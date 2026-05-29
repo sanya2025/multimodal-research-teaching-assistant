@@ -129,7 +129,7 @@ multimodal-research-teaching-assistant/
 
 ## Tutorial notebooks
 
-The `notebooks/` folder contains a 10-part tutorial that builds the system from scratch, fully runnable on local models:
+The `notebooks/tutorials/` folder contains a 10-part tutorial that builds the system from scratch, fully runnable on local models:
 
 | # | Notebook                                                | What you learn                                  |
 |---|---------------------------------------------------------|-------------------------------------------------|
