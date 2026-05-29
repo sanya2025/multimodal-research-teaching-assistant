@@ -22,6 +22,7 @@ This repo is the flagship portfolio project paired with a 10-notebook tutorial s
   - [Evaluation](#evaluation)
   - [Design tradeoffs](#design-tradeoffs)
   - [Limitations \& future work](#limitations--future-work)
+  - [License](#license)
 
 ---
 
@@ -173,3 +174,7 @@ Notebook 09 builds the eval pipeline with Ragas and a small hand-labeled benchma
 ---
 
 Made for portfolio review, interview discussion, and actually being useful when reading papers.
+
+## License
+
+This project is licensed under the MIT License. See the LICENSE file for details.
