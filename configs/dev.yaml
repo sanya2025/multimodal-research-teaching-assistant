@@ -1,0 +1,24 @@
+# Development environment defaults.
+# Values here are overridden by .env or shell env vars.
+# Switch environment: export MRTA_ENV=dev (default)
+
+llm_provider: ollama
+
+ollama_host: http://localhost:11434
+ollama_llm_model: llama3.2:3b
+ollama_vlm_model: qwen2.5vl:7b
+
+embedding_model: nomic-embed-text
+clip_model: ViT-B-32
+
+vector_store: faiss
+qdrant_url: http://localhost:6333
+vector_store_path: data/vector_store
+
+top_k: 5
+chunk_size: 1000
+chunk_overlap: 200
+
+log_level: DEBUG
+log_file: data/logs/runs.jsonl
+enable_tracing: false

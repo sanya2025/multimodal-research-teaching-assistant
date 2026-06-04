@@ -1,0 +1,22 @@
+# Test environment — faster settings for pytest runs.
+# Switch environment: export MRTA_ENV=test
+
+llm_provider: ollama
+
+ollama_host: http://localhost:11434
+ollama_llm_model: llama3.2:3b
+ollama_vlm_model: llava:7b
+
+embedding_model: sentence-transformers/all-MiniLM-L6-v2
+clip_model: ViT-B-32
+
+vector_store: faiss
+vector_store_path: data/test_vector_store
+
+top_k: 3
+chunk_size: 500
+chunk_overlap: 50
+
+log_level: WARNING
+log_file: data/logs/test_runs.jsonl
+enable_tracing: false
