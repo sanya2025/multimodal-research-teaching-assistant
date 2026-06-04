@@ -81,13 +81,19 @@ cd multimodal-research-teaching-assistant
 python -m venv .venv
 source .venv/bin/activate   # Windows: .venv\Scripts\activate
 
-pip install -r requirements.txt
+# Full install (recommended for tutorials):
+pip install -e ".[all]"
+
+# Or install only what you need:
+pip install -e ".[api,eval]"   # backend + evaluation
+pip install -e ".[dev]"        # development tooling only
+
 cp .env.example .env
 
 # Install Ollama (https://ollama.com) then pull the default models:
 ollama pull llama3.2:3b
-ollama pull llava:7b
-ollama pull nomic-embed-text   # optional alternative embedder
+ollama pull qwen2.5vl:7b
+ollama pull nomic-embed-text
 ```
 
 ## Quick start
@@ -96,34 +102,44 @@ ollama pull nomic-embed-text   # optional alternative embedder
 # 1. Walk through the tutorials end-to-end
 jupyter lab notebooks/
 
-# 2. Or run the app:
-uvicorn app.api.main:app --reload --port 8000     # backend
-streamlit run frontend/streamlit_app.py           # frontend (separate terminal)
+# 2. Or run the app directly:
+uvicorn apps.api.main:app --reload --port 8000    # backend
+streamlit run apps/streamlit/app.py               # frontend (separate terminal)
 ```
 
 Upload a paper, ask a question, see the answer with page citations.
+
+### Environment switching
+
+Config is loaded from `configs/{MRTA_ENV}.yaml` with env vars taking priority:
+
+```bash
+MRTA_ENV=dev pytest    # default — uses configs/dev.yaml
+MRTA_ENV=test pytest   # uses configs/test.yaml (lighter models, test paths)
+```
 
 ## Repo layout
 
 ```
 multimodal-research-teaching-assistant/
-├── app/
-│   ├── api/              FastAPI routers + main.py
-│   ├── core/             rag_pipeline.py, llm.py, config.py
-|   |--- generation/ 
-│   ├── ingestion/        pdf_loader.py, chunker.py, figure_extractor.py
-│   ├── retrieval/        vector_store.py, embedder.py, reranker.py
-│   ├── multimodal/       vlm_client.py, clip_embedder.py
-│   ├── evaluation/       eval_pipeline.py, metrics.py
-│   ├── prompts/          Jinja2 prompt templates
-│   └── observability/    logging.py, tracing.py
-├── frontend/streamlit_app.py
-├── data/{raw,processed,vector_store,logs}/
+├── src/
+│   └── mrta/             installable Python library (pip install -e .)
+│       ├── core/         config.py, schemas.py, llm.py, rag_pipeline.py
+│       ├── ingestion/    pdf_loader.py, chunker.py, figure_extractor.py
+│       ├── retrieval/    vector_store.py, embedder.py, reranker.py
+│       ├── multimodal/   vlm_client.py, clip_embedder.py
+│       ├── evaluation/   eval_pipeline.py, metrics.py
+│       ├── prompts/      Jinja2 prompt templates
+│       └── observability/ logging.py, tracing.py
+├── apps/
+│   ├── api/              FastAPI entry point (imports from mrta.*)
+│   └── streamlit/        Streamlit UI
+├── configs/              dev.yaml, test.yaml — environment-specific defaults
+├── data/                 raw/, processed/, vector_store/, logs/
 ├── notebooks/            Tutorial series (00 → 09)
-├── tests/                pytest unit + integration
-├── configs/              YAML configs per env
+├── tests/                pytest unit + integration + fixtures
 ├── docker/               Dockerfile.api, Dockerfile.ui, docker-compose.yml
-├── docs/                 architecture.md, system_design.md, evaluation.md
+├── docs/                 adr/, architecture/, evaluation/, deployment/
 └── .github/workflows/    ci.yml
 ```
 
@@ -159,8 +175,8 @@ Notebook 09 builds the eval pipeline with Ragas and a small hand-labeled benchma
 
 ## Design tradeoffs
 
-- **FAISS vs Qdrant.** FAISS is in-process, zero infra, and perfect for the tutorial. We swap to Qdrant in Docker once we want persistence + filtering on metadata. The vector store interface (`app/retrieval/vector_store.py`) is identical for both.
-- **Local models vs API.** Defaulting to Ollama keeps the project free, private, and reproducible. The LLM client (`app/core/llm.py`) is provider-agnostic — flipping to OpenAI is one config change.
+- **FAISS vs Qdrant.** FAISS is in-process, zero infra, and perfect for the tutorial. We swap to Qdrant in Docker once we want persistence + filtering on metadata. The vector store interface (`src/mrta/retrieval/vector_store.py`) is identical for both.
+- **Local models vs API.** Defaulting to Ollama keeps the project free, private, and reproducible. The LLM client (`src/mrta/core/llm.py`) is provider-agnostic — flipping to OpenAI is one config change.
 - **Chunk size.** 500–800 tokens with 100-token overlap is the sweet spot for research papers; we revisit this in Notebook 02 with a side-by-side recall comparison.
 - **Citations.** We store `{doc_id, page, section, chunk_id}` on every chunk so the LLM can quote exact pages, and we re-verify cited pages in the eval pipeline.
 
