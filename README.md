@@ -21,6 +21,7 @@ This repo is the flagship portfolio project paired with a 10-notebook tutorial s
   - [Tutorial notebooks](#tutorial-notebooks)
   - [Evaluation](#evaluation)
   - [Design tradeoffs](#design-tradeoffs)
+  - [Architecture decisions](#architecture-decisions)
   - [Limitations \& future work](#limitations--future-work)
   - [License](#license)
 
@@ -32,7 +33,7 @@ Researchers, graduate students, and engineers regularly need to read and reason 
 
 ## Architecture
 
-```
+```text
 PDFs / Slides / Images
         ↓
    Ingestion (PyMuPDF + pdfplumber)
@@ -120,7 +121,7 @@ MRTA_ENV=test pytest   # uses configs/test.yaml (lighter models, test paths)
 
 ## Repo layout
 
-```
+```text
 multimodal-research-teaching-assistant/
 ├── src/
 │   └── mrta/             installable Python library (pip install -e .)
@@ -179,6 +180,19 @@ Notebook 09 builds the eval pipeline with Ragas and a small hand-labeled benchma
 - **Local models vs API.** Defaulting to Ollama keeps the project free, private, and reproducible. The LLM client (`src/mrta/core/llm.py`) is provider-agnostic — flipping to OpenAI is one config change.
 - **Chunk size.** 500–800 tokens with 100-token overlap is the sweet spot for research papers; we revisit this in Notebook 02 with a side-by-side recall comparison.
 - **Citations.** We store `{doc_id, page, section, chunk_id}` on every chunk so the LLM can quote exact pages, and we re-verify cited pages in the eval pipeline.
+
+## Architecture decisions
+
+Key decisions are documented as Architecture Decision Records in [`docs/adr/`](docs/adr/):
+
+| ADR | Decision |
+| --- | -------- |
+| [ADR-001](docs/adr/ADR-001-src-layout-and-library-design.md) | `src/` layout and library design |
+| [ADR-002](docs/adr/ADR-002-vector-store-faiss-vs-qdrant.md) | FAISS default with Qdrant swap path |
+| [ADR-003](docs/adr/ADR-003-llm-provider-strategy.md) | Ollama default, provider-agnostic LLM client |
+| [ADR-004](docs/adr/ADR-004-embedding-model-selection.md) | Two-tier embeddings (MiniLM for CI, nomic-embed-text for dev) |
+| [ADR-005](docs/adr/ADR-005-rag-architecture.md) | Chunking, retrieval, generation, and citation design |
+| [ADR-006](docs/adr/ADR-006-evaluation-framework.md) | Ragas + DeepEval, 6 evaluation metrics |
 
 ## Limitations & future work
 
