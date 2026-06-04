@@ -142,7 +142,9 @@ multimodal-research-teaching-assistant/
 │   └── streamlit/        Streamlit UI
 ├── configs/              dev.yaml, test.yaml — environment-specific defaults
 ├── data/                 raw/, processed/, vector_store/, logs/
-├── notebooks/            Tutorial series (00 → 09)
+├── notebooks/
+│   ├── tutorials/        Original series (00 → 09) — inline implementations
+│   └── production/       Same series — imports from mrta.* library
 ├── tests/                pytest unit + integration + fixtures
 ├── docker/               Dockerfile.api, Dockerfile.streamlit, docker-compose.yml
 ├── docs/                 adr/, architecture/, evaluation/, deployment/
@@ -151,7 +153,12 @@ multimodal-research-teaching-assistant/
 
 ## Tutorial notebooks
 
-The `notebooks/tutorials/` folder contains a 10-part tutorial that builds the system from scratch, fully runnable on local models:
+Two parallel versions of the 10-part series:
+
+- **`notebooks/tutorials/`** — original teaching version; every function is defined inline so students can see exactly how it works.
+- **`notebooks/production/`** — same content; functions are imported from `src/mrta/` instead. Use this as the reference for what each notebook looks like once the library module is complete.
+
+Both are fully runnable on local models (Ollama + Hugging Face, no API keys):
 
 | # | Notebook                                                | What you learn                                  |
 |---|---------------------------------------------------------|-------------------------------------------------|
