@@ -1,7 +1,6 @@
 """Shared Pydantic models used across mrta modules."""
-from __future__ import annotations
 
-from pathlib import Path
+from __future__ import annotations
 
 from pydantic import BaseModel
 

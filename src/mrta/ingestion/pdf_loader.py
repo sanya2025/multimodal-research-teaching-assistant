@@ -1,4 +1,5 @@
 """PDF ingestion — loads a PDF into typed PageRecord / PdfDocument objects."""
+
 from __future__ import annotations
 
 import hashlib
@@ -22,13 +23,15 @@ def load_pdf(path: str | Path) -> PdfDocument:
     for i, page in enumerate(doc, start=1):
         text = page.get_text("text")  # plain text; "blocks" gives layout boxes
         n_images = len(page.get_images(full=True))
-        pages.append(PageRecord(
-            doc_id=doc_id,
-            page=i,
-            text=text,
-            n_images=n_images,
-            source=path.name,
-        ))
+        pages.append(
+            PageRecord(
+                doc_id=doc_id,
+                page=i,
+                text=text,
+                n_images=n_images,
+                source=path.name,
+            )
+        )
     return PdfDocument(
         doc_id=doc_id,
         source=path.name,

@@ -1,4 +1,5 @@
 """Typed configuration. Priority: env vars > .env > configs/{MRTA_ENV}.yaml > defaults."""
+
 from __future__ import annotations
 
 import os

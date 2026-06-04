@@ -1,4 +1,5 @@
 """Unit tests for mrta.ingestion.pdf_loader."""
+
 from __future__ import annotations
 
 from pathlib import Path
