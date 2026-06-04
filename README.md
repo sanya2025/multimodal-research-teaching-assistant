@@ -123,6 +123,10 @@ MRTA_ENV=test pytest   # uses configs/test.yaml (lighter models, test paths)
 
 ```text
 multimodal-research-teaching-assistant/
+├── README.md
+├── RESEARCH_NOTES.md
+├── pyproject.toml
+├── requirements.txt
 ├── src/
 │   └── mrta/             installable Python library (pip install -e .)
 │       ├── core/         config.py, schemas.py, llm.py, rag_pipeline.py
@@ -139,7 +143,7 @@ multimodal-research-teaching-assistant/
 ├── data/                 raw/, processed/, vector_store/, logs/
 ├── notebooks/            Tutorial series (00 → 09)
 ├── tests/                pytest unit + integration + fixtures
-├── docker/               Dockerfile.api, Dockerfile.ui, docker-compose.yml
+├── docker/               Dockerfile.api, Dockerfile.streamlit, docker-compose.yml
 ├── docs/                 adr/, architecture/, evaluation/, deployment/
 └── .github/workflows/    ci.yml
 ```
