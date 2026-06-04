@@ -1,0 +1,25 @@
+FROM python:3.11-slim
+
+WORKDIR /app
+
+# Install system deps required by PyMuPDF
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    libmupdf-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy package definition first for better layer caching
+COPY pyproject.toml ./
+COPY src/ ./src/
+
+# Install library + API dependencies only (no dev/eval/llm extras)
+RUN pip install --no-cache-dir -e ".[api]"
+
+# Copy application entry point
+COPY apps/api/ ./apps/api/
+
+# Copy configs so Settings can load configs/{MRTA_ENV}.yaml
+COPY configs/ ./configs/
+
+EXPOSE 8000
+
+CMD ["uvicorn", "apps.api.main:app", "--host", "0.0.0.0", "--port", "8000"]
