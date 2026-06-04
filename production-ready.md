@@ -252,7 +252,7 @@ def rag_query(
 
 **RAG prompt template (`src/mrta/prompts/rag.j2`):**
 
-```
+```jinja2
 You are a research assistant. Answer the question using only the context below.
 Cite the page number(s) you drew from.
 
