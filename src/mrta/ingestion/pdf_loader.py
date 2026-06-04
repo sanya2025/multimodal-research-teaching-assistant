@@ -1,8 +1,18 @@
+"""PDF ingestion — loads a PDF into typed PageRecord / PdfDocument objects."""
+from __future__ import annotations
+
 import hashlib
+from pathlib import Path
+
+import fitz  # PyMuPDF
+
+from mrta.core.schemas import PageRecord, PdfDocument
+
 
 def _doc_id(path: Path) -> str:
     h = hashlib.sha1(path.read_bytes()).hexdigest()[:10]
     return f"{path.stem}_{h}"
+
 
 def load_pdf(path: str | Path) -> PdfDocument:
     path = Path(path)

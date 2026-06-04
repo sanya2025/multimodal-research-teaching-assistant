@@ -1,64 +1,17 @@
-# --- Core ---
-python-dotenv>=1.0.0
-pydantic>=2.6.0
-pydantic-settings>=2.2.0
-PyYAML>=6.0
-
-# --- Ingestion ---
-PyMuPDF>=1.24.0          # fitz
-pdfplumber>=0.11.0
-unstructured>=0.13.0
-Pillow>=10.0.0
-pytesseract>=0.3.10      # OCR fallback (needs system tesseract)
-
-# --- Chunking / embeddings ---
-sentence-transformers>=2.7.0
-tiktoken>=0.7.0
-langchain-text-splitters>=0.2.0
-langchain>=0.2.0
-langchain-core>=0.2.0
-langchain-community>=0.2.0
-# langchain-google-vertexai>=1.0.0
-
-# --- Vector store ---
-faiss-cpu>=1.8.0
-qdrant-client>=1.9.0     # for the production swap notebook
-
-# --- LLM clients (local) ---
-ollama>=0.2.0
-transformers>=4.41.0
-accelerate>=0.30.0
-torch>=2.2.0
-huggingface-hub>=0.23.0
-
-# --- Multimodal ---
-open-clip-torch>=2.24.0
-einops>=0.8.0
-
-# --- Backend / frontend ---
-fastapi>=0.111.0
-uvicorn[standard]>=0.30.0
-python-multipart>=0.0.9
-streamlit>=1.35.0
-httpx>=0.27.0
-jinja2>=3.1.4
-
-# --- Evaluation + observability ---
-ragas>=0.1.10
-deepeval>=0.21.0
-opentelemetry-api>=1.25.0
-opentelemetry-sdk>=1.25.0
-structlog>=24.1.0
-
-# --- Notebook / dev ---
-jupyterlab>=4.2.0
-ipykernel>=6.29.0
-matplotlib>=3.8.0
-pandas>=2.2.0
-tqdm>=4.66.0
-
-# --- Tooling ---
-pytest>=8.2.0
-pytest-asyncio>=0.23.0
-ruff>=0.4.0
-black>=24.4.0
+# ----------------------------------------------------------------------------
+# requirements.txt — convenience file for students and quick environment setup
+#
+# pyproject.toml is the authoritative source of truth for dependencies.
+#
+# For full development (recommended):
+#   pip install -e ".[dev]"
+#
+# For a specific slice:
+#   pip install -e ".[api]"          FastAPI backend only
+#   pip install -e ".[llm]"          local LLM inference (torch, transformers)
+#   pip install -e ".[eval]"         Ragas + DeepEval evaluation
+#   pip install -e ".[all]"          everything
+#
+# This file installs all optional groups (tutorial default):
+# ----------------------------------------------------------------------------
+-e ".[all]"

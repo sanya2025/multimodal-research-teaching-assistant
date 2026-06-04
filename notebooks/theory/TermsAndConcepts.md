@@ -3,7 +3,7 @@
 
 `llama3.2:3b` is a **small, text-only large language model** from Meta's Llama 3.2 family. The `3b` means it has approximately **3 billion parameters**. It is designed to run efficiently on laptops, desktops, and edge devices while still providing good instruction following, summarization, and chat capabilities. ([Hugging Face][1])
 
-### Breaking down the name
+## Breaking down the name
 
 * **Llama 3.2** = Meta's model family released in September 2024.
 * **3B** = 3 billion parameters.
@@ -43,15 +43,15 @@ Typical memory usage:
 
 For other planned projects:
 
-| Project            | Llama 3.2 3B                   |
-| ------------------ | ------------------------------ |
-| Learning LangGraph | ✅ Excellent                    |
-| Learning RAG       | ✅ Excellent                    |
-| AI Tutor           | ✅ Good                         |
-| Agent workflows    | ✅ Good                         |
-| Research Assistant | ⚠️ OK for prototype            |
-| Complex reasoning  | ⚠️ Limited                     |
-| Portfolio project  | ⚠️ Use larger model eventually |
+| Project            | Llama 3.2 3B                     |
+| ------------------ | -------------------------------- |
+| Learning LangGraph | ✅ Excellent                     |
+| Learning RAG       | ✅ Excellent                     |
+| AI Tutor           | ✅ Good                          |
+| Agent workflows    | ✅ Good                          |
+| Research Assistant | ⚠️ OK for prototype              |
+| Complex reasoning  | ⚠️ Limited                       |
+| Portfolio project  | ⚠️ Use larger model eventually   |
 
 For **ResearchClaw** and **Multimodal AI Research Assistant**, I would use:
 

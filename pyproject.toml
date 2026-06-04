@@ -1,0 +1,131 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/mrta"]
+
+# ---------------------------------------------------------------------------
+# Package metadata
+# ---------------------------------------------------------------------------
+[project]
+name = "mrta"
+version = "0.1.0"
+description = "Multimodal AI Research & Teaching Assistant — PDF ingestion, RAG, VLM, evaluation"
+readme = "README.md"
+license = { file = "LICENSE" }
+requires-python = ">=3.11"
+
+dependencies = [
+    # Config / env
+    "pydantic>=2.6.0",
+    "pydantic-settings>=2.2.0",
+    "python-dotenv>=1.0.0",
+    "PyYAML>=6.0",
+    # Ingestion
+    "PyMuPDF>=1.24.0",
+    "pdfplumber>=0.11.0",
+    "Pillow>=10.0.0",
+    # Chunking + embeddings
+    "sentence-transformers>=2.7.0",
+    "tiktoken>=0.7.0",
+    "langchain-text-splitters>=0.2.0",
+    "langchain>=0.2.0",
+    "langchain-core>=0.2.0",
+    "langchain-community>=0.2.0",
+    # Vector store
+    "faiss-cpu>=1.8.0",
+    # Prompts + observability
+    "jinja2>=3.1.4",
+    "structlog>=24.1.0",
+]
+
+# ---------------------------------------------------------------------------
+# Optional dependency groups
+# Install with: pip install -e ".[group]"
+# ---------------------------------------------------------------------------
+[project.optional-dependencies]
+
+# Local LLM inference (heavy — torch, transformers, Ollama client)
+llm = [
+    "ollama>=0.2.0",
+    "transformers>=4.41.0",
+    "accelerate>=0.30.0",
+    "torch>=2.2.0",
+    "huggingface-hub>=0.23.0",
+]
+
+# Multimodal — CLIP image embeddings + VLM support
+multimodal = [
+    "open-clip-torch>=2.24.0",
+    "einops>=0.8.0",
+]
+
+# OCR fallback for scanned PDFs
+ocr = [
+    "unstructured>=0.13.0",
+    "pytesseract>=0.3.10",
+]
+
+# Production vector store swap
+qdrant = [
+    "qdrant-client>=1.9.0",
+]
+
+# FastAPI backend
+api = [
+    "fastapi>=0.111.0",
+    "uvicorn[standard]>=0.30.0",
+    "python-multipart>=0.0.9",
+    "httpx>=0.27.0",
+]
+
+# Streamlit frontend
+streamlit = [
+    "streamlit>=1.35.0",
+]
+
+# Evaluation + observability
+eval = [
+    "ragas>=0.1.10",
+    "deepeval>=0.21.0",
+    "opentelemetry-api>=1.25.0",
+    "opentelemetry-sdk>=1.25.0",
+]
+
+# Development tooling + notebooks
+dev = [
+    "pytest>=8.2.0",
+    "pytest-asyncio>=0.23.0",
+    "ruff>=0.4.0",
+    "black>=24.4.0",
+    "jupyterlab>=4.2.0",
+    "ipykernel>=6.29.0",
+    "matplotlib>=3.8.0",
+    "pandas>=2.2.0",
+    "tqdm>=4.66.0",
+]
+
+# Everything
+all = [
+    "mrta[llm,multimodal,ocr,qdrant,api,streamlit,eval,dev]",
+]
+
+# ---------------------------------------------------------------------------
+# Tool configuration
+# ---------------------------------------------------------------------------
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"
+
+[tool.ruff]
+src = ["src"]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP"]
+
+[tool.black]
+line-length = 100
+target-version = ["py311"]

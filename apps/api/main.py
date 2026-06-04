@@ -1,4 +1,4 @@
-"""FastAPI entry point. Run with: uvicorn app.api.main:app --reload --port 8000"""
+"""FastAPI entry point. Run with: uvicorn apps.api.main:app --reload --port 8000"""
 from __future__ import annotations
 
 from fastapi import FastAPI
@@ -16,4 +16,4 @@ def health() -> dict[str, str]:
 
 
 # Endpoints are wired up in Notebook 05.
-# from app.api import routes  # noqa
+# from apps.api import routers  # noqa
