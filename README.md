@@ -124,6 +124,7 @@ MRTA_ENV=test pytest   # uses configs/test.yaml (lighter models, test paths)
 ```text
 multimodal-research-teaching-assistant/
 ├── README.md
+├── CLAUDE.md
 ├── RESEARCH_NOTES.md
 ├── pyproject.toml
 ├── requirements.txt
