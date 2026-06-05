@@ -39,8 +39,8 @@ src/mrta/
 ├── core/
 │   ├── config.py          Settings (pydantic-settings, YAML-backed)       ✅ done
 │   ├── schemas.py         PageRecord, PdfDocument, Chunk                   partial (FigureRecord, EvalReport missing)
-│   ├── llm.py             LLMClient — provider-agnostic text generation    stub
-│   ├── rag_pipeline.py    rag_query() — retrieve → prompt → generate       stub
+│   ├── llm.py             LLMClient — provider-agnostic text generation    ✅ done
+│   ├── rag_pipeline.py    rag_query() — retrieve → prompt → generate       ✅ done
 │   └── exceptions.py      MrtaError base + subclasses                      stub
 ├── ingestion/
 │   ├── pdf_loader.py      load_pdf(), _doc_id(), ocr_page_if_needed()     ✅ done
@@ -55,8 +55,8 @@ src/mrta/
 │   ├── clip_embedder.py   CLIPEmbedder — image → float32 vector            stub
 │   └── vlm_client.py      VLMClient — image + text → caption               stub
 ├── prompts/
-│   ├── __init__.py        load_prompt(name, **kwargs) → str                stub
-│   ├── rag.j2             base RAG template                                stub
+│   ├── __init__.py        load_prompt(name, **kwargs) → str                ✅ done
+│   ├── rag.j2             base RAG template                                ✅ done
 │   ├── explain.j2         explain a figure or concept                      stub
 │   ├── quiz.j2            generate quiz questions                          stub
 │   ├── beginner.j2        simplified explanation                           stub
@@ -66,7 +66,7 @@ src/mrta/
 │   └── metrics.py         answer_relevance(), faithfulness(),
 │                          citation_correctness(), hallucination_rate()     stub
 └── observability/
-    ├── logging.py         StructuredLogger — JSONL per run                 stub
+    ├── logging.py         StructuredLogger — JSONL per run                 ✅ done
     └── tracing.py         OpenTelemetry spans (optional)                   stub
 ```
 
@@ -529,8 +529,8 @@ After each step: run `MRTA_ENV=test pytest`, commit.
 |--------|--------|
 | `core/config.py` | ✅ complete |
 | `core/schemas.py` | partial — `PageRecord`, `PdfDocument`, `Chunk` done; `FigureRecord`, `EvalReport` missing |
-| `core/llm.py` | stub |
-| `core/rag_pipeline.py` | stub |
+| `core/llm.py` | ✅ complete |
+| `core/rag_pipeline.py` | ✅ complete |
 | `core/exceptions.py` | stub |
 | `ingestion/pdf_loader.py` | ✅ complete |
 | `ingestion/chunker.py` | ✅ complete |
@@ -540,8 +540,8 @@ After each step: run `MRTA_ENV=test pytest`, commit.
 | `retrieval/reranker.py` | stub |
 | `multimodal/clip_embedder.py` | stub |
 | `multimodal/vlm_client.py` | stub |
-| `prompts/` | stub |
+| `prompts/` | ✅ complete (rag.j2 done; explain/quiz/beginner/expert in Phase 08) |
 | `evaluation/eval_pipeline.py` | stub |
 | `evaluation/metrics.py` | stub |
-| `observability/logging.py` | stub |
+| `observability/logging.py` | ✅ complete |
 | `observability/tracing.py` | stub |

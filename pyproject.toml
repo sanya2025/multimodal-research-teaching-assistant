@@ -35,6 +35,8 @@ dependencies = [
     "langchain-community>=0.2.0",
     # Vector store
     "faiss-cpu>=1.8.0",
+    # LLM client (lightweight HTTP wrapper — Ollama server itself is external)
+    "ollama>=0.2.0",
     # Prompts + observability
     "jinja2>=3.1.4",
     "structlog>=24.1.0",
@@ -46,9 +48,8 @@ dependencies = [
 # ---------------------------------------------------------------------------
 [project.optional-dependencies]
 
-# Local LLM inference (heavy — torch, transformers, Ollama client)
+# Local LLM inference (heavy — torch, transformers, HuggingFace models)
 llm = [
-    "ollama>=0.2.0",
     "transformers>=4.41.0",
     "accelerate>=0.30.0",
     "torch>=2.2.0",

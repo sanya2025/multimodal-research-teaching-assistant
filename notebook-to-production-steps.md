@@ -254,3 +254,88 @@ cos(u, v) = u · v     ← that's exactly what IndexFlatIP computes
 At paper scale (<1M vectors), `IndexFlatIP` is the right default: exact, instant, no
 configuration. The `VectorStore` interface is the swap boundary for Qdrant (Phase 09) —
 replacing the implementation doesn't change any caller.
+
+---
+
+## Phase 04 — End-to-End RAG Pipeline
+
+### What's extracted — Phase 04
+
+| Tutorial cell | Inline code | Production import |
+|---------------|-------------|-------------------|
+| [6] | `class OllamaLLM:` with `chat(system, user) -> dict` | `from mrta.core.llm import LLMClient` — upgraded interface: `chat(messages: list[dict]) -> str` |
+| [4] | `RAG_PROMPT = Template(r"""...""")` | `from mrta.prompts import load_prompt` — template lives at `src/mrta/prompts/rag.j2` |
+| [8] | `def rag_answer(question, store, llm, k)` | `from mrta.core.rag_pipeline import rag_query` — upgraded return: `{"answer", "sources", "latency_s"}` |
+| [14] | `def log_run(run, log_file)` | `from mrta.observability.logging import StructuredLogger` — reads `settings.log_file` |
+
+### What's still inline — Phase 04
+
+| Cell | Content | Why |
+|------|---------|-----|
+| [12] | Single question demo call | Live Ollama call; teaching demo |
+| [14] | Multi-question batch loop | Live Ollama calls; demonstrates batch usage |
+| [17] | Failure modes table | Markdown only |
+
+### Running notebook cell status
+
+| Cell | Status | Notes |
+|------|--------|-------|
+| [4] | `from mrta.retrieval import Embedder, VectorStore` | Phase 03 done — no more inline VectorStore |
+| [6] | `from mrta.prompts import load_prompt` | Template body moved to `rag.j2` |
+| [8] | `from mrta.core.llm import LLMClient` | Replaces inline `OllamaLLM` |
+| [10] | `from mrta.core.rag_pipeline import rag_query` | Replaces inline `rag_answer` |
+| [12] | Inline — updated | Uses `rag_query`; accesses `out["sources"]` (list[Chunk], `.page`) |
+| [14] | Inline — updated | Loop uses `rag_query`; `[c.page for c in out["sources"]]` |
+| [16] | `from mrta.observability.logging import StructuredLogger` | Replaces inline `log_run` |
+
+### Classes and functions implemented — Phase 04
+
+| Symbol | File | Signature |
+|--------|------|-----------|
+| `LLMClient.__init__` | `src/mrta/core/llm.py` | `(provider: str \| None, model: str \| None) -> None` |
+| `LLMClient.chat` | `src/mrta/core/llm.py` | `(messages: list[dict], temperature: float = 0.1) -> str` |
+| `rag_query` | `src/mrta/core/rag_pipeline.py` | `(question, vector_store, llm, top_k=5) -> dict` |
+| `load_prompt` | `src/mrta/prompts/__init__.py` | `(name: str, **kwargs) -> str` |
+| `StructuredLogger.log_run` | `src/mrta/observability/logging.py` | `(question, answer, sources, latency_s) -> None` |
+
+### Two interface refinements from tutorial → production
+
+**`OllamaLLM.chat(system, user)` → `LLMClient.chat(messages: list[dict]) -> str`**
+
+The tutorial API is Ollama-specific: `chat(system, user)` bakes in the two-role convention at the
+call site, and returns a dict with `text`, `model`, `latency_s`, `prompt_tokens`. The production
+interface uses the OpenAI-style `messages` list — provider-agnostic; any provider that accepts
+`[{"role": "system"}, {"role": "user"}]` works without changes to callers. Return type is plain
+`str` (response content only); latency and token counts belong at the pipeline level, not inside
+the LLM wrapper.
+
+**`rag_answer` return → `rag_query` return**
+
+Tutorial: `{"question", "answer", "cited_pages", "retrieved": [{"page", "score", "chunk_id"}], "latency_s", "model"}`.
+Production: `{"answer": str, "sources": list[Chunk], "latency_s": float}`.
+The `sources` are typed `Chunk` objects — callers use `.page`, `.text`, `.source` directly instead
+of indexing dicts. Keeping the model name out of the return value is intentional: it's an
+implementation detail of `LLMClient`, not a property of the answer.
+
+### Concept note — why the RAG prompt has three separate sections
+
+The `rag.j2` template separates the prompt into three distinct regions:
+
+```text
+1. Role + grounding rule  (system layer)
+2. --- CONTEXT ---        (retrieved chunks, each labeled with source + page)
+3. --- QUESTION ---       (user query, placed after context)
+```
+
+**Grounding rule prevents hallucination.** "Use ONLY the context below. If insufficient, say
+'I could not find this.'" gives the model explicit permission to refuse rather than invent. Without
+this, RLHF-trained models often generate plausible-sounding answers even when the context is empty.
+
+**Citation format forces structured output.** Demanding `[page N]` citation strings in a
+predictable bracket format allows downstream code (`re.finditer(r"\[page (\d+)"`) to parse them
+reliably. Unstructured "see page 3" or "(p.3)" references are harder to parse and validate.
+
+**Context before question prevents "lost in the middle" degradation.** Transformer attention
+weights degrade for tokens in the middle of a long context window. Placing the question at the
+end ensures it's in the recency-favoured region. Context chunks are the longest part; they go
+first so any degradation hits them rather than the question or the grounding rule.
