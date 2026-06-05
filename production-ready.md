@@ -1,6 +1,18 @@
 # Production-Ready Plan
 
-This document maps every tutorial notebook to the `src/mrta/` library.  
+## Purpose
+
+This is the **architecture blueprint** for the `src/mrta/` library.
+It defines what the library should look like when complete — every module, every public function, every interface signature.
+
+Use it to answer: *"What should I build next, and what should it look like?"*
+
+It does **not** track progress or record what was done in each session — that lives in
+[notebook-to-production-steps.md](notebook-to-production-steps.md), the per-notebook execution log.
+
+---
+
+This document maps every tutorial notebook to the `src/mrta/` library.
 It answers three questions for each notebook: **what to extract**, **where it lives**, and **why**.
 
 ---
@@ -26,14 +38,14 @@ When this is done for all notebooks, the library is complete and the notebooks b
 src/mrta/
 ├── core/
 │   ├── config.py          Settings (pydantic-settings, YAML-backed)       ✅ done
-│   ├── schemas.py         PageRecord, PdfDocument, Chunk                   partial
+│   ├── schemas.py         PageRecord, PdfDocument, Chunk                   partial (FigureRecord, EvalReport missing)
 │   ├── llm.py             LLMClient — provider-agnostic text generation    stub
 │   ├── rag_pipeline.py    rag_query() — retrieve → prompt → generate       stub
 │   └── exceptions.py      MrtaError base + subclasses                      stub
 ├── ingestion/
-│   ├── pdf_loader.py      load_pdf(), _doc_id()                            ✅ done
+│   ├── pdf_loader.py      load_pdf(), _doc_id(), ocr_page_if_needed()     ✅ done
 │   ├── chunker.py         fixed_chunks(), recursive_chunks(),
-│   │                      token_chunks(), semantic_chunks()                 stub
+│   │                      token_chunks(), semantic_chunks(), chunk_pdf()    ✅ done
 │   └── figure_extractor.py extract_figures() → list[FigureRecord]          stub
 ├── retrieval/
 │   ├── embedder.py        Embedder (sentence-transformers + Ollama)        stub
@@ -85,10 +97,10 @@ print(settings.llm_provider, settings.embedding_model)
 
 | Function / class | Target file | Why |
 |-----------------|-------------|-----|
-| `PageRecord`, `PdfDocument` | `src/mrta/core/schemas.py` | Shared across ingestion, retrieval, API — must not be re-defined per notebook |
-| `load_pdf(path) -> PdfDocument` | `src/mrta/ingestion/pdf_loader.py` | ✅ already done |
-| `extract_figures(path) -> list[FigureRecord]` | `src/mrta/ingestion/figure_extractor.py` | Used again in Phase 07; single source of truth |
-| `ocr_page_if_needed(page) -> str` | `src/mrta/ingestion/pdf_loader.py` | Called inside `load_pdf` when text is empty |
+| `PageRecord`, `PdfDocument` | `src/mrta/core/schemas.py` | ✅ done — shared across ingestion, retrieval, API |
+| `load_pdf(path) -> PdfDocument` | `src/mrta/ingestion/pdf_loader.py` | ✅ done |
+| `ocr_page_if_needed(page) -> str` | `src/mrta/ingestion/pdf_loader.py` | ✅ done — OCR fallback for scanned pages |
+| `extract_figures(path) -> list[FigureRecord]` | `src/mrta/ingestion/figure_extractor.py` | stub — extracted in Phase 07 |
 
 **`FigureRecord` schema to add to `schemas.py`:**
 
@@ -123,12 +135,12 @@ figures = extract_figures("data/sample/attention_is_all_you_need.pdf")
 
 | Function | Target file | Why |
 |----------|-------------|-----|
-| `Chunk` schema | `src/mrta/core/schemas.py` | Used by retrieval, RAG, API, evaluation |
-| `fixed_chunks(pdf, size, overlap)` | `src/mrta/ingestion/chunker.py` | Baseline strategy |
-| `recursive_chunks(pdf, size, overlap)` | `src/mrta/ingestion/chunker.py` | Default production strategy |
-| `token_chunks(pdf, size, overlap)` | `src/mrta/ingestion/chunker.py` | Token-budget-aware; needed for accurate context window math |
-| `semantic_chunks(pdf, threshold)` | `src/mrta/ingestion/chunker.py` | Advanced; slow but highest quality |
-| `chunk_pdf(pdf, strategy, **kwargs)` | `src/mrta/ingestion/chunker.py` | Single entry point used by the RAG pipeline |
+| `Chunk` schema | `src/mrta/core/schemas.py` | ✅ done — used by retrieval, RAG, API, evaluation |
+| `fixed_chunks(pdf, size, overlap)` | `src/mrta/ingestion/chunker.py` | ✅ done — baseline strategy |
+| `recursive_chunks(pdf, size, overlap)` | `src/mrta/ingestion/chunker.py` | ✅ done — default production strategy |
+| `token_chunks(pdf, size, overlap)` | `src/mrta/ingestion/chunker.py` | ✅ done — token-budget-aware |
+| `semantic_chunks(pdf, threshold)` | `src/mrta/ingestion/chunker.py` | ✅ done — advanced; slow but highest quality |
+| `chunk_pdf(pdf, strategy, **kwargs)` | `src/mrta/ingestion/chunker.py` | ✅ done — single entry point for RAG pipeline |
 
 **`Chunk` schema to add to `schemas.py`:**
 
@@ -516,12 +528,12 @@ After each step: run `MRTA_ENV=test pytest`, commit.
 | Module | Status |
 |--------|--------|
 | `core/config.py` | ✅ complete |
-| `core/schemas.py` | partial — `PageRecord`, `PdfDocument` done; `Chunk`, `FigureRecord`, `EvalReport` missing |
+| `core/schemas.py` | partial — `PageRecord`, `PdfDocument`, `Chunk` done; `FigureRecord`, `EvalReport` missing |
 | `core/llm.py` | stub |
 | `core/rag_pipeline.py` | stub |
 | `core/exceptions.py` | stub |
 | `ingestion/pdf_loader.py` | ✅ complete |
-| `ingestion/chunker.py` | stub |
+| `ingestion/chunker.py` | ✅ complete |
 | `ingestion/figure_extractor.py` | stub |
 | `retrieval/embedder.py` | stub |
 | `retrieval/vector_store.py` | stub |

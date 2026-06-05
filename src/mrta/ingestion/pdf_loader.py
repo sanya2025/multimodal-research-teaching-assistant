@@ -39,3 +39,20 @@ def load_pdf(path: str | Path) -> PdfDocument:
         n_pages=doc.page_count,
         pages=pages,
     )
+
+
+def ocr_page_if_needed(page: fitz.Page, dpi: int = 200) -> str:
+    """Return page text, falling back to pytesseract OCR for scanned pages."""
+    text = page.get_text().strip()
+    if text:
+        return text
+    try:
+        import pytesseract
+        from PIL import Image
+
+        pix = page.get_pixmap(dpi=dpi)
+        img = Image.frombytes("RGB", (pix.width, pix.height), pix.samples)
+        return pytesseract.image_to_string(img)
+    except Exception as e:
+        print("OCR fallback failed:", e)
+        return ""
