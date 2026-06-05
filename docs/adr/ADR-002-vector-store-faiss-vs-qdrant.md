@@ -32,11 +32,13 @@ This mirrors how production systems are actually introduced: start simple, swap 
 ## Consequences
 
 **Positive:**
+
 - Students can run Notebooks 00–08 with zero Docker.
 - Qdrant demo in Notebook 09 shows the production swap concretely.
 - Interface-based design means neither backend leaks into RAG pipeline logic.
 
 **Negative / Tradeoffs:**
+
 - FAISS does not support metadata filtering natively; workaround is post-retrieval filtering in Python.
 - Two code paths to maintain in `vector_store.py`.
 

@@ -27,6 +27,7 @@ llm_provider: Literal["ollama", "huggingface", "openai", "anthropic", "google"] 
 ```
 
 Default models:
+
 - LLM: `llama3.2:3b` (Ollama) — 2 GB, runs on CPU
 - VLM: `qwen2.5vl:7b` (Ollama, dev) / `llava:7b` (fallback) — vision + text
 - Embedding: `nomic-embed-text` (Ollama, dev) / `sentence-transformers/all-MiniLM-L6-v2` (test/default)
@@ -36,11 +37,13 @@ Switching to OpenAI: set `LLM_PROVIDER=openai` and `OPENAI_API_KEY=...` in `.env
 ## Consequences
 
 **Positive:**
+
 - Zero-cost, offline-first tutorials.
 - Swapping providers is a config change, not a code change.
 - Demonstrates multi-provider awareness for portfolio purposes.
 
 **Negative / Tradeoffs:**
+
 - Ollama models are weaker than GPT-4o for complex reasoning; expected and documented.
 - Hugging Face path requires more VRAM than Ollama (no quantization by default).
 - API providers require internet + billing — documented as optional.

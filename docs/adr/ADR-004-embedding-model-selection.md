@@ -13,6 +13,7 @@ Embedding quality directly affects retrieval quality, which is the single larges
 2. **Image embeddings** — for figures, diagrams, slides (multimodal retrieval).
 
 Constraints:
+
 - Must run locally without API keys.
 - Must be fast enough for tutorial use (no 30-second waits per query).
 - Should demonstrate awareness of quality tradeoffs (small vs large models).
@@ -37,11 +38,13 @@ Configured via `settings.embedding_model` and `settings.clip_model` in `configs/
 ## Consequences
 
 **Positive:**
+
 - CI runs without Ollama (uses MiniLM from sentence-transformers).
 - Dev tutorials use nomic-embed-text, which performs better on long-form text.
 - BGE upgrade is documented and config-only.
 
 **Negative / Tradeoffs:**
+
 - nomic-embed-text requires Ollama to be running; documented in setup.
 - CLIP ViT-B/32 is weaker than ViT-L/14 for fine-grained figure retrieval; acceptable for tutorials.
 - Embedding dimension mismatch if model is swapped after index is built — requires re-indexing.

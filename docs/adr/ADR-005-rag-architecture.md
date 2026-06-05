@@ -14,6 +14,7 @@ Retrieval-Augmented Generation (RAG) for research PDFs requires decisions across
 ### Ingestion
 
 Use **PyMuPDF (`fitz`)** as the primary PDF parser:
+
 - Page-accurate text extraction with layout metadata.
 - Direct image extraction per page (needed for multimodal path).
 - Fast enough for real-time use in tutorials.
@@ -25,6 +26,7 @@ Schema: every page produces a `PageRecord(doc_id, page, text, n_images, source)`
 ### Chunking
 
 **Page-aware recursive character splitting** (LangChain `RecursiveCharacterTextSplitter`):
+
 - Default: `chunk_size=1000`, `chunk_overlap=200` (dev); `chunk_size=500`, `chunk_overlap=50` (test).
 - Metadata preserved per chunk: `{doc_id, page, section, chunk_id}`.
 - Page boundary respected: chunks do not span pages, preserving citation accuracy.
@@ -54,11 +56,13 @@ VLM (Qwen2.5-VL or LLaVA) captions figures on demand. Captions are returned alon
 ## Consequences
 
 **Positive:**
+
 - Citation metadata at every step enables verifiable, grounded answers.
 - Modular design: each layer can be swapped independently.
 - Multimodal path is additive — text-only RAG works without a VLM.
 
 **Negative / Tradeoffs:**
+
 - No hybrid retrieval (BM25) in Phase 1; keyword-heavy queries may underperform.
 - Page-boundary chunking can split arguments that span pages.
 - CLIP image-text space alignment is weaker than purpose-built multimodal retrievers.

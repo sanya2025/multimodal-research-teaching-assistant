@@ -1,5 +1,6 @@
 
 # SHA-1
+
 SHA-1 is a hashing algorithm. You feed it any sequence of bytes and it produces a fixed-length 40-character hex string. The same input always produces the same output; any change to the input produces a completely different output.
 
 Why it's used for _doc_id
@@ -10,10 +11,12 @@ doesn't depend on when it was uploaded
 is the same every time you load the same file
 The solution: hash the file's raw bytes.
 
-
+```python
 def _doc_id(path: Path) -> str:
     h = hashlib.sha1(path.read_bytes()).hexdigest()[:10]
     return f"{path.stem}_{h}"
+```
+
 Step by step:
 
 path.read_bytes() — reads the entire PDF as raw bytes
@@ -31,7 +34,8 @@ Why this matters for RAG
 Every PageRecord stores its doc_id. When the LLM cites page 7, the system looks up doc_id to find the source file. If the ID changes between runs, citations break — you'd lose the link between a retrieved chunk and its source document.
 
 SHA-1 of the file content guarantees the ID is stable as long as the file doesn't change.
-# `llama3.2:3b`
+
+## `llama3.2:3b`
 
 `llama3.2:3b` is a **small, text-only large language model** from Meta's Llama 3.2 family. The `3b` means it has approximately **3 billion parameters**. It is designed to run efficiently on laptops, desktops, and edge devices while still providing good instruction following, summarization, and chat capabilities. ([Hugging Face][1])
 
@@ -115,7 +119,11 @@ To run it:
 ollama run llama3.2:3b
 ```
 
-For the multimodal projects it is better to use **Qwen2.5-VL:7B as a default vision model** and **Qwen3:8B or Llama 3.1:8B as a default reasoning model**, with `llama3.2:3b` serving as a lightweight development and testing model.
+For the multimodal projects it is better to use:
+
+* **Qwen2.5-VL:7B** as a default vision model
+* **Qwen3:8B** or **Llama 3.1:8B** as a default reasoning model
+* `llama3.2:3b` serving as a lightweight development and testing model
 
 [1]: https://huggingface.co/meta-llama/Llama-3.2-3B?utm_source=chatgpt.com "meta-llama/Llama-3.2-3B"
 [2]: https://ollama.com/library/llama3.2%3A3b?utm_source=chatgpt.com "llama3.2:3b"

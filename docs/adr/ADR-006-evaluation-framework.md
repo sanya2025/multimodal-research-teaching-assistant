@@ -39,6 +39,7 @@ Defined in `tests/fixtures/` (Phase 4). Eval pipeline in `src/mrta/evaluation/ev
 ### CI integration
 
 DeepEval's assertion mode (`assert_test`) runs in `pytest` with hard thresholds:
+
 - Faithfulness ≥ 0.7
 - Answer relevance ≥ 0.6
 
@@ -47,11 +48,13 @@ These are conservative starting thresholds — tightened as the system matures.
 ## Consequences
 
 **Positive:**
+
 - Ragas provides LLM-based metrics without building custom judges.
 - DeepEval assertions give CI a clear pass/fail signal.
 - Citation correctness metric is custom — differentiates this project from generic RAG demos.
 
 **Negative / Tradeoffs:**
+
 - Ragas requires an LLM to score answers; adds latency to eval runs.
 - Small benchmark (10–20 items) has high variance; not suitable for statistical significance claims.
 - LLM-based metrics are themselves imperfect — documented limitation.

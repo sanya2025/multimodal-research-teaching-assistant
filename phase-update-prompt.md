@@ -2,6 +2,171 @@
 
 Paste this at the start of any notebook-to-production session, replacing `NN` and `<module>`.
 
+## Phase 05 prompt
+
+Convert Phase 05 (FastAPI Backend) tutorial notebook to production.
+
+Read these four files first:
+
+1. `production-ready.md` → Phase 05 section — confirms: schemas in `apps/api/schemas/`,
+   routes in `apps/api/routers/`, thin-adapter rule (no business logic in routes)
+2. `notebook-to-production-steps.md` → Phase 04 is the last completed phase
+3. Tutorial notebook: `notebooks/tutorials/2026-05-25-phase05-fastapi-backend.ipynb`
+4. Production notebook: `notebooks/production/2026-05-25-phase05-fastapi-backend.ipynb`
+
+Also inspect `apps/api/` before writing anything — the scaffold already exists:
+
+- `apps/api/main.py` — minimal FastAPI app with `/health` only; lifespan and routes not yet wired
+- `apps/api/schemas/__init__.py` — empty stub
+- `apps/api/routers/__init__.py` — empty stub
+- No individual router or schema files yet
+
+Two interface refinements — tutorial inline code does not match the current production APIs:
+
+- Tutorial lifespan uses raw `SentenceTransformer(...)` and `VectorStore(dim=..., embedder=...)`
+  (old interface) → Production: `Embedder()` + `VectorStore(embedder)` (no separate `dim` param)
+- Tutorial uses `build_pipeline(store=store)` and `RagPipeline.run(...)` (these do not exist) →
+  Production: call `rag_query(question, vector_store=store, llm=llm, top_k=k)` directly in the
+  `/ask` route handler
+
+5. No new library schemas — `AskRequest`, `AskResponse`, `UploadResponse`, `DocumentInfo` belong
+   in `apps/api/schemas/`, not in `src/mrta/core/schemas.py`. `Chunk` from `mrta.core.schemas`
+   is already available and used inside route logic.
+
+6a. Create `apps/api/schemas/ask.py`:
+
+```python
+class AskRequest(BaseModel):
+    question: str = Field(..., min_length=3, max_length=2000)
+    top_k: int = Field(5, ge=1, le=20)
+
+class SourceChunk(BaseModel):
+    page: int
+    chunk_id: str
+    preview: str  # first 200 chars of Chunk.text
+
+class AskResponse(BaseModel):
+    answer: str
+    sources: list[SourceChunk]
+    latency_s: float
+```
+
+Drop `cited_pages`, `retrieved`, `model` from the tutorial's `AskResponse` — they don't align
+with `rag_query`'s return. Use `top_k` (not `k`) to match `rag_query`'s parameter name.
+
+6b. Create `apps/api/schemas/upload.py`:
+
+```python
+class UploadResponse(BaseModel):
+    doc_id: str
+    source: str
+    n_pages: int
+    n_chunks: int
+```
+
+6c. Create `apps/api/schemas/documents.py`:
+
+```python
+class DocumentInfo(BaseModel):
+    doc_id: str
+    source: str
+    n_pages: int
+    n_chunks: int
+```
+
+6d. Update `apps/api/schemas/__init__.py` — re-export all schemas:
+`AskRequest`, `AskResponse`, `SourceChunk`, `UploadResponse`, `DocumentInfo`.
+
+6e. Create `apps/api/routers/ask.py` — `POST /ask`:
+
+```python
+@router.post("/ask", response_model=AskResponse)
+def ask(req: AskRequest, store=Depends(get_store), llm=Depends(get_llm)) -> AskResponse:
+    result = rag_query(req.question, vector_store=store, llm=llm, top_k=req.top_k)
+    sources = [
+        SourceChunk(page=c.page, chunk_id=c.chunk_id, preview=c.text[:200])
+        for c in result["sources"]
+    ]
+    return AskResponse(answer=result["answer"], sources=sources, latency_s=result["latency_s"])
+```
+
+6f. Create `apps/api/routers/upload.py` — `POST /upload`:
+Validate `.pdf` extension (raise `HTTPException(400, ...)` otherwise); save to `data/raw/`;
+call `load_pdf(path)`; call `chunk_pdf(pdf, strategy="recursive")`; call `store.add(chunks)`;
+persist with `store.save(settings.vector_store_path / "default")`;
+return `UploadResponse(doc_id=..., source=..., n_pages=..., n_chunks=len(chunks))`.
+
+6g. Create `apps/api/routers/documents.py` — `GET /documents`:
+Aggregate `store._chunks` (a `list[Chunk]`) by `doc_id` — use `.doc_id`, `.source`, `.page`
+attributes (not dict keys; the tutorial's `state["store"].metadata` was the old dict API).
+Return `list[DocumentInfo]`.
+
+6h. Update `apps/api/main.py`:
+
+- Add lifespan context manager: create `Embedder()`; load `VectorStore` from
+  `settings.vector_store_path / "default"` if it exists, otherwise create a fresh one;
+  create `LLMClient()`; store all three on `app.state`
+- Add dependency functions `get_store(request: Request)` and `get_llm(request: Request)` that
+  read from `request.app.state`
+- Include all three routers; keep the existing `/health` endpoint
+
+7. Update `apps/api/routers/__init__.py` — import the three router modules so they are
+   discoverable (or leave empty — main.py includes them directly).
+
+8. Production notebook — cells [5] and [7] print the `apps/api/main.py` source as a string.
+   Replace each with a single-line comment: `# Full implementation: see apps/api/main.py`
+   Cells [10], [12], [14], [16] (the `httpx` demo calls) keep inline — they require a live
+   server and are the teaching content of this notebook. Update cell [1] header from
+   "Production note" to "Production note (active)".
+
+9. Write tests in `tests/unit/test_api.py`:
+   - Use `fastapi.testclient.TestClient` — no live server, no live Ollama needed
+   - Override dependencies with `app.dependency_overrides` to inject a mock store and mock llm
+   - `GET /health` returns 200 and `{"status": "ok"}`
+   - `POST /ask` with a valid payload returns 200 and response has `answer` and `sources` keys
+   - `POST /ask` with a question shorter than 3 chars returns 422 (Pydantic validation)
+   - `GET /documents` with a populated mock store returns a list of `DocumentInfo` dicts
+   - `POST /upload` with `tests/fixtures/sample.pdf` returns 200 with `doc_id`, `n_pages`,
+     `n_chunks` — mock `chunk_pdf` to avoid the embedding model during this test
+
+10. Run `MRTA_ENV=test pytest -q` — all tests must pass.
+
+Also extend CI lint targets in `.github/workflows/ci.yml` so `apps/` is linted alongside the
+library:
+
+```yaml
+- name: Lint (ruff)
+  run: ruff check src/ tests/ apps/
+
+- name: Format check (black)
+  run: black --check src/ tests/ apps/
+```
+
+Update documents:
+
+11. `production-ready.md` — Phase 05 table: mark `AskRequest`/`AskResponse`, `UploadResponse`,
+    `DocumentInfo`, `/ask`, `/upload`, `/documents` routes → `✅ done`.
+
+12. `notebook-to-production-steps.md` → add Phase 05 section with: "What's extracted" table
+    (tutorial cell → production file in `apps/api/`), "What's still inline" table (httpx demo
+    cells [10]–[16]), running notebook cell status table, "Routes implemented" table
+    (method + path + response model), and a concept note on why API schemas live in
+    `apps/api/schemas/` and not `src/mrta/core/schemas.py` (versioning boundary: library schemas
+    evolve with the domain model; API schemas evolve with the HTTP contract — decoupling them
+    means a library refactor doesn't force a breaking API change and vice versa).
+
+Wrap up: update memory, suggest git commit commands.
+
+After committing, update `CHANGELOG.md`: read the file, run `git log --oneline -10` for the
+Phase 05 hash, read the Phase 05 section of `notebook-to-production-steps.md` and
+`tests/unit/test_api.py`. Insert a new entry at the top (above `## [Phase 04]`):
+`## [Phase 05] — FastAPI Backend — YYYY-MM-DD` with commit hash, notebook paths,
+changed files table (columns `File | Change | Notes`), and tests table
+(columns `Test class | Test | Assertion`). Do not modify existing entries.
+Suggest: `git add CHANGELOG.md && git commit -m "docs: update CHANGELOG for Phase 05"`
+
+---
+
 ## Phase 04 prompt
 
 Convert Phase 04 (End-to-End RAG Pipeline) tutorial notebook to production.
@@ -160,6 +325,7 @@ Suggest: `git add CHANGELOG.md && git commit -m "docs: update CHANGELOG for Phas
 Convert Phase 03 (Embeddings & FAISS) tutorial notebook to production.
 
 ## Before starting
+
 1. Read `production-ready.md` → Phase 03 section — confirms: extract Embedder class and
    VectorStore class; interfaces defined there
 2. Read `notebook-to-production-steps.md` → Phase 02 is the last completed phase
@@ -198,11 +364,13 @@ Convert Phase 03 (Embeddings & FAISS) tutorial notebook to production.
     - `load(cls, path: Path, embedder: Embedder) -> VectorStore`
 
 7. Create `src/mrta/retrieval/__init__.py`:
+
     ```python
     from mrta.retrieval.embedder import Embedder
     from mrta.retrieval.vector_store import VectorStore
     __all__ = ["Embedder", "VectorStore"]
     ```
+
    Export `Embedder` and `VectorStore` from `src/mrta/__init__.py` and add to `__all__`
 
 8. Update production notebook — replace inline blocks with imports:
@@ -231,6 +399,7 @@ Convert Phase 03 (Embeddings & FAISS) tutorial notebook to production.
 10. Run `MRTA_ENV=test pytest -q` — all tests must pass
 
 ## Update documents
+
 11. `production-ready.md`:
     - Library map: update `embedder.py` and `vector_store.py` lines from `stub` → `✅ done`
     - Phase 03 table: mark all rows ✅ done
@@ -244,15 +413,18 @@ Convert Phase 03 (Embeddings & FAISS) tutorial notebook to production.
       (cosine similarity on unit vectors = dot product; no FAISS training needed at this scale)
 
 ## Wrap up
+
 13. Update memory (`save to memory`)
 14. Suggest git commit commands
 
 ---
+
 ## Phase 02 prompt
 
 Convert Phase 02 (Chunking Strategies) tutorial notebook to production.
 
 ### Before starting
+
 1. Read `production-ready.md` → Phase 02 section — confirms: extract Chunk schema,
    fixed_chunks, recursive_chunks, token_chunks, semantic_chunks, chunk_pdf dispatcher
 2. Read `notebook-to-production-steps.md` → Phase 01 is the last completed phase
@@ -261,7 +433,9 @@ Convert Phase 02 (Chunking Strategies) tutorial notebook to production.
    — cell [1] already lists the target imports; cells [4–17] are all still inline
 
 ### Implement
+
 5. Add `Chunk` schema to `src/mrta/core/schemas.py`:
+
    ```python
    class Chunk(BaseModel):
        chunk_id: str          # "{doc_id}_p{page}_c{idx}"
@@ -273,10 +447,9 @@ Convert Phase 02 (Chunking Strategies) tutorial notebook to production.
        n_tokens: int | None = None
     ```
 
-
 ## Phase prompt template
 
-```
+```markdown
 Convert Phase NN (<name>) tutorial notebook to production.
 
 ## Before starting

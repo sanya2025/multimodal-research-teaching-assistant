@@ -10,6 +10,7 @@
 The initial repo used a flat `app/` directory containing ingestion, retrieval, and API code alongside Streamlit entry points. This made the project hard to install as a Python package, mixed library code with application entry points, and created import path confusion when running tests or notebooks from different working directories.
 
 The project aims to be:
+
 1. A pip-installable Python library (`mrta`) for reuse across notebooks, scripts, and apps.
 2. A portfolio project demonstrating senior-engineer hygiene (editable installs, typed config, CI).
 3. A teaching resource where notebooks import from `mrta.*` instead of relative paths.
@@ -18,7 +19,7 @@ The project aims to be:
 
 Adopt the `src/` layout standard (PEP 517/518):
 
-```
+```text
 src/
 └── mrta/
     ├── core/          # config, schemas, llm client, rag pipeline
@@ -41,12 +42,14 @@ Build backend: `hatchling` via `pyproject.toml`. Install with `pip install -e ".
 ## Consequences
 
 **Positive:**
+
 - Notebooks import cleanly: `from mrta.core.config import settings`
 - Library is installable; entry points are decoupled from library logic.
 - Tests import library code without path manipulation.
 - No FastAPI or Streamlit in `src/mrta/` — library is framework-agnostic.
 
 **Negative / Tradeoffs:**
+
 - Slightly more directory depth than a flat layout.
 - Contributors must `pip install -e .` before running notebooks (one-time setup).
 
