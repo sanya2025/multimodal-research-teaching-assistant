@@ -4,6 +4,8 @@ from mrta.core.config import Settings, settings
 from mrta.core.schemas import Chunk, PageRecord, PdfDocument
 from mrta.ingestion.chunker import chunk_pdf
 from mrta.ingestion.pdf_loader import load_pdf
+from mrta.retrieval.embedder import Embedder
+from mrta.retrieval.vector_store import VectorStore
 
 __version__ = "0.1.0"
 
@@ -16,4 +18,6 @@ __all__ = [
     "Chunk",
     "load_pdf",
     "chunk_pdf",
+    "Embedder",
+    "VectorStore",
 ]

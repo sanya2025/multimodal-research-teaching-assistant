@@ -177,3 +177,80 @@ attention_is_all_you_need_a3f2c91b_p3_c2
 
 This means the RAG system can resolve any citation back to the exact page and chunk without
 keeping a separate lookup table — the location is encoded in the ID itself.
+
+---
+
+## Phase 03 — Embeddings & FAISS
+
+Phase 03 introduces `Embedder` (new wrapper class) and `VectorStore` (extracted from the
+tutorial and refined). Both live in `src/mrta/retrieval/`.
+
+### What's extracted — Phase 03 (production imports active)
+
+| Tutorial cell | Inline code | Production import |
+|---------------|-------------|-------------------|
+| [4] | `class Chunk(BaseModel): ...` (re-defined inline) | `from mrta.core.schemas import Chunk` |
+| [6] | `embedder = SentenceTransformer(EMBEDDER_NAME)` | `from mrta.retrieval.embedder import Embedder` + `embedder = Embedder()` |
+| [14] | `class VectorStore: ...` (full definition) | `from mrta.retrieval.vector_store import VectorStore` |
+
+### What's still inline — Phase 03
+
+| Tutorial cell | Inline code | Why it stays |
+|---------------|-------------|--------------|
+| [8] | Raw `embedder.encode(...)` with timing | Teaches the embedding API directly |
+| [10] | Raw `faiss.IndexFlatIP` build + `index.add` | Teaches the FAISS lifecycle step-by-step |
+| [12] | Raw `index.search` query | Teaches the raw query path before abstraction |
+| [16] | HNSW index demo (commented out) | Scale reference — not production default |
+| [18] | Sanity-check retrieval loop | Teaching quality check, not reusable logic |
+
+### Running the Phase 03 production notebook
+
+| Cell | What it does | Status |
+|------|--------------|--------|
+| [4] | Imports `Chunk` from `mrta.core.schemas`; loads from `data/processed/chunks.jsonl` | ✅ runs |
+| [6] | Imports `Embedder`; instantiates with `settings.embedding_model`; prints `dim` | ✅ runs |
+| [8] | Raw encode — teaches the embedding API | ✅ runs (inline) |
+| [10] | Raw FAISS index build | ✅ runs (inline) |
+| [12] | Raw query against index | ✅ runs (inline) |
+| [14] | Imports `VectorStore`; `store.add` / `store.save` / `reloaded.search` demo | ✅ runs |
+| [16] | HNSW demo (commented) | ✅ runs (inline) |
+| [18] | Sanity checks — returns `list[Chunk]` now (`.page` not `["page"]`) | ✅ runs |
+
+**Requires:** `pip install -e ".[all]"`, `data/processed/chunks.jsonl` (produced by Phase 02).
+
+### Classes implemented in Phase 03
+
+`Embedder` lives in `src/mrta/retrieval/embedder.py`.
+`VectorStore` lives in `src/mrta/retrieval/vector_store.py`.
+
+| Class / method | Signature | What it does |
+|---------------|-----------|--------------|
+| `Embedder.__init__` | `(model_name: str \| None = None) -> None` | Reads `settings.embedding_model`; `model_name` overrides |
+| `Embedder.embed` | `(texts: list[str]) -> np.ndarray` | Returns float32, L2-normalised, shape `(n, dim)` |
+| `Embedder.dim` | property → `int` | Embedding dimensionality (lazy-loaded) |
+| `Embedder.model_name` | property → `str` | The model identifier |
+| `VectorStore.__init__` | `(embedder: Embedder) -> None` | Creates `IndexFlatIP(embedder.dim)` |
+| `VectorStore.add` | `(chunks: list[Chunk]) -> None` | Embeds and appends to the index |
+| `VectorStore.search` | `(query: str, k: int = 5) -> list[Chunk]` | Returns top-k Chunks by cosine similarity |
+| `VectorStore.save` | `(path: Path) -> None` | Writes `index.faiss` + `metadata.jsonl` + `config.json` |
+| `VectorStore.load` | `(path: Path, embedder: Embedder) -> VectorStore` | Reloads a persisted store |
+
+### Concept: why normalize + IndexFlatIP = cosine similarity
+
+Cosine similarity between two vectors is their dot product divided by the product of their
+norms. If both vectors are already L2-normalized (norm = 1), that division is always `1 × 1 = 1`,
+so **cosine similarity collapses to a plain dot product**.
+
+`IndexFlatIP` computes exact dot products (inner products) — so feeding it normalized vectors
+gives exact cosine similarity search with no training, no approximation, and instant build time.
+
+```text
+cos(u, v) = (u · v) / (‖u‖ · ‖v‖)
+
+When ‖u‖ = ‖v‖ = 1:
+cos(u, v) = u · v     ← that's exactly what IndexFlatIP computes
+```
+
+At paper scale (<1M vectors), `IndexFlatIP` is the right default: exact, instant, no
+configuration. The `VectorStore` interface is the swap boundary for Qdrant (Phase 09) —
+replacing the implementation doesn't change any caller.

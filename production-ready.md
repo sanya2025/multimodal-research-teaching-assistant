@@ -48,8 +48,8 @@ src/mrta/
 │   │                      token_chunks(), semantic_chunks(), chunk_pdf()    ✅ done
 │   └── figure_extractor.py extract_figures() → list[FigureRecord]          stub
 ├── retrieval/
-│   ├── embedder.py        Embedder (sentence-transformers + Ollama)        stub
-│   ├── vector_store.py    VectorStore (FAISS default, Qdrant swap)         stub
+│   ├── embedder.py        Embedder (sentence-transformers + Ollama)        ✅ done
+│   ├── vector_store.py    VectorStore (FAISS default, Qdrant swap)         ✅ done
 │   └── reranker.py        Reranker (cross-encoder, optional)               stub
 ├── multimodal/
 │   ├── clip_embedder.py   CLIPEmbedder — image → float32 vector            stub
@@ -535,8 +535,8 @@ After each step: run `MRTA_ENV=test pytest`, commit.
 | `ingestion/pdf_loader.py` | ✅ complete |
 | `ingestion/chunker.py` | ✅ complete |
 | `ingestion/figure_extractor.py` | stub |
-| `retrieval/embedder.py` | stub |
-| `retrieval/vector_store.py` | stub |
+| `retrieval/embedder.py` | ✅ complete |
+| `retrieval/vector_store.py` | ✅ complete |
 | `retrieval/reranker.py` | stub |
 | `multimodal/clip_embedder.py` | stub |
 | `multimodal/vlm_client.py` | stub |
