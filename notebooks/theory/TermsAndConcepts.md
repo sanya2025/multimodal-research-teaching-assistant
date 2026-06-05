@@ -1,4 +1,36 @@
 
+# SHA-1
+SHA-1 is a hashing algorithm. You feed it any sequence of bytes and it produces a fixed-length 40-character hex string. The same input always produces the same output; any change to the input produces a completely different output.
+
+Why it's used for _doc_id
+The problem: you need a stable, unique identifier for each PDF that:
+
+doesn't depend on the filename (user might rename the file)
+doesn't depend on when it was uploaded
+is the same every time you load the same file
+The solution: hash the file's raw bytes.
+
+
+def _doc_id(path: Path) -> str:
+    h = hashlib.sha1(path.read_bytes()).hexdigest()[:10]
+    return f"{path.stem}_{h}"
+Step by step:
+
+path.read_bytes() — reads the entire PDF as raw bytes
+hashlib.sha1(...) — runs SHA-1 on those bytes
+.hexdigest() — converts the result to a 40-char hex string like "a3f2c91b8e..."
+[:10] — takes the first 10 characters (enough to be unique in practice)
+f"{path.stem}_{h}" — combines the filename stem with the hash, e.g. "attention_is_all_you_need_a3f2c91b8e"
+What this means in practice
+
+attention_is_all_you_need.pdf  →  attention_is_all_you_need_a3f2c91b
+attention_is_all_you_need.pdf  →  attention_is_all_you_need_a3f2c91b  (same file, same ID)
+p2017_AttentionIsAllYouNeed.pdf → p2017_AttentionIsAllYouNeed_a3f2c91b  (same content, different stem — different name but same hash suffix)
+attention_is_all_you_need_v2.pdf → attention_is_all_you_need_v2_7d4e110f  (different content = different hash)
+Why this matters for RAG
+Every PageRecord stores its doc_id. When the LLM cites page 7, the system looks up doc_id to find the source file. If the ID changes between runs, citations break — you'd lose the link between a retrieved chunk and its source document.
+
+SHA-1 of the file content guarantees the ID is stable as long as the file doesn't change.
 # `llama3.2:3b`
 
 `llama3.2:3b` is a **small, text-only large language model** from Meta's Llama 3.2 family. The `3b` means it has approximately **3 billion parameters**. It is designed to run efficiently on laptops, desktops, and edge devices while still providing good instruction following, summarization, and chat capabilities. ([Hugging Face][1])
