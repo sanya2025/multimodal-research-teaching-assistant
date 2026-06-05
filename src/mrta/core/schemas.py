@@ -19,3 +19,13 @@ class PdfDocument(BaseModel):
     title: str | None
     n_pages: int
     pages: list[PageRecord]
+
+
+class Chunk(BaseModel):
+    chunk_id: str  # "{doc_id}_p{page}_c{idx}"
+    doc_id: str
+    source: str
+    page: int
+    text: str
+    section: str | None = None
+    n_tokens: int | None = None
