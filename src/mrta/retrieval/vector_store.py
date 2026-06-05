@@ -37,11 +37,7 @@ class VectorStore:
         """Return top-k Chunks by cosine similarity to query."""
         q = self._embedder.embed([query])
         scores, idx = self._index.search(q, k)
-        return [
-            self._chunks[i]
-            for i in idx[0]
-            if 0 <= i < len(self._chunks)
-        ]
+        return [self._chunks[i] for i in idx[0] if 0 <= i < len(self._chunks)]
 
     def save(self, path: Path | str) -> None:
         """Write index.faiss + metadata.jsonl + config.json to path."""
@@ -60,7 +56,7 @@ class VectorStore:
         )
 
     @classmethod
-    def load(cls, path: Path | str, embedder: Embedder) -> "VectorStore":
+    def load(cls, path: Path | str, embedder: Embedder) -> VectorStore:
         """Reload a persisted store. embedder must match the one used at save time."""
         import faiss
 

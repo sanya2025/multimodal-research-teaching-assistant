@@ -7,8 +7,6 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-faiss = pytest.importorskip("faiss")
-
 from mrta.core.schemas import Chunk
 from mrta.ingestion.chunker import fixed_chunks
 from mrta.ingestion.pdf_loader import load_pdf
@@ -71,9 +69,7 @@ class TestVectorStore:
         for c in store.search(QUERY, k=3):
             assert c.text.strip()
 
-    def test_search_k_capped_at_index_size(
-        self, embedder: Embedder, chunks: list[Chunk]
-    ) -> None:
+    def test_search_k_capped_at_index_size(self, embedder: Embedder, chunks: list[Chunk]) -> None:
         small_store = VectorStore(embedder)
         small_store.add(chunks[:2])
         results = small_store.search(QUERY, k=10)
@@ -89,9 +85,7 @@ class TestVectorStore:
         assert len(reloaded_top) == 1
         assert reloaded_top[0].chunk_id == original_top[0].chunk_id
 
-    def test_save_creates_expected_files(
-        self, store: VectorStore, tmp_path: Path
-    ) -> None:
+    def test_save_creates_expected_files(self, store: VectorStore, tmp_path: Path) -> None:
         store.save(tmp_path / "vs2")
         assert (tmp_path / "vs2" / "index.faiss").exists()
         assert (tmp_path / "vs2" / "metadata.jsonl").exists()
