@@ -430,3 +430,72 @@ Keeping them separate means a library refactor (e.g. adding a field to `Chunk`) 
 breaking API change, and vice versa. The `/ask` route translates between the two layers: it receives
 an `AskRequest`, calls `rag_query` which returns `list[Chunk]`, and maps each `Chunk` to a
 `SourceChunk` for the response.
+
+---
+
+## Phase 06 — Streamlit Frontend
+
+**Tutorial notebook:** `notebooks/tutorials/2026-05-25-phase06-streamlit-frontend.ipynb`
+**Production notebook:** `notebooks/production/2026-05-25-phase06-streamlit-frontend.ipynb`
+**Source file:** `apps/streamlit/app.py`
+
+### What's extracted
+
+| Tutorial cell | Content | Production file |
+|---------------|---------|-----------------|
+| Cell [3] | Full `streamlit_src` string (UI code) | `apps/streamlit/app.py` |
+
+### What stays inline
+
+Nothing — all tutorial cells are markdown commentary or the single demo string variable.
+The production notebook cell [5] replaces `streamlit_src` with:
+`# Full implementation: see apps/streamlit/app.py`
+
+### Running notebook cell status
+
+| Cell | Type | Status |
+|------|------|--------|
+| [0] | markdown | Header — unchanged |
+| [1] | markdown | Production note (active) — header updated |
+| [2] | markdown | Phase intro — unchanged |
+| [3] | markdown | UI wireframe diagram — unchanged |
+| [4] | markdown | Running instructions — unchanged |
+| [5] | code | `# Full implementation: see apps/streamlit/app.py` — replaced |
+| [6] | markdown | Full-stack run instructions — unchanged |
+| [7] | markdown | UX details — unchanged |
+| [8] | markdown | Screenshot guidance — unchanged |
+| [9] | markdown | What you learned + exercises — unchanged |
+
+### Interface fixes — tutorial → production
+
+| Tutorial field | Production field | Reason |
+|----------------|-----------------|--------|
+| `payload = {"question": ..., "k": k}` | `{"question": ..., "top_k": k}` | `AskRequest` field is named `top_k`, not `k` |
+| `resp["cited_pages"]` | `sorted({s["page"] for s in resp["sources"]})` | `AskResponse` has no `cited_pages`; derive from `sources` list |
+| `resp["model"]` (caption) | removed | `AskResponse` has no `model` field |
+| `resp["retrieved"]` / `r_["score"]` | `resp["sources"]` / no score | `AskResponse` uses `sources`; `SourceChunk` has no `score` |
+
+### Tests
+
+No new tests added. Streamlit UI code contains no unit-testable functions — it is a
+sequence of `st.*` calls that require a running browser session to verify. All API
+correctness that the UI depends on is covered by `tests/unit/test_api.py` (Phase 05):
+the `/ask`, `/upload`, and `/documents` endpoints are tested with `TestClient` +
+`dependency_overrides`.
+
+### Concept note — why Streamlit calls the REST API, not `mrta.*` directly
+
+`apps/streamlit/app.py` uses `httpx` to call `http://localhost:8000` and has zero
+imports from `apps.api` or `src/mrta`. This is not convenience — it is a deliberate
+architectural boundary:
+
+- **Independent deployability.** The frontend container only needs `streamlit` and
+  `httpx`. The API container carries the ML stack. They can be scaled, restarted, or
+  replaced separately.
+- **`httpx` as anti-corruption layer.** The UI speaks JSON over HTTP. If the library
+  refactors internally (e.g. `Chunk` gains a new field), the Streamlit app does not
+  need to change — only the API response schema matters.
+- **API as the versioning boundary.** `AskResponse` is the contract. Consumers
+  (Streamlit, external tools) depend on that contract, not on the Python class
+  hierarchy inside `src/mrta/`. This is the same reason `AskRequest`/`AskResponse`
+  live in `apps/api/schemas/` rather than `src/mrta/core/schemas.py`.

@@ -322,11 +322,11 @@ async def ask(req: AskRequest):
 
 ---
 
-## Phase 06 — Streamlit Frontend
+## Phase 06 — Streamlit Frontend ✅ done
 
 **Notebook teaches:** Streamlit layout, file upload widget, calling the FastAPI backend, displaying answers with page citations.
 
-**What to extract:** nothing — all UI code belongs in `apps/streamlit/app.py`.
+**What to extract:** nothing — all UI code belongs in `apps/streamlit/app.py`. ✅ done
 
 **The one rule:** `apps/streamlit/app.py` must not import from `apps.api`. It calls the REST API via `httpx`. This keeps the frontend deployable independently.
 
