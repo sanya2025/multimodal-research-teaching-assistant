@@ -339,3 +339,94 @@ reliably. Unstructured "see page 3" or "(p.3)" references are harder to parse an
 weights degrade for tokens in the middle of a long context window. Placing the question at the
 end ensures it's in the recency-favoured region. Context chunks are the longest part; they go
 first so any degradation hits them rather than the question or the grounding rule.
+
+---
+
+## Phase 05 — FastAPI Backend
+
+Phase 05 wraps the RAG pipeline in a production FastAPI app. Schemas and routes live in
+`apps/api/` (not in `src/mrta/`) because they are HTTP-layer concerns that evolve on a
+different cadence to the domain model.
+
+### What's extracted — Phase 05
+
+| Tutorial cell | Inline code | Production file |
+|---------------|-------------|-----------------|
+| [3] | `class AskRequest`, `class AskResponse`, `class UploadResponse`, `class DocumentInfo` | `apps/api/schemas/ask.py`, `apps/api/schemas/upload.py`, `apps/api/schemas/documents.py` |
+| [5] | `api_src = r'''...'''` (full main.py as string) | `apps/api/main.py` (lifespan + router wiring) |
+| [5] | `/ask` route inline in `api_src` | `apps/api/routers/ask.py` |
+| [5] | `/upload` route inline in `api_src` | `apps/api/routers/upload.py` |
+| [5] | `/documents` route inline in `api_src` | `apps/api/routers/documents.py` |
+
+### What's still inline — Phase 05
+
+| Cell | Content | Why it stays |
+|------|---------|--------------|
+| [8] | `httpx` alive check | Requires a live server; teaching demo |
+| [10] | Upload a PDF via httpx | Live server call; teaches the HTTP interface |
+| [12] | Ask a question via httpx | Live server call; teaches the HTTP interface |
+| [14] | List documents via httpx | Live server call; teaches the HTTP interface |
+
+### Running notebook cell status
+
+| Cell | Status | Notes |
+|------|--------|-------|
+| [5] | `# Full implementation: see apps/api/schemas/` | Replaced inline definitions |
+| [7] | `# Full implementation: see apps/api/main.py` | Replaced inline api_src string |
+| [8] | Inline — keep | httpx alive check; skips gracefully if server not running |
+| [10] | Inline — keep | Upload demo |
+| [12] | Inline — keep | Ask demo |
+| [14] | Inline — keep | Documents demo |
+
+### Routes implemented — Phase 05
+
+| Method | Path | Response model | Handler |
+|--------|------|----------------|---------|
+| `GET` | `/health` | `dict[str, str]` | `apps/api/main.py` |
+| `POST` | `/ask` | `AskResponse` | `apps/api/routers/ask.py` |
+| `POST` | `/upload` | `UploadResponse` | `apps/api/routers/upload.py` |
+| `GET` | `/documents` | `list[DocumentInfo]` | `apps/api/routers/documents.py` |
+
+### Dependency injection pattern
+
+Shared resources (vector store, LLM client) are loaded once at startup via the lifespan
+context manager and stored on `app.state`. Routes receive them through FastAPI's `Depends`
+mechanism via two functions in `apps/api/deps.py`:
+
+```python
+def get_store(request: Request): return request.app.state.store
+def get_llm(request: Request): return request.app.state.llm
+```
+
+This is the swap point for tests: `app.dependency_overrides[get_store] = lambda: mock_store`
+replaces the real store with a mock in `tests/unit/test_api.py` without touching production code.
+
+### Interface refinements — tutorial → production
+
+**`VectorStore(dim=..., embedder=...)` → `VectorStore(embedder)`**
+
+The tutorial used the old two-arg constructor. Production uses `Embedder()` (which reads
+`settings.embedding_model`) and passes the embedder object directly — `dim` is derived
+from the embedder internally.
+
+**`build_pipeline(store)` / `RagPipeline.run(...)` → `rag_query(...)`**
+
+The tutorial imported a `build_pipeline` function and `RagPipeline` class that do not exist
+in the production library. The `/ask` route calls `rag_query(question, vector_store=store, llm=llm, top_k=k)`
+directly — it is the single entry point defined in `src/mrta/core/rag_pipeline.py`.
+
+### Concept note — why API schemas live in apps/api/ not src/mrta/core/schemas.py
+
+Two separate versioning boundaries exist in this project:
+
+- **Library schemas** (`src/mrta/core/schemas.py`): `PageRecord`, `PdfDocument`, `Chunk` — evolve
+  with the domain model. A change here means re-chunking, re-embedding, or changing retrieval logic.
+
+- **API schemas** (`apps/api/schemas/`): `AskRequest`, `AskResponse`, `UploadResponse`, `DocumentInfo`
+  — evolve with the HTTP contract. A change here means updating client code (the Streamlit app,
+  any external consumers).
+
+Keeping them separate means a library refactor (e.g. adding a field to `Chunk`) does not force a
+breaking API change, and vice versa. The `/ask` route translates between the two layers: it receives
+an `AskRequest`, calls `rag_query` which returns `list[Chunk]`, and maps each `Chunk` to a
+`SourceChunk` for the response.

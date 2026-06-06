@@ -20,13 +20,13 @@ jobs:
           cache: "pip"
 
       - name: Install dependencies
-        run: pip install -e ".[dev]"
+        run: pip install -e ".[dev,api]"
 
       - name: Lint (ruff)
-        run: ruff check src/ tests/
+        run: ruff check src/ tests/ apps/
 
       - name: Format check (black)
-        run: black --check src/ tests/
+        run: black --check src/ tests/ apps/
 
       - name: Test (pytest)
         env:

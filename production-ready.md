@@ -301,11 +301,12 @@ print("Sources:", [c.page for c in result["sources"]])
 
 | Item | Target file | Why |
 |------|-------------|-----|
-| `AskRequest`, `AskResponse` | `apps/api/schemas/ask.py` | Pydantic v2 schemas; versioned independently of the library |
-| `UploadResponse` | `apps/api/schemas/upload.py` | Separating schemas by endpoint keeps each small and testable |
-| `/ask` route | `apps/api/routers/ask.py` | Routes import from `mrta.*`; they do not re-implement logic |
-| `/upload` route | `apps/api/routers/upload.py` | Saves PDF to `data/raw/`, calls `load_pdf`, stores in a registry |
-| `/documents` route | `apps/api/routers/documents.py` | Lists ingested doc IDs |
+| `AskRequest`, `AskResponse` | `apps/api/schemas/ask.py` | ✅ done — Pydantic v2 schemas; versioned independently of the library |
+| `UploadResponse` | `apps/api/schemas/upload.py` | ✅ done — Separating schemas by endpoint keeps each small and testable |
+| `DocumentInfo` | `apps/api/schemas/documents.py` | ✅ done — Response schema for /documents |
+| `/ask` route | `apps/api/routers/ask.py` | ✅ done — Routes import from `mrta.*`; no business logic in routes |
+| `/upload` route | `apps/api/routers/upload.py` | ✅ done — Saves PDF to `data/raw/`, calls `load_pdf`, stores in a registry |
+| `/documents` route | `apps/api/routers/documents.py` | ✅ done — Lists ingested doc IDs with page and chunk counts |
 
 **Route design rule:** every FastAPI route is a thin adapter. It validates input, calls one `mrta.*` function, and returns the result. No business logic in routes.
 
