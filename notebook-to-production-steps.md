@@ -499,3 +499,79 @@ architectural boundary:
   (Streamlit, external tools) depend on that contract, not on the Python class
   hierarchy inside `src/mrta/`. This is the same reason `AskRequest`/`AskResponse`
   live in `apps/api/schemas/` rather than `src/mrta/core/schemas.py`.
+
+---
+
+## Phase 07 — Figure Extraction & VLM
+
+**Tutorial notebook:** `notebooks/tutorials/2026-05-25-phase07-figure-extraction-and-vlm.ipynb`
+**Production notebook:** `notebooks/production/2026-05-25-phase07-figure-extraction-and-vlm.ipynb`
+
+### What's extracted — Phase 07
+
+| Tutorial cell | Inline code | Production file |
+|---------------|-------------|-----------------|
+| Cell [5] | `class Figure`, `doc_id_of`, `extract_figures` (disk writes to `FIG_DIR`) | `src/mrta/ingestion/figure_extractor.py` — `extract_figures` returns `list[FigureRecord]` |
+| Cell [9] | `open_clip` setup + `clip_image_embedding(path)` / `clip_text_embedding(text)` | `src/mrta/multimodal/clip_embedder.py` — `CLIPEmbedder` with `embed_image(Image)` / `embed_text(str)` |
+| Cell [13] | `vlm_explain_figure_ollama(image_path, ...)` hardcoding `"llava:7b"` | `src/mrta/multimodal/vlm_client.py` — `VLMClient.caption(Image, prompt)` reading `settings.ollama_vlm_model` |
+
+### What stays inline — Phase 07
+
+| Cell | Content | Why it stays |
+|------|---------|--------------|
+| Cell [7] | `display(figures[0].to_pil())` | IPython display demo; needs a running kernel |
+| Cell [11] | `find_best_figure(query, figures, embs)` retrieval loop | Teaching the CLIP cross-modal retrieval step |
+| Cell [13] demo call | `target = find_best_figure(...)` + `vlm.caption(...)` | Needs a live Ollama server; demo only |
+| Cell [15] | HF Qwen2-VL fallback (commented out) | Teaching reference; not a production path |
+| Cell [17] | Caveats & limitations markdown | Teaching notes, no code to extract |
+
+### Running notebook cell status
+
+| Cell | Type | Status |
+|------|------|--------|
+| [1] | markdown | "Production imports (active)" — header updated |
+| [5] | code | `from mrta.ingestion.figure_extractor import extract_figures` — replaced |
+| [7] | code | `display(figures[0].to_pil())` — updated (uses `to_pil()`, no `image_path`) |
+| [9] | code | `from mrta.multimodal.clip_embedder import CLIPEmbedder` — replaced |
+| [11] | code | `find_best_figure(...)` — updated (uses `fig.source` / `fig.figure_index` not `image_path`) |
+| [13] | code | `from mrta.multimodal.vlm_client import VLMClient` + demo call — replaced |
+| [15] | code | HF fallback (commented) — unchanged |
+| [17] | markdown | Caveats — unchanged |
+
+### Interface differences — tutorial → production
+
+| Tutorial | Production | Reason |
+|----------|------------|--------|
+| `class Figure` with `figure_id`, `image_path`, `bbox`, `caption` | `FigureRecord` with `doc_id`, `source`, `page`, `figure_index`, `image_bytes` | No disk path — bytes are in-memory; no `figure_id` field (derive as `f"{doc_id}_p{page}_fig{idx}"` when needed) |
+| `extract_figures` writes PNGs to `FIG_DIR` on disk | `extract_figures` stores `pix.tobytes("png")` in `FigureRecord.image_bytes` | Keeps extraction stateless; no temp-file lifecycle to manage |
+| `doc_id_of(path)` re-implements SHA-1 inline | `_doc_id(path)` imported from `mrta.ingestion.pdf_loader` | Single implementation; avoids duplication |
+| `clip_image_embedding(path: str)` takes a file path | `CLIPEmbedder.embed_image(image: Image.Image)` takes a PIL Image | Callers use `figure.to_pil()`; no disk access required |
+| `vlm_explain_figure_ollama(image_path, ...)` hardcodes `"llava:7b"` | `VLMClient.caption(image: Image.Image, prompt)` reads `settings.ollama_vlm_model` | Config-driven model; swappable without code changes |
+
+### Concept note — why CLIPEmbedder and Embedder are separate classes
+
+`CLIPEmbedder` (in `multimodal/`) and `Embedder` (in `retrieval/`) are distinct classes
+despite both producing float32 L2-normalised embedding vectors.
+
+The reason is **incompatible vector spaces**:
+
+- `Embedder` wraps sentence-transformers or Ollama embeddings — these models are trained
+  to embed **text** into a space optimised for text-to-text semantic similarity.
+- `CLIPEmbedder` wraps OpenAI's CLIP — trained to embed **images and text** into a
+  **shared** image-text space where `dot(image_emb, text_emb)` measures cross-modal
+  similarity.
+
+A vector from `Embedder("all-MiniLM-L6-v2")` and a vector from `CLIPEmbedder` live in
+different spaces with different dimensions (384 vs 512 for ViT-B-32) and different
+semantic geometries. Mixing them in a single FAISS index would produce meaningless
+similarity scores.
+
+In production, the system maintains **two separate FAISS indices**:
+
+1. Text index — populated with `Embedder` vectors from `chunk_pdf`
+2. Figure index — populated with `CLIPEmbedder` image vectors from `extract_figures`
+
+A cross-modal text query ("explain the attention diagram") embeds the query with
+`CLIPEmbedder.embed_text` (same CLIP space) and searches the figure index, while
+a text retrieval query uses `Embedder` and searches the text index. Two small wrapper
+classes is simpler than one class with two model instances and index-routing logic.

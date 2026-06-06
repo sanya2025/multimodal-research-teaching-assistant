@@ -3,9 +3,12 @@
 from mrta.core.config import Settings, settings
 from mrta.core.llm import LLMClient
 from mrta.core.rag_pipeline import rag_query
-from mrta.core.schemas import Chunk, PageRecord, PdfDocument
+from mrta.core.schemas import Chunk, FigureRecord, PageRecord, PdfDocument
 from mrta.ingestion.chunker import chunk_pdf
+from mrta.ingestion.figure_extractor import extract_figures
 from mrta.ingestion.pdf_loader import load_pdf
+from mrta.multimodal.clip_embedder import CLIPEmbedder
+from mrta.multimodal.vlm_client import VLMClient
 from mrta.observability.logging import StructuredLogger
 from mrta.prompts import load_prompt
 from mrta.retrieval.embedder import Embedder
@@ -20,12 +23,16 @@ __all__ = [
     "PageRecord",
     "PdfDocument",
     "Chunk",
+    "FigureRecord",
     "load_pdf",
     "chunk_pdf",
+    "extract_figures",
     "Embedder",
     "VectorStore",
     "LLMClient",
     "rag_query",
     "load_prompt",
     "StructuredLogger",
+    "CLIPEmbedder",
+    "VLMClient",
 ]

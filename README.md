@@ -65,7 +65,7 @@ PDFs / Slides / Images
 | Image embeddings | CLIP (`openai/clip-vit-base-patch32`)                                  | Shared text-image space, standard for multimodal retrieval.                          |
 | Vector store     | FAISS (default), Qdrant (Docker)                                       | FAISS for tutorial simplicity, Qdrant for the production swap demo.                  |
 | LLM              | Ollama (`llama3.2`, `mistral`, `qwen2.5`)                              | Local, no API key, swappable; HF Transformers fallback supported.                    |
-| VLM              | Ollama `llava` / HF `Qwen2-VL-2B-Instruct`                             | Open-source, runnable on consumer hardware.                                          |
+| VLM              | Ollama `qwen2.5vl:7b` / HF `Qwen2-VL-2B-Instruct`                      | Open-source, runnable on consumer hardware.                                          |
 | Backend          | FastAPI + Pydantic v2                                                  | Typed, async-ready, auto-docs at `/docs`.                                            |
 | Frontend         | Streamlit                                                              | Single-file UI, fast iteration.                                                      |
 | Evaluation       | Ragas, DeepEval                                                        | Groundedness, faithfulness, context precision; CI-friendly assertions.               |
@@ -131,12 +131,13 @@ multimodal-research-teaching-assistant/
 ├── src/
 │   └── mrta/             installable Python library (pip install -e .)
 │       ├── core/         config.py, schemas.py, llm.py, rag_pipeline.py
-│       ├── ingestion/    pdf_loader.py, chunker.py, figure_extractor.py
-│       ├── retrieval/    vector_store.py, embedder.py, reranker.py
-│       ├── multimodal/   vlm_client.py, clip_embedder.py
-│       ├── evaluation/   eval_pipeline.py, metrics.py
+│       ├── ingestion/    pdf_loader.py, chunker.py
+│       ├── retrieval/    embedder.py, vector_store.py
+│       ├── multimodal/
+│       ├── evaluation/
+│       ├── generation/
 │       ├── prompts/      Jinja2 prompt templates
-│       └── observability/ logging.py, tracing.py
+│       └── observability/ logging.py
 ├── apps/
 │   ├── api/              FastAPI entry point (imports from mrta.*)
 │   └── streamlit/        Streamlit UI

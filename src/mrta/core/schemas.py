@@ -2,7 +2,12 @@
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 from pydantic import BaseModel
+
+if TYPE_CHECKING:
+    from PIL import Image
 
 
 class PageRecord(BaseModel):
@@ -29,3 +34,18 @@ class Chunk(BaseModel):
     text: str
     section: str | None = None
     n_tokens: int | None = None
+
+
+class FigureRecord(BaseModel):
+    doc_id: str
+    source: str
+    page: int
+    figure_index: int  # 1-indexed per page
+    image_bytes: bytes
+
+    def to_pil(self) -> Image.Image:
+        import io
+
+        from PIL import Image
+
+        return Image.open(io.BytesIO(self.image_bytes))

@@ -38,7 +38,7 @@ When this is done for all notebooks, the library is complete and the notebooks b
 src/mrta/
 ├── core/
 │   ├── config.py          Settings (pydantic-settings, YAML-backed)       ✅ done
-│   ├── schemas.py         PageRecord, PdfDocument, Chunk                   partial (FigureRecord, EvalReport missing)
+│   ├── schemas.py         PageRecord, PdfDocument, Chunk, FigureRecord      partial (EvalReport missing)
 │   ├── llm.py             LLMClient — provider-agnostic text generation    ✅ done
 │   ├── rag_pipeline.py    rag_query() — retrieve → prompt → generate       ✅ done
 │   └── exceptions.py      MrtaError base + subclasses                      stub
@@ -46,14 +46,14 @@ src/mrta/
 │   ├── pdf_loader.py      load_pdf(), _doc_id(), ocr_page_if_needed()     ✅ done
 │   ├── chunker.py         fixed_chunks(), recursive_chunks(),
 │   │                      token_chunks(), semantic_chunks(), chunk_pdf()    ✅ done
-│   └── figure_extractor.py extract_figures() → list[FigureRecord]          stub
+│   └── figure_extractor.py extract_figures() → list[FigureRecord]          ✅ done
 ├── retrieval/
 │   ├── embedder.py        Embedder (sentence-transformers + Ollama)        ✅ done
 │   ├── vector_store.py    VectorStore (FAISS default, Qdrant swap)         ✅ done
 │   └── reranker.py        Reranker (cross-encoder, optional)               stub
 ├── multimodal/
-│   ├── clip_embedder.py   CLIPEmbedder — image → float32 vector            stub
-│   └── vlm_client.py      VLMClient — image + text → caption               stub
+│   ├── clip_embedder.py   CLIPEmbedder — image → float32 vector            ✅ done
+│   └── vlm_client.py      VLMClient — image + text → caption               ✅ done
 ├── prompts/
 │   ├── __init__.py        load_prompt(name, **kwargs) → str                ✅ done
 │   ├── rag.j2             base RAG template                                ✅ done
@@ -353,17 +353,17 @@ if question:
 
 ---
 
-## Phase 07 — Figure Extraction & VLM
+## Phase 07 — Figure Extraction & VLM ✅ done
 
 **Notebook teaches:** bounding-box-aware figure extraction, CLIP embeddings for cross-modal retrieval, VLM captioning with LLaVA or Qwen2-VL.
 
 **What to extract:**
 
-| Class / function | Target file | Why |
-|-----------------|-------------|-----|
-| `extract_figures(path) -> list[FigureRecord]` | `src/mrta/ingestion/figure_extractor.py` | Also needed in Phase 01; single implementation |
-| `CLIPEmbedder` | `src/mrta/multimodal/clip_embedder.py` | Image embedding; separate from text embedder |
-| `VLMClient` | `src/mrta/multimodal/vlm_client.py` | Wraps Ollama LLaVA and HF Qwen2-VL behind one interface |
+| Class / function | Target file | Why | Status |
+|-----------------|-------------|-----|--------|
+| `extract_figures(path) -> list[FigureRecord]` | `src/mrta/ingestion/figure_extractor.py` | Also needed in Phase 01; single implementation | ✅ done |
+| `CLIPEmbedder` | `src/mrta/multimodal/clip_embedder.py` | Image embedding; separate from text embedder | ✅ done |
+| `VLMClient` | `src/mrta/multimodal/vlm_client.py` | Wraps Ollama LLaVA and HF Qwen2-VL behind one interface | ✅ done |
 
 **`CLIPEmbedder` interface:**
 
@@ -529,18 +529,18 @@ After each step: run `MRTA_ENV=test pytest`, commit.
 | Module | Status |
 |--------|--------|
 | `core/config.py` | ✅ complete |
-| `core/schemas.py` | partial — `PageRecord`, `PdfDocument`, `Chunk` done; `FigureRecord`, `EvalReport` missing |
+| `core/schemas.py` | partial — `PageRecord`, `PdfDocument`, `Chunk`, `FigureRecord` done; `EvalReport` missing |
 | `core/llm.py` | ✅ complete |
 | `core/rag_pipeline.py` | ✅ complete |
 | `core/exceptions.py` | stub |
 | `ingestion/pdf_loader.py` | ✅ complete |
 | `ingestion/chunker.py` | ✅ complete |
-| `ingestion/figure_extractor.py` | stub |
+| `ingestion/figure_extractor.py` | ✅ complete |
 | `retrieval/embedder.py` | ✅ complete |
 | `retrieval/vector_store.py` | ✅ complete |
 | `retrieval/reranker.py` | stub |
-| `multimodal/clip_embedder.py` | stub |
-| `multimodal/vlm_client.py` | stub |
+| `multimodal/clip_embedder.py` | ✅ complete |
+| `multimodal/vlm_client.py` | ✅ complete |
 | `prompts/` | ✅ complete (rag.j2 done; explain/quiz/beginner/expert in Phase 08) |
 | `evaluation/eval_pipeline.py` | stub |
 | `evaluation/metrics.py` | stub |
