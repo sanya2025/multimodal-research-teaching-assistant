@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import hashlib
+import os
 from pathlib import Path
 
 import numpy as np
@@ -17,8 +19,36 @@ FIXTURE_PDF = Path(__file__).parents[1] / "fixtures" / "sample.pdf"
 QUERY = "What is attention?"
 
 
+class _FakeEmbedder:
+    """Deterministic embedder that needs no model download — safe for CI."""
+
+    DIM = 8
+
+    @property
+    def dim(self) -> int:
+        return self.DIM
+
+    @property
+    def model_name(self) -> str:
+        return "fake/test-model"
+
+    def embed(self, texts: list[str]) -> np.ndarray:
+        vecs = []
+        for text in texts:
+            seed = int(hashlib.md5(text.encode()).hexdigest()[:8], 16)
+            v = np.random.default_rng(seed).standard_normal(self.DIM).astype("float32")
+            v /= max(float(np.linalg.norm(v)), 1e-10)
+            vecs.append(v)
+        return np.array(vecs, dtype="float32")
+
+
 @pytest.fixture(scope="module")
-def embedder() -> Embedder:
+def embedder() -> _FakeEmbedder:
+    return _FakeEmbedder()
+
+
+@pytest.fixture(scope="module")
+def real_embedder() -> Embedder:
     # test.yaml sets embedding_model = sentence-transformers/all-MiniLM-L6-v2
     return Embedder()
 
@@ -29,31 +59,32 @@ def chunks() -> list[Chunk]:
 
 
 @pytest.fixture(scope="module")
-def store(embedder: Embedder, chunks: list[Chunk]) -> VectorStore:
+def store(embedder: _FakeEmbedder, chunks: list[Chunk]) -> VectorStore:
     vs = VectorStore(embedder)
     vs.add(chunks)
     return vs
 
 
+@pytest.mark.skipif(os.getenv("CI") == "true", reason="requires HuggingFace model download")
 class TestEmbedder:
-    def test_embed_returns_correct_shape(self, embedder: Embedder) -> None:
-        result = embedder.embed(["hello world"])
-        assert result.shape == (1, embedder.dim)
+    def test_embed_returns_correct_shape(self, real_embedder: Embedder) -> None:
+        result = real_embedder.embed(["hello world"])
+        assert result.shape == (1, real_embedder.dim)
 
-    def test_embed_float32(self, embedder: Embedder) -> None:
-        result = embedder.embed(["hello"])
+    def test_embed_float32(self, real_embedder: Embedder) -> None:
+        result = real_embedder.embed(["hello"])
         assert result.dtype == np.float32
 
-    def test_embed_normalised(self, embedder: Embedder) -> None:
-        result = embedder.embed(["hello", "world"])
+    def test_embed_normalised(self, real_embedder: Embedder) -> None:
+        result = real_embedder.embed(["hello", "world"])
         norms = np.linalg.norm(result, axis=1)
         np.testing.assert_allclose(norms, 1.0, atol=1e-5)
 
-    def test_dim_positive(self, embedder: Embedder) -> None:
-        assert embedder.dim > 0
+    def test_dim_positive(self, real_embedder: Embedder) -> None:
+        assert real_embedder.dim > 0
 
-    def test_model_name_accessible(self, embedder: Embedder) -> None:
-        assert embedder.model_name != ""
+    def test_model_name_accessible(self, real_embedder: Embedder) -> None:
+        assert real_embedder.model_name != ""
 
 
 class TestVectorStore:
