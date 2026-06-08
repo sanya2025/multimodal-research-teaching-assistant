@@ -405,12 +405,16 @@ caption = vlm.caption(figures[0].to_pil(), prompt="Describe this figure.")
 
 | Item | Target file | Why |
 |------|-------------|-----|
-| `load_prompt(name, **kwargs) -> str` | `src/mrta/prompts/__init__.py` | Single function; callers never touch Jinja2 directly |
-| `rag.j2` | `src/mrta/prompts/rag.j2` | ✅ planned in Phase 04 |
-| `beginner.j2` | `src/mrta/prompts/beginner.j2` | Teaching mode |
-| `expert.j2` | `src/mrta/prompts/expert.j2` | Teaching mode |
-| `quiz.j2` | `src/mrta/prompts/quiz.j2` | Teaching mode |
-| `explain.j2` | `src/mrta/prompts/explain.j2` | Figure explanation |
+| `load_prompt(name, **kwargs) -> str` | `src/mrta/prompts/__init__.py` | ✅ done in Phase 04 |
+| `MODES` constant | `src/mrta/prompts/__init__.py` | ✅ done — maps mode name → template base name |
+| `_base.j2` | `src/mrta/prompts/_base.j2` | ✅ done — shared grounding wrapper; all RAG modes extend it |
+| `rag.j2` | `src/mrta/prompts/rag.j2` | ✅ done in Phase 04 |
+| `beginner.j2` | `src/mrta/prompts/beginner.j2` | ✅ done — teaching mode |
+| `expert.j2` | `src/mrta/prompts/expert.j2` | ✅ done — teaching mode (graduate-level) |
+| `quiz.j2` | `src/mrta/prompts/quiz.j2` | ✅ done — teaching mode |
+| `explain.j2` | `src/mrta/prompts/explain.j2` | ✅ done — figure explanation for VLMClient |
+| `interview.j2` | `src/mrta/prompts/interview.j2` | ✅ done — tutorial extra; system-design interview framing |
+| `lecture_notes.j2` | `src/mrta/prompts/lecture_notes.j2` | ✅ done — tutorial extra; structured study notes |
 
 **`load_prompt` implementation:**
 
@@ -541,7 +545,7 @@ After each step: run `MRTA_ENV=test pytest`, commit.
 | `retrieval/reranker.py` | stub |
 | `multimodal/clip_embedder.py` | ✅ complete |
 | `multimodal/vlm_client.py` | ✅ complete |
-| `prompts/` | ✅ complete (rag.j2 done; explain/quiz/beginner/expert in Phase 08) |
+| `prompts/` | ✅ complete (all templates done: rag, _base, beginner, expert, quiz, explain, interview, lecture_notes) |
 | `evaluation/eval_pipeline.py` | stub |
 | `evaluation/metrics.py` | stub |
 | `observability/logging.py` | ✅ complete |

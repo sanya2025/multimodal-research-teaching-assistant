@@ -575,3 +575,59 @@ A cross-modal text query ("explain the attention diagram") embeds the query with
 `CLIPEmbedder.embed_text` (same CLIP space) and searches the figure index, while
 a text retrieval query uses `Embedder` and searches the text index. Two small wrapper
 classes is simpler than one class with two model instances and index-routing logic.
+
+---
+
+## Phase 08 — Teaching Modes & Prompt Engineering
+
+**Notebook:** `notebooks/tutorials/2026-05-25-phase08-teaching-modes-and-prompts.ipynb`
+**Production:** `notebooks/production/2026-05-25-phase08-teaching-modes-and-prompts.ipynb`
+
+### What's extracted — Phase 08
+
+| Tutorial cell | What it does | Production file |
+|---------------|--------------|-----------------|
+| Cell [4] | Writes `_base.jinja2` inline | `src/mrta/prompts/_base.j2` |
+| Cell [6] | Writes `beginner.jinja2`, `graduate.jinja2`, `interview.jinja2`, `quiz.jinja2`, `lecture_notes.jinja2` | `src/mrta/prompts/beginner.j2`, `expert.j2`, `interview.j2`, `quiz.j2`, `lecture_notes.j2` |
+| Cell [8] | Defines `render_prompt()` with `FileSystemLoader` + `MODES` dict | `load_prompt()` already in `__init__.py`; `MODES` added as public constant |
+| — | No tutorial equivalent | `src/mrta/prompts/explain.j2` — figure explanation for `VLMClient.caption()` |
+
+### What stays inline — Phase 08
+
+| Cell | Content | Why kept inline |
+|------|---------|-----------------|
+| Cell [4] (setup) | `repo_root` path setup, `PROMPTS.mkdir()` | Notebook environment setup; not library code |
+| Cell [12] | Full `VectorStore` + `SentenceTransformer` + `ask()` demo | Requires live Ollama server; is the teaching demo for section 8.5 |
+| Cells [13–15] | Prompt-quality checks, heuristics, "What you learned", exercises | Teaching content only |
+
+### Running notebook cell status — Phase 08
+
+| Cell | Status | Notes |
+|------|--------|-------|
+| [1] | ✅ active | `from mrta.prompts import load_prompt, MODES` |
+| [4] | inline | Notebook env setup |
+| [6] | ✅ replaced | `# Template: see src/mrta/prompts/_base.j2` |
+| [8] | ✅ replaced | `# Templates: see src/mrta/prompts/` |
+| [10] | ✅ active | `from mrta.prompts import load_prompt, MODES` + smoke test |
+| [12] | inline | Live demo — requires Ollama + SentenceTransformer |
+
+### Interface differences — Phase 08
+
+| Tutorial | Production | Reason |
+|----------|-----------|--------|
+| `.jinja2` extension | `.j2` extension | Matches existing `rag.j2`; consistent across all templates |
+| `graduate.jinja2` | `expert.j2` | `production-ready.md` spec uses "expert"; content (behavior block) identical |
+| `FileSystemLoader(PROMPTS)` + `MODES` dict inline | `PackageLoader("mrta", "prompts")` + `MODES` as public constant | `PackageLoader` works with editable installs; `MODES` in `__init__.py` means callers don't maintain their own dict |
+| `render_prompt(mode, *, question, chunks)` | `load_prompt(name, **kwargs)` | `load_prompt` accepts the template name directly; `MODES[mode]` gives the name |
+| No `explain.j2` | `explain.j2` added | Needed by `VLMClient.caption(image, prompt=load_prompt("explain", ...))` — figure explanation is a different prompt shape than RAG |
+
+### Concept note — Jinja2 block inheritance vs f-strings
+
+`_base.j2` uses Jinja2 `{% block %}` inheritance rather than Python f-strings or string
+concatenation. With block inheritance, each mode file (`beginner.j2`, `expert.j2`, etc.)
+overrides only the `behavior` and `format` blocks — the grounding rule, context loop, and
+citation instruction live in `_base.j2` exactly once. A single edit to `_base.j2` propagates
+to all seven modes. With f-strings, every mode would embed the full prompt string, and a
+grounding-rule change would require editing all seven files. Jinja2 inheritance also keeps
+the intent readable: `{% extends "_base.j2" %}` says "this is a teaching-mode variant",
+not a complete prompt from scratch.

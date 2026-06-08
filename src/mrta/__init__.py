@@ -10,7 +10,7 @@ from mrta.ingestion.pdf_loader import load_pdf
 from mrta.multimodal.clip_embedder import CLIPEmbedder
 from mrta.multimodal.vlm_client import VLMClient
 from mrta.observability.logging import StructuredLogger
-from mrta.prompts import load_prompt
+from mrta.prompts import MODES, load_prompt
 from mrta.retrieval.embedder import Embedder
 from mrta.retrieval.vector_store import VectorStore
 
@@ -32,6 +32,7 @@ __all__ = [
     "LLMClient",
     "rag_query",
     "load_prompt",
+    "MODES",
     "StructuredLogger",
     "CLIPEmbedder",
     "VLMClient",

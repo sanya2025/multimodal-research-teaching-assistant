@@ -1,0 +1,7 @@
+{% extends "_base.j2" %}
+{% block behavior %}Generate exactly 5 multiple-choice quiz questions about the topic.
+- Each has 4 options (A, B, C, D) and exactly one correct answer.
+- Cover different aspects: motivation, mechanism, results, limitations, math.
+- After listing all 5, output an "ANSWER KEY" section with the correct letter and a
+  1-sentence justification citing pages.{% endblock %}
+{% block format %}--- QUIZ ---{% endblock %}
