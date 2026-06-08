@@ -631,3 +631,89 @@ to all seven modes. With f-strings, every mode would embed the full prompt strin
 grounding-rule change would require editing all seven files. Jinja2 inheritance also keeps
 the intent readable: `{% extends "_base.j2" %}` says "this is a teaching-mode variant",
 not a complete prompt from scratch.
+
+---
+
+## Phase 09 — Evaluation, Observability & Docker
+
+**Tutorial notebook:** `notebooks/tutorials/2026-05-25-phase09-evaluation-logging-docker.ipynb`
+**Production notebook:** `notebooks/production/2026-05-25-phase09-evaluation-logging-docker.ipynb`
+
+### What's extracted — Phase 09
+
+| Tutorial cell | What it does | Production file |
+|---------------|--------------|-----------------|
+| Cell [4] | Inline `VectorStore`, `run_question`, `metric_recall_at_k`, `metric_substring_match`, `metric_citation_in_retrieval` | `src/mrta/evaluation/metrics.py` — `answer_relevance`, `faithfulness`, `citation_correctness`, `hallucination_rate` (different names and signatures; see interface differences) |
+| Cell [10] | Inline `log_run()` using `structlog` | Already done — `src/mrta/observability/logging.py` (`StructuredLogger.log_run`); cell [12] replaced with import |
+| — | No tutorial equivalent | `src/mrta/evaluation/eval_pipeline.py` — `run_eval(benchmark, vs, llm)` calling `rag_query` |
+| — | No tutorial equivalent | `EvalReport` schema added to `src/mrta/core/schemas.py` |
+
+### What stays inline — Phase 09
+
+| Cell | Content | Why kept inline |
+|------|---------|-----------------|
+| Cell [4] (production [4]) | Benchmark list definition + `data/processed/benchmark.jsonl` write | Data setup, not library code |
+| Cell [8] (production [8]) | Run benchmark loop with pandas — updated to `rag_query` + production metric names | Needs live Ollama + pre-built vector store index |
+| Cell [10] (production [10]) | Ragas integration (fully commented out) | Illustrative only; no production extraction needed |
+| Cell [12] (production [14]) | Pandas log aggregation from JSONL | Needs actual run data; demo only |
+
+### Running notebook cell status — Phase 09
+
+| Cell | Status | Notes |
+|------|--------|-------|
+| [1] | ✅ active | Converted markdown→code; `from mrta.evaluation.*` + `StructuredLogger` |
+| [4] | inline | Benchmark data + env setup |
+| [6] | ✅ replaced | Library imports: `rag_query`, evaluation metrics, `Embedder`, `VectorStore`, `LLMClient` |
+| [8] | ✅ updated | Uses `rag_query` + production metric names (was `run_question` + `metric_*`) |
+| [10] | inline | Ragas (commented out) — illustrative |
+| [12] | ✅ replaced | `from mrta.observability.logging import StructuredLogger` |
+| [14] | inline | Pandas log aggregation — needs live JSONL |
+| [16] | ✅ replaced | `# Dockerfiles: see docker/Dockerfile.api, docker/Dockerfile.ui` |
+| [18] | ✅ replaced | `# docker-compose: see docker/docker-compose.yml` |
+| [21] | ✅ replaced | `# CI: see .github/workflows/ci.yml` |
+
+### Interface differences — Phase 09
+
+| Tutorial | Production | Reason |
+|----------|------------|--------|
+| `metric_recall_at_k(expected_pages, retrieved_pages)` | Not extracted | Benchmark-specific helper — uses `expected_pages` from the hand-labeled benchmark, not a general-purpose metric |
+| `metric_substring_match(answer, expected_substrings)` | Base idea for `answer_relevance(question, answer)` | Production compares against the question keywords, not hand-labeled substrings; no benchmark annotations required |
+| `metric_citation_in_retrieval(cited, retrieved)` | `citation_correctness(answer, chunks)` | Production parses citations directly from the answer string using `re`; takes `list[Chunk]` not raw page lists |
+| No tutorial equivalent | `faithfulness(answer, chunks)` | Sentence-level grounding check: are answer sentences covered by at least one chunk? |
+| No tutorial equivalent | `hallucination_rate(answer, chunks)` | `1 - faithfulness` — the inverse, useful as a penalty metric |
+| `run_question()` — inline Ollama + FAISS loop | Not extracted — use `rag_query` | `rag_query` is already in `mrta.core.rag_pipeline`; extracting `run_question` would be a duplicate |
+| `log_run()` — inline `structlog` + JSONL write | `StructuredLogger.log_run()` | Already implemented in Phase 04; Phase 09 just replaces the inline cell with an import |
+| Tutorial cells [14], [16], [19] write Docker/CI files | Replaced with comments | Files already exist from Phases 5 and 6 |
+
+### Concept note — why four metrics instead of Ragas
+
+Ragas (section 9.4 in the tutorial) is a higher-quality LLM-judged metric suite. The
+four deterministic metrics extracted here (`answer_relevance`, `faithfulness`,
+`citation_correctness`, `hallucination_rate`) exist for a different reason: they are
+**zero-dependency** and run in CI without an LLM judge.
+
+The distinction matters:
+
+- **Deterministic metrics** run in under a second, need no network access, and are
+  suitable for `pytest` (they make assertions about string overlap and regex matches).
+  They catch regressions in the basic mechanics: are citations real, is the answer
+  vaguely about the question, are sentences loosely grounded?
+
+- **Ragas / LLM-judged metrics** measure semantic quality: does the answer
+  *faithfully* support every claim, is the retrieval *relevant* to the question?
+  These require a running LLM and are better run in a nightly evaluation job, not CI.
+
+In production, both layers are used. `test_metrics.py` tests the deterministic layer.
+Ragas usage lives in the notebook as an illustrative, opt-in section.
+
+### Concept note — `EvalReport` as the aggregation contract
+
+`run_eval` returns an `EvalReport` (a Pydantic model) rather than a plain dict. This
+matters for the same reason `AskResponse` exists in the API layer:
+
+- **Serialisable.** `report.model_dump()` gives a JSON-ready dict for logging, dashboards,
+  or storing as an artifact alongside a model checkpoint.
+- **Typed.** Callers (CI scripts, Streamlit eval tabs, Jupyter cells) can access
+  `report.faithfulness` with autocomplete and type safety, not `result["faithfulness"]`.
+- **Versioned.** Adding a new metric means adding a field to `EvalReport` — the old
+  schema is still valid; callers that don't need the new field are unaffected.

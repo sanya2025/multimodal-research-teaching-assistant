@@ -2,6 +2,473 @@
 
 Paste this at the start of any notebook-to-production session, replacing `NN` and `<module>`.
 
+## Phase 09 prompt
+
+Convert Phase 09 (Evaluation, Observability & Docker) tutorial notebook to production.
+
+Read these six files first:
+
+1. `production-ready.md` → Phase 09 section — confirms: add `EvalReport` schema,
+   create `src/mrta/evaluation/metrics.py` (four metric functions), create
+   `src/mrta/evaluation/eval_pipeline.py` (`run_eval`); `StructuredLogger` is already done.
+2. `notebook-to-production-steps.md` → Phase 08 is the last completed phase.
+3. Tutorial notebook: `notebooks/tutorials/2026-05-25-phase09-evaluation-logging-docker.ipynb`
+4. Production notebook: `notebooks/production/2026-05-25-phase09-evaluation-logging-docker.ipynb`
+5. `src/mrta/evaluation/__init__.py` — currently a one-line stub; needs to export all symbols.
+6. `src/mrta/observability/logging.py` — already complete; do **not** rewrite it.
+
+Also inspect `src/mrta/core/schemas.py` — `EvalReport` is missing and must be added there.
+Also inspect `src/mrta/core/rag_pipeline.py` — `run_eval` calls `rag_query` from this module.
+
+**Four interface differences** — tutorial inline code does not match the production setup:
+
+- Tutorial defines three metrics named `metric_recall_at_k`, `metric_substring_match`,
+  `metric_citation_in_retrieval` →
+  Production defines four metrics with cleaner names: `answer_relevance`, `faithfulness`,
+  `citation_correctness`, `hallucination_rate`. These are different functions — see exact
+  signatures in step 5 below.
+- Tutorial defines `run_question()` inline using a `SentenceTransformer` + FAISS
+  `VectorStore` + raw `ollama.chat` call →
+  Production calls `rag_query(question, vs, llm)` from `mrta.core.rag_pipeline`.
+  Do **not** extract `run_question` to the library.
+- Tutorial defines `log_run()` inline using `structlog` →
+  Production uses `StructuredLogger.log_run()` from `src/mrta/observability/logging.py`,
+  which is already implemented. Cell [12] should be replaced with a `StructuredLogger`
+  import and usage example.
+- Tutorial cells [14], [16], [19] write `docker/Dockerfile.api`, `docker/Dockerfile.ui`,
+  `docker/docker-compose.yml`, and `.github/workflows/ci.yml` →
+  All four files already exist (created in Phases 5 and 6). Replace those cells with
+  comments pointing to the existing files.
+
+**`StructuredLogger` and Docker files are already done** — do not rewrite them.
+
+---
+
+### Step 1 — Add `EvalReport` to `src/mrta/core/schemas.py`
+
+Append after the `FigureRecord` class:
+
+```python
+class EvalReport(BaseModel):
+    """Aggregated evaluation results over a benchmark question set."""
+
+    n_questions: int
+    answer_relevance: float
+    faithfulness: float
+    citation_correctness: float
+    hallucination_rate: float
+    mean_latency_s: float
+```
+
+---
+
+### Step 2 — Create `src/mrta/evaluation/metrics.py`
+
+Full file — pure Python, no Ollama, no model downloads:
+
+```python
+"""mrta.evaluation.metrics — deterministic RAG quality metrics."""
+
+from __future__ import annotations
+
+import re
+
+from mrta.core.schemas import Chunk
+
+
+def answer_relevance(question: str, answer: str) -> float:
+    """Score in [0,1]: fraction of non-trivial question keywords found in the answer."""
+    stop = {
+        "what", "is", "the", "a", "an", "how", "why", "does", "do", "did",
+        "are", "in", "of", "to", "and", "for", "on", "at", "by",
+    }
+    tokens = {
+        t.lower().strip(".,?!;:")
+        for t in question.split()
+        if t.lower().strip(".,?!;:") not in stop
+    }
+    if not tokens:
+        return 1.0
+    answer_lower = answer.lower()
+    return sum(1 for t in tokens if t in answer_lower) / len(tokens)
+
+
+def faithfulness(answer: str, chunks: list[Chunk]) -> float:
+    """Score in [0,1]: fraction of answer sentences grounded in at least one chunk."""
+    sentences = [s.strip() for s in re.split(r"[.!?]+", answer) if s.strip()]
+    if not sentences:
+        return 1.0
+    context = " ".join(c.text.lower() for c in chunks)
+    grounded = 0
+    for sent in sentences:
+        tokens = {t.lower().strip(".,!?;:") for t in sent.split() if len(t) > 3}
+        if not tokens or any(t in context for t in tokens):
+            grounded += 1
+    return grounded / len(sentences)
+
+
+def citation_correctness(answer: str, chunks: list[Chunk]) -> float:
+    """Score in [0,1]: fraction of [page N] citations that refer to a page in chunks."""
+    cited = [int(m.group(1)) for m in re.finditer(r"\[page (\d+)", answer, re.IGNORECASE)]
+    if not cited:
+        return 1.0
+    valid_pages = {c.page for c in chunks}
+    return sum(1 for p in cited if p in valid_pages) / len(cited)
+
+
+def hallucination_rate(answer: str, chunks: list[Chunk]) -> float:
+    """Fraction of answer sentences with no grounding chunk (1 - faithfulness)."""
+    return 1.0 - faithfulness(answer, chunks)
+
+
+__all__ = ["answer_relevance", "faithfulness", "citation_correctness", "hallucination_rate"]
+```
+
+---
+
+### Step 3 — Create `src/mrta/evaluation/eval_pipeline.py`
+
+Full file:
+
+```python
+"""mrta.evaluation.eval_pipeline — run all metrics over a benchmark."""
+
+from __future__ import annotations
+
+from mrta.core.llm import LLMClient
+from mrta.core.rag_pipeline import rag_query
+from mrta.core.schemas import EvalReport
+from mrta.evaluation.metrics import (
+    answer_relevance,
+    citation_correctness,
+    faithfulness,
+    hallucination_rate,
+)
+from mrta.retrieval.vector_store import VectorStore
+
+
+def run_eval(
+    benchmark: list[dict],
+    vs: VectorStore,
+    llm: LLMClient,
+    top_k: int = 5,
+) -> EvalReport:
+    """Run all four metrics over benchmark and return an averaged EvalReport.
+
+    Each benchmark item must have a "question" key.
+    """
+    ar_scores: list[float] = []
+    f_scores: list[float] = []
+    cc_scores: list[float] = []
+    hr_scores: list[float] = []
+    latencies: list[float] = []
+
+    for item in benchmark:
+        result = rag_query(item["question"], vs, llm, top_k=top_k)
+        ar_scores.append(answer_relevance(item["question"], result["answer"]))
+        f_scores.append(faithfulness(result["answer"], result["sources"]))
+        cc_scores.append(citation_correctness(result["answer"], result["sources"]))
+        hr_scores.append(hallucination_rate(result["answer"], result["sources"]))
+        latencies.append(result["latency_s"])
+
+    n = len(benchmark)
+    return EvalReport(
+        n_questions=n,
+        answer_relevance=sum(ar_scores) / n,
+        faithfulness=sum(f_scores) / n,
+        citation_correctness=sum(cc_scores) / n,
+        hallucination_rate=sum(hr_scores) / n,
+        mean_latency_s=sum(latencies) / n,
+    )
+
+
+__all__ = ["run_eval"]
+```
+
+---
+
+### Step 4 — Update `src/mrta/evaluation/__init__.py`
+
+Replace the stub:
+
+```python
+"""mrta.evaluation — evaluation metrics and pipeline."""
+
+from mrta.evaluation.eval_pipeline import run_eval
+from mrta.evaluation.metrics import (
+    answer_relevance,
+    citation_correctness,
+    faithfulness,
+    hallucination_rate,
+)
+
+__all__ = [
+    "run_eval",
+    "answer_relevance",
+    "faithfulness",
+    "citation_correctness",
+    "hallucination_rate",
+]
+```
+
+---
+
+### Step 5 — Update `src/mrta/__init__.py`
+
+Add these imports after the `StructuredLogger` line:
+
+```python
+from mrta.core.schemas import Chunk, EvalReport, FigureRecord, PageRecord, PdfDocument
+from mrta.evaluation.eval_pipeline import run_eval
+from mrta.evaluation.metrics import (
+    answer_relevance,
+    citation_correctness,
+    faithfulness,
+    hallucination_rate,
+)
+```
+
+Add to `__all__`:
+
+```python
+"EvalReport",
+"run_eval",
+"answer_relevance",
+"faithfulness",
+"citation_correctness",
+"hallucination_rate",
+```
+
+Note: `EvalReport` is being added to the existing `from mrta.core.schemas import ...` line,
+not as a separate import.
+
+---
+
+### Step 6 — Activate production notebook cells
+
+Production notebook: `notebooks/production/2026-05-25-phase09-evaluation-logging-docker.ipynb`
+
+**Cell [1]** — change cell type from `markdown` to `code`; replace content with:
+
+```python
+from mrta.evaluation.eval_pipeline import run_eval
+from mrta.evaluation.metrics import (
+    answer_relevance,
+    citation_correctness,
+    faithfulness,
+    hallucination_rate,
+)
+from mrta.observability.logging import StructuredLogger
+```
+
+**Cell [6]** — replace the inline `VectorStore` + `run_question` + `metric_*` definitions
+with library imports and component setup:
+
+```python
+from mrta.core.rag_pipeline import rag_query
+from mrta.evaluation.metrics import (
+    answer_relevance,
+    citation_correctness,
+    faithfulness,
+    hallucination_rate,
+)
+from mrta.retrieval.embedder import Embedder
+from mrta.retrieval.vector_store import VectorStore
+from mrta.core.llm import LLMClient
+
+embedder = Embedder()
+store = VectorStore.load("data/vector_store/aiayn", embedder)  # requires pre-built index
+llm = LLMClient()
+print("Components loaded.")
+```
+
+**Cell [8]** — update benchmark runner to use production API (replaces `run_question` +
+tutorial metric names with `rag_query` + production metric functions):
+
+```python
+import pandas as pd
+
+rows = []
+for q in benchmark:
+    result = rag_query(q["question"], store, llm)
+    rows.append({
+        "question": q["question"][:60] + "...",
+        "answer_relevance": round(answer_relevance(q["question"], result["answer"]), 2),
+        "faithfulness": round(faithfulness(result["answer"], result["sources"]), 2),
+        "citation_correctness": round(citation_correctness(result["answer"], result["sources"]), 2),
+        "hallucination_rate": round(hallucination_rate(result["answer"], result["sources"]), 2),
+        "latency_s": round(result["latency_s"], 1),
+    })
+df = pd.DataFrame(rows)
+df
+```
+
+**Cell [12]** — replace the inline `structlog` setup + `log_run` function with:
+
+```python
+from mrta.observability.logging import StructuredLogger
+
+logger = StructuredLogger()
+# Usage after rag_query:
+# result = rag_query(question, store, llm)
+# logger.log_run(
+#     question=question,
+#     answer=result["answer"],
+#     sources=result["sources"],
+#     latency_s=result["latency_s"],
+# )
+print("StructuredLogger ready — logs append to", __import__("mrta").settings.log_file)
+```
+
+**Cell [16]** — replace the Dockerfile write cell with:
+
+```python
+# Dockerfiles already exist — see docker/Dockerfile.api and docker/Dockerfile.ui
+# Built and validated in Phase 6.
+```
+
+**Cell [18]** — replace the docker-compose write cell with:
+
+```python
+# docker-compose already exists — see docker/docker-compose.yml
+# Brings up api + ui + qdrant with: docker compose -f docker/docker-compose.yml up
+```
+
+**Cell [21]** — replace the ci.yml write cell with:
+
+```python
+# CI workflow already exists — see .github/workflows/ci.yml
+# Runs on every push/PR to main: ruff → black --check → pytest
+```
+
+---
+
+### Step 7 — Create `tests/unit/test_metrics.py`
+
+Full file:
+
+```python
+"""Tests for mrta.evaluation.metrics — all metrics return floats in [0,1]."""
+
+from __future__ import annotations
+
+import pytest
+
+from mrta.core.schemas import Chunk
+from mrta.evaluation.metrics import (
+    answer_relevance,
+    citation_correctness,
+    faithfulness,
+    hallucination_rate,
+)
+
+CHUNKS = [
+    Chunk(doc_id="d1", source="paper.pdf", page=3, chunk_index=0, text="The model uses 512 dimensions."),
+    Chunk(doc_id="d1", source="paper.pdf", page=5, chunk_index=1, text="Multi-head attention with 8 heads."),
+]
+
+
+class TestAnswerRelevance:
+    def test_keyword_present(self) -> None:
+        score = answer_relevance("What is 512?", "The dimension is 512.")
+        assert score == 1.0
+
+    def test_no_overlap(self) -> None:
+        score = answer_relevance("What is 512?", "This says nothing relevant.")
+        assert 0.0 <= score <= 1.0
+
+    def test_returns_float(self) -> None:
+        assert isinstance(answer_relevance("Q", "A"), float)
+
+    def test_range(self) -> None:
+        assert 0.0 <= answer_relevance("dimensions model?", "unrelated text here") <= 1.0
+
+
+class TestFaithfulness:
+    def test_grounded_answer(self) -> None:
+        score = faithfulness("The model uses 512 dimensions.", CHUNKS)
+        assert score == 1.0
+
+    def test_empty_answer(self) -> None:
+        assert faithfulness("", CHUNKS) == 1.0
+
+    def test_returns_float(self) -> None:
+        assert isinstance(faithfulness("answer", CHUNKS), float)
+
+    def test_range(self) -> None:
+        assert 0.0 <= faithfulness("some text about things", CHUNKS) <= 1.0
+
+    def test_ungrounded_sentence(self) -> None:
+        score = faithfulness("Completely invented claim about dragons flying.", CHUNKS)
+        assert 0.0 <= score <= 1.0
+
+
+class TestCitationCorrectness:
+    def test_correct_citation(self) -> None:
+        assert citation_correctness("The answer is in [page 3].", CHUNKS) == 1.0
+
+    def test_wrong_page(self) -> None:
+        assert citation_correctness("See [page 99].", CHUNKS) == 0.0
+
+    def test_no_citations(self) -> None:
+        assert citation_correctness("Answer with no citations.", CHUNKS) == 1.0
+
+    def test_mixed_citations(self) -> None:
+        score = citation_correctness("See [page 3] and [page 99].", CHUNKS)
+        assert score == 0.5
+
+    def test_returns_float(self) -> None:
+        assert isinstance(citation_correctness("text", CHUNKS), float)
+
+
+class TestHallucinationRate:
+    def test_complement_of_faithfulness(self) -> None:
+        answer = "The model uses 512 dimensions."
+        assert abs(faithfulness(answer, CHUNKS) + hallucination_rate(answer, CHUNKS) - 1.0) < 1e-9
+
+    def test_range(self) -> None:
+        assert 0.0 <= hallucination_rate("some text", CHUNKS) <= 1.0
+
+    def test_returns_float(self) -> None:
+        assert isinstance(hallucination_rate("answer", CHUNKS), float)
+```
+
+---
+
+### Step 8 — Validate
+
+Run the full test suite:
+
+```bash
+MRTA_ENV=test pytest -q
+```
+
+Expected: all previous tests pass plus 15 new tests in `test_metrics.py`.
+
+Run lint:
+
+```bash
+ruff check src/ tests/ apps/
+black --check src/ tests/ apps/
+```
+
+---
+
+### Step 9 — Update documentation
+
+Update `production-ready.md`:
+
+- Phase 09 table: mark all rows ✅ done
+- Library map: mark `evaluation/metrics.py` and `evaluation/eval_pipeline.py` as ✅ complete
+- Mark `core/schemas.py` as ✅ complete (EvalReport now added)
+
+Update `notebook-to-production-steps.md`: append Phase 09 section following the same format
+as Phase 08.
+
+Update `memory/project-improvement-roadmap.md`: append Phase 09 completion entry.
+
+---
+
 ## Phase 08 prompt
 
 Convert Phase 08 (Teaching Modes & Prompt Engineering) tutorial notebook to production.

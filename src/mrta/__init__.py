@@ -3,7 +3,14 @@
 from mrta.core.config import Settings, settings
 from mrta.core.llm import LLMClient
 from mrta.core.rag_pipeline import rag_query
-from mrta.core.schemas import Chunk, FigureRecord, PageRecord, PdfDocument
+from mrta.core.schemas import Chunk, EvalReport, FigureRecord, PageRecord, PdfDocument
+from mrta.evaluation.eval_pipeline import run_eval
+from mrta.evaluation.metrics import (
+    answer_relevance,
+    citation_correctness,
+    faithfulness,
+    hallucination_rate,
+)
 from mrta.ingestion.chunker import chunk_pdf
 from mrta.ingestion.figure_extractor import extract_figures
 from mrta.ingestion.pdf_loader import load_pdf
@@ -24,6 +31,7 @@ __all__ = [
     "PdfDocument",
     "Chunk",
     "FigureRecord",
+    "EvalReport",
     "load_pdf",
     "chunk_pdf",
     "extract_figures",
@@ -36,4 +44,9 @@ __all__ = [
     "StructuredLogger",
     "CLIPEmbedder",
     "VLMClient",
+    "run_eval",
+    "answer_relevance",
+    "faithfulness",
+    "citation_correctness",
+    "hallucination_rate",
 ]

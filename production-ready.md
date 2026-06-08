@@ -38,7 +38,7 @@ When this is done for all notebooks, the library is complete and the notebooks b
 src/mrta/
 ├── core/
 │   ├── config.py          Settings (pydantic-settings, YAML-backed)       ✅ done
-│   ├── schemas.py         PageRecord, PdfDocument, Chunk, FigureRecord      partial (EvalReport missing)
+│   ├── schemas.py         PageRecord, PdfDocument, Chunk, FigureRecord, EvalReport  ✅ done
 │   ├── llm.py             LLMClient — provider-agnostic text generation    ✅ done
 │   ├── rag_pipeline.py    rag_query() — retrieve → prompt → generate       ✅ done
 │   └── exceptions.py      MrtaError base + subclasses                      stub
@@ -533,7 +533,7 @@ After each step: run `MRTA_ENV=test pytest`, commit.
 | Module | Status |
 |--------|--------|
 | `core/config.py` | ✅ complete |
-| `core/schemas.py` | partial — `PageRecord`, `PdfDocument`, `Chunk`, `FigureRecord` done; `EvalReport` missing |
+| `core/schemas.py` | ✅ complete (`PageRecord`, `PdfDocument`, `Chunk`, `FigureRecord`, `EvalReport`) |
 | `core/llm.py` | ✅ complete |
 | `core/rag_pipeline.py` | ✅ complete |
 | `core/exceptions.py` | stub |
@@ -546,7 +546,7 @@ After each step: run `MRTA_ENV=test pytest`, commit.
 | `multimodal/clip_embedder.py` | ✅ complete |
 | `multimodal/vlm_client.py` | ✅ complete |
 | `prompts/` | ✅ complete (all templates done: rag, _base, beginner, expert, quiz, explain, interview, lecture_notes) |
-| `evaluation/eval_pipeline.py` | stub |
-| `evaluation/metrics.py` | stub |
+| `evaluation/eval_pipeline.py` | ✅ complete (`run_eval` returning `EvalReport`) |
+| `evaluation/metrics.py` | ✅ complete (`answer_relevance`, `faithfulness`, `citation_correctness`, `hallucination_rate`) |
 | `observability/logging.py` | ✅ complete |
 | `observability/tracing.py` | stub |

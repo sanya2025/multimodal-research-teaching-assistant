@@ -49,3 +49,14 @@ class FigureRecord(BaseModel):
         from PIL import Image
 
         return Image.open(io.BytesIO(self.image_bytes))
+
+
+class EvalReport(BaseModel):
+    """Aggregated evaluation results over a benchmark question set."""
+
+    n_questions: int
+    answer_relevance: float
+    faithfulness: float
+    citation_correctness: float
+    hallucination_rate: float
+    mean_latency_s: float
