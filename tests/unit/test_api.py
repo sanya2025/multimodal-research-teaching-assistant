@@ -58,9 +58,9 @@ def client(mock_store: MagicMock, mock_llm: MagicMock):
     app.dependency_overrides[get_store] = lambda: mock_store
     app.dependency_overrides[get_llm] = lambda: mock_llm
     with (
-        patch("apps.api.main.Embedder"),     # prevents HuggingFace download in lifespan
+        patch("apps.api.main.Embedder"),  # prevents HuggingFace download in lifespan
         patch("apps.api.main.VectorStore"),  # prevents FAISS IndexFlatIP construction
-        patch("apps.api.main.LLMClient"),    # prevents Ollama connection in lifespan
+        patch("apps.api.main.LLMClient"),  # prevents Ollama connection in lifespan
         TestClient(app) as c,
     ):
         yield c
