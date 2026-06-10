@@ -5,6 +5,248 @@ Each entry maps tutorial notebook cells → `src/mrta/` modules → production n
 
 ---
 
+## [Phase 09] — Evaluation, Observability & Docker — 2026-06-08
+
+**Commit:** `7c0774d`
+**Tutorial notebook:** `notebooks/tutorials/2026-05-25-phase09-evaluation-logging-docker.ipynb`
+**Production notebook:** `notebooks/production/2026-05-25-phase09-evaluation-logging-docker.ipynb`
+
+### Changed files
+
+| File | Change | Notes |
+|------|--------|-------|
+| `src/mrta/core/schemas.py` | Updated | `EvalReport` model added — `n_questions`, `answer_relevance`, `faithfulness`, `citation_correctness`, `hallucination_rate`, `mean_latency_s` |
+| `src/mrta/evaluation/metrics.py` | Created | Four deterministic metrics: `answer_relevance`, `faithfulness`, `citation_correctness`, `hallucination_rate`; pure Python, no model downloads |
+| `src/mrta/evaluation/eval_pipeline.py` | Created | `run_eval(benchmark, vs, llm, top_k) -> EvalReport`; iterates benchmark, calls `rag_query`, averages all four metrics |
+| `src/mrta/evaluation/__init__.py` | Updated | Exports `run_eval`, `answer_relevance`, `faithfulness`, `citation_correctness`, `hallucination_rate` |
+| `src/mrta/__init__.py` | Updated | `EvalReport`, `run_eval`, and all four metric functions added to public API |
+| `notebooks/production/…phase09….ipynb` | Updated | Cells [1], [6], [8], [12], [16], [18], [21] replaced with library imports or comments pointing to existing Docker/CI files |
+| `tests/unit/test_metrics.py` | Created | 17 tests — see table below |
+| `production-ready.md` | Updated | Phase 09 library map rows marked ✅ done; `EvalReport` noted in schema row |
+| `notebook-to-production-steps.md` | Updated | Phase 09 section appended |
+
+### Tests created — `tests/unit/test_metrics.py` (17 tests)
+
+| Test class | Test | Assertion |
+|------------|------|-----------|
+| `TestAnswerRelevance` | `test_keyword_present` | score is `1.0` when question keyword appears in answer |
+| `TestAnswerRelevance` | `test_no_overlap` | score is in `[0, 1]` when there is no keyword overlap |
+| `TestAnswerRelevance` | `test_returns_float` | return type is `float` |
+| `TestAnswerRelevance` | `test_range` | score is in `[0, 1]` for arbitrary inputs |
+| `TestFaithfulness` | `test_grounded_answer` | score is `1.0` when answer text appears in chunks |
+| `TestFaithfulness` | `test_empty_answer` | empty answer scores `1.0` (vacuously grounded) |
+| `TestFaithfulness` | `test_returns_float` | return type is `float` |
+| `TestFaithfulness` | `test_range` | score is in `[0, 1]` for arbitrary inputs |
+| `TestFaithfulness` | `test_ungrounded_sentence` | invented claim scores in `[0, 1]` |
+| `TestCitationCorrectness` | `test_correct_citation` | `[page 3]` citing a real page scores `1.0` |
+| `TestCitationCorrectness` | `test_wrong_page` | `[page 99]` citing a non-existent page scores `0.0` |
+| `TestCitationCorrectness` | `test_no_citations` | answer with no `[page N]` patterns scores `1.0` |
+| `TestCitationCorrectness` | `test_mixed_citations` | one valid + one invalid citation scores `0.5` |
+| `TestCitationCorrectness` | `test_returns_float` | return type is `float` |
+| `TestHallucinationRate` | `test_complement_of_faithfulness` | `faithfulness + hallucination_rate == 1.0` within `1e-9` |
+| `TestHallucinationRate` | `test_range` | score is in `[0, 1]` |
+| `TestHallucinationRate` | `test_returns_float` | return type is `float` |
+
+---
+
+## [Phase 08] — Teaching Modes & Prompt Engineering — 2026-06-08
+
+**Commit:** `e3ca49a`
+**Tutorial notebook:** `notebooks/tutorials/2026-05-25-phase08-teaching-modes-and-prompts.ipynb`
+**Production notebook:** `notebooks/production/2026-05-25-phase08-teaching-modes-and-prompts.ipynb`
+
+### Changed files
+
+| File | Change | Notes |
+|------|--------|-------|
+| `src/mrta/prompts/_base.j2` | Created | Shared parent template with Jinja2 block inheritance — `role`, `behavior`, `format` blocks; grounding rule and citation instruction shared across all modes |
+| `src/mrta/prompts/beginner.j2` | Created | Extends `_base.j2`; plain language, analogies, short paragraphs |
+| `src/mrta/prompts/expert.j2` | Created | Extends `_base.j2`; graduate-level ML background assumed; precise terminology and equations |
+| `src/mrta/prompts/interview.j2` | Created | Extends `_base.j2`; ML system-design interview style with tradeoffs and complexity analysis |
+| `src/mrta/prompts/quiz.j2` | Created | Extends `_base.j2`; generates 5 multiple-choice questions with answer key |
+| `src/mrta/prompts/lecture_notes.j2` | Created | Extends `_base.j2`; structured notes with Key Terms, Mechanism, Results, Open questions |
+| `src/mrta/prompts/explain.j2` | Created | Standalone template (does not extend `_base.j2`); used by `VLMClient.caption` for figure explanation; optional `level` and `question` variables |
+| `src/mrta/prompts/__init__.py` | Updated | `MODES` constant added — maps user-facing mode names to template base names; exported in `__all__` |
+| `src/mrta/__init__.py` | Updated | `MODES` added to public API |
+| `notebooks/production/…phase08….ipynb` | Updated | Cells [1], [6], [8], [10] replaced with library imports; remaining cells kept inline |
+| `tests/unit/test_prompts.py` | Created | 15 tests — see table below |
+| `production-ready.md` | Updated | Phase 08 table all rows marked ✅ done; library map updated |
+| `notebook-to-production-steps.md` | Updated | Phase 08 section appended |
+
+### Tests created — `tests/unit/test_prompts.py` (15 tests)
+
+| Test class | Test | Assertion |
+|------------|------|-----------|
+| `TestLoadPrompt` | `test_rag_contains_question` | `load_prompt("rag", ...)` returns non-empty string containing the question |
+| `TestLoadPrompt` | `test_beginner_contains_question` | `load_prompt("beginner", ...)` returns non-empty string containing the question |
+| `TestLoadPrompt` | `test_expert_returns_nonempty` | `load_prompt("expert", ...)` returns non-empty string |
+| `TestLoadPrompt` | `test_quiz_contains_quiz_marker` | `load_prompt("quiz", ...)` contains `"QUIZ"` |
+| `TestLoadPrompt` | `test_interview_returns_nonempty` | `load_prompt("interview", ...)` returns non-empty string |
+| `TestLoadPrompt` | `test_lecture_notes_returns_nonempty` | `load_prompt("lecture_notes", ...)` returns non-empty string |
+| `TestLoadPrompt` | `test_explain_no_kwargs` | `load_prompt("explain")` returns non-empty string with no required kwargs |
+| `TestLoadPrompt` | `test_explain_level_injected` | custom `level` appears in the rendered explain prompt |
+| `TestLoadPrompt` | `test_explain_question_injected` | optional `question` kwarg appears in rendered explain prompt |
+| `TestLoadPrompt` | `test_unknown_template_raises` | `load_prompt("nonexistent")` raises `jinja2.exceptions.TemplateNotFound` |
+| `TestLoadPrompt` | `test_chunks_rendered_in_rag` | RAG prompt includes chunk `source` and `text` content |
+| `TestModes` | `test_modes_is_dict` | `MODES` is a `dict` |
+| `TestModes` | `test_modes_has_required_keys` | `MODES` contains `beginner`, `expert`, `quiz`, `lecture_notes`, `interview`, `explain` |
+| `TestModes` | `test_all_rag_modes_loadable` | every non-explain mode renders to a non-empty string via `load_prompt` |
+| `TestModes` | `test_explain_mode_loadable` | `load_prompt(MODES["explain"])` renders to a non-empty string |
+
+---
+
+## [Phase 07] — Figure Extraction & VLM — 2026-06-05
+
+**Commit:** `45e7a3b`
+**Tutorial notebook:** `notebooks/tutorials/2026-05-25-phase07-figure-extraction-and-vlm.ipynb`
+**Production notebook:** `notebooks/production/2026-05-25-phase07-figure-extraction-and-vlm.ipynb`
+
+### Changed files
+
+| File | Change | Notes |
+|------|--------|-------|
+| `src/mrta/core/schemas.py` | Updated | `FigureRecord` model added — `doc_id`, `source`, `page`, `figure_index`, `image_bytes: bytes`; `to_pil()` method converts bytes to `PIL.Image.Image` |
+| `src/mrta/ingestion/figure_extractor.py` | Created | `extract_figures(pdf_path) -> list[FigureRecord]`; uses `_doc_id` from `pdf_loader`; stores PNG bytes in-memory — no disk writes |
+| `src/mrta/multimodal/clip_embedder.py` | Created | `CLIPEmbedder.embed_image(Image)` / `embed_text(str)`; lazy-imports `open_clip`; returns L2-normalised float32 `(512,)` vectors |
+| `src/mrta/multimodal/vlm_client.py` | Created | `VLMClient.caption(Image, prompt)`; reads `settings.ollama_vlm_model`; converts PIL → PNG bytes → base64 → `ollama.chat` |
+| `src/mrta/multimodal/__init__.py` | Updated | Exports `CLIPEmbedder`, `VLMClient` |
+| `src/mrta/ingestion/__init__.py` | Updated | Adds `extract_figures` alongside `load_pdf`, `chunk_pdf` |
+| `src/mrta/__init__.py` | Updated | `FigureRecord`, `extract_figures`, `CLIPEmbedder`, `VLMClient` added to public API |
+| `notebooks/production/…phase07….ipynb` | Updated | Cells [1], [5], [9], [13] replaced with library imports; cells [7], [11], [15], [17] kept inline as teaching demos |
+| `tests/unit/test_figure_extractor.py` | Created | 5 tests — see table below |
+| `tests/unit/test_clip_embedder.py` | Created | 5 tests (skipped if `open_clip` absent) — see table below |
+| `production-ready.md` | Updated | Phase 07 table all rows marked ✅ done; library map updated |
+| `notebook-to-production-steps.md` | Updated | Phase 07 section appended |
+
+### Tests created — `tests/unit/test_figure_extractor.py` (5 tests)
+
+| Test class | Test | Assertion |
+|------------|------|-----------|
+| — | `test_extract_figures_returns_list` | `extract_figures(sample.pdf)` returns a `list` |
+| — | `test_extract_figures_items_are_figure_records` | every item is a `FigureRecord` instance |
+| — | `test_figure_record_image_bytes_non_empty` | `image_bytes` is non-empty for every record |
+| — | `test_figure_record_page_and_index_positive` | `page >= 1` and `figure_index >= 1` for every record |
+| — | `test_to_pil_returns_pil_image` | `to_pil()` returns `PIL.Image.Image` |
+
+### Tests created — `tests/unit/test_clip_embedder.py` (5 tests, skipped if `open_clip` absent)
+
+| Test class | Test | Assertion |
+|------------|------|-----------|
+| — | `test_embed_image_shape` | `embed_image(1×1 white image)` returns shape `(512,)` |
+| — | `test_embed_image_dtype` | embedding dtype is `float32` |
+| — | `test_embed_image_l2_norm` | L2 norm is `~1.0` within `1e-5` |
+| — | `test_embed_text_shape_and_norm` | `embed_text(str)` returns shape `(512,)` with norm `~1.0` |
+| — | `test_image_text_dot_product_positive` | image and matching text embeddings have positive dot product |
+
+---
+
+## [Phase 06] — Streamlit Frontend — 2026-06-05
+
+**Commit:** `087ada3`
+**Tutorial notebook:** `notebooks/tutorials/2026-05-25-phase06-streamlit-frontend.ipynb`
+**Production notebook:** `notebooks/production/2026-05-25-phase06-streamlit-frontend.ipynb`
+
+### Changed files
+
+| File | Change | Notes |
+|------|--------|-------|
+| `apps/streamlit/app.py` | Updated | Full Streamlit UI replacing 7-line scaffold — sidebar upload + doc list, mode radio (6 teaching modes), question input, k slider, answer + cited pages + chunks expander; four API contract fixes: `k` → `top_k`, `cited_pages` derived from `sources`, `model` removed, `retrieved` → `sources` |
+| `notebooks/production/…phase06….ipynb` | Updated | Cell [5] replaced with comment pointing to `apps/streamlit/app.py`; cell [1] header → "Production note (active)" |
+| `production-ready.md` | Updated | Phase 06 `apps/streamlit/app.py` row marked ✅ done |
+| `notebook-to-production-steps.md` | Updated | Phase 06 section appended |
+
+### Tests
+
+No new tests added. Streamlit UI has no unit-testable logic — correctness is covered by the Phase 05 API tests (`tests/unit/test_api.py`).
+
+---
+
+## [Phase 05] — FastAPI Backend — 2026-06-05
+
+**Commit:** `f66426c`
+**Tutorial notebook:** `notebooks/tutorials/2026-05-25-phase05-fastapi-backend.ipynb`
+**Production notebook:** `notebooks/production/2026-05-25-phase05-fastapi-backend.ipynb`
+
+### Changed files
+
+| File | Change | Notes |
+|------|--------|-------|
+| `apps/api/schemas/ask.py` | Created | `AskRequest` (`question`, `top_k`), `SourceChunk` (`page`, `chunk_id`, `preview`), `AskResponse` Pydantic models |
+| `apps/api/schemas/upload.py` | Created | `UploadResponse` schema — `doc_id`, `source`, `n_pages`, `n_chunks` |
+| `apps/api/schemas/documents.py` | Created | `DocumentInfo` schema — same fields as `UploadResponse` |
+| `apps/api/schemas/__init__.py` | Updated | Re-exports all five schema classes |
+| `apps/api/deps.py` | Created | `get_store(request)` and `get_llm(request)` FastAPI dependency functions — read from `app.state`; importable for `dependency_overrides` in tests |
+| `apps/api/routers/ask.py` | Created | `POST /ask` — calls `rag_query` directly; maps `list[Chunk]` to `list[SourceChunk]` |
+| `apps/api/routers/upload.py` | Created | `POST /upload` — validates `.pdf` extension, calls `chunk_pdf`, adds to store |
+| `apps/api/routers/documents.py` | Created | `GET /documents` — aggregates `store._chunks` by `doc_id` into `list[DocumentInfo]` |
+| `apps/api/main.py` | Updated | Lifespan creates `Embedder`, `VectorStore`, `LLMClient` on `app.state`; includes three routers; `/health` kept |
+| `notebooks/production/…phase05….ipynb` | Updated | Cells [5], [7] replaced with comments; cell [1] header → "active" |
+| `.github/workflows/ci.yml` | Updated | Lint targets extended to `apps/`; install step changed to `.[dev,api]` |
+| `tests/unit/test_api.py` | Created | 13 tests — see table below |
+| `production-ready.md` | Updated | Phase 05 table all rows marked ✅ done |
+| `notebook-to-production-steps.md` | Updated | Phase 05 section appended |
+
+### Tests created — `tests/unit/test_api.py` (13 tests)
+
+| Test class | Test | Assertion |
+|------------|------|-----------|
+| `TestHealth` | `test_returns_200` | `GET /health` returns status 200 |
+| `TestHealth` | `test_returns_ok` | `GET /health` body is `{"status": "ok"}` |
+| `TestAsk` | `test_valid_payload_returns_200` | `POST /ask` with valid payload returns 200 |
+| `TestAsk` | `test_response_has_answer_and_sources` | response JSON has `answer` and `sources` keys |
+| `TestAsk` | `test_short_question_returns_422` | question shorter than 3 chars returns 422 |
+| `TestAsk` | `test_sources_contain_page_and_chunk_id` | each source has `page` and `chunk_id` |
+| `TestDocuments` | `test_returns_200` | `GET /documents` returns 200 |
+| `TestDocuments` | `test_returns_list` | response is a `list` |
+| `TestDocuments` | `test_returns_document_info_shape` | each item has `doc_id`, `source`, `n_pages`, `n_chunks` |
+| `TestDocuments` | `test_aggregates_chunks_by_doc_id` | two chunks with same `doc_id` aggregate to one `DocumentInfo` |
+| `TestUpload` | `test_pdf_upload_returns_200` | `POST /upload` with a PDF returns 200 |
+| `TestUpload` | `test_pdf_upload_returns_expected_fields` | response has `doc_id`, `n_pages`, `n_chunks` with correct chunk count |
+| `TestUpload` | `test_non_pdf_returns_400` | non-PDF file returns 400 |
+
+---
+
+## [Phase 04] — End-to-End RAG Pipeline — 2026-06-05
+
+**Commit:** `64f58e4`
+**Tutorial notebook:** `notebooks/tutorials/2026-05-25-phase04-rag-pipeline.ipynb`
+**Production notebook:** `notebooks/production/2026-05-25-phase04-rag-pipeline.ipynb`
+
+### Changed files
+
+| File | Change | Notes |
+|------|--------|-------|
+| `src/mrta/core/llm.py` | Created | `LLMClient` wrapping Ollama; `chat(messages: list[dict], temperature) -> str`; returns plain string (not a dict) |
+| `src/mrta/core/rag_pipeline.py` | Created | `rag_query(question, vector_store, llm, top_k) -> dict`; returns `{"answer", "sources": list[Chunk], "latency_s"}` |
+| `src/mrta/prompts/__init__.py` | Created | `load_prompt(name, **kwargs)` using Jinja2 `PackageLoader`; renders `src/mrta/prompts/{name}.j2` |
+| `src/mrta/prompts/rag.j2` | Created | RAG prompt template — system role, grounding rule, context block with chunk source/page/text, question, citation format |
+| `src/mrta/observability/logging.py` | Created | `StructuredLogger.log_run()` appends one JSON line to `settings.log_file`; creates parent directories automatically |
+| `src/mrta/observability/__init__.py` | Updated | Exports `StructuredLogger` |
+| `src/mrta/__init__.py` | Updated | `LLMClient`, `rag_query`, `load_prompt`, `StructuredLogger` added to public API |
+| `notebooks/production/…phase04….ipynb` | Updated | Cells [4], [6], [8], [10], [16] replaced with library imports; cell [1] header → "active" |
+| `tests/unit/test_rag_pipeline.py` | Created | 12 tests — see table below |
+| `production-ready.md` | Updated | Phase 04 table all rows marked ✅ done; library map updated |
+| `notebook-to-production-steps.md` | Updated | Phase 04 section appended |
+
+### Tests created — `tests/unit/test_rag_pipeline.py` (12 tests)
+
+| Test class | Test | Assertion |
+|------------|------|-----------|
+| `TestLLMClient` | `test_chat_returns_mocked_text` | `LLMClient.chat()` returns the mocked response content string |
+| `TestLLMClient` | `test_chat_returns_str` | return type is `str` |
+| `TestRagQuery` | `test_returns_expected_keys` | result dict has `answer`, `sources`, `latency_s` keys |
+| `TestRagQuery` | `test_answer_is_str` | `result["answer"]` is `str` |
+| `TestRagQuery` | `test_sources_are_chunk_instances` | every source is a `Chunk` instance |
+| `TestRagQuery` | `test_top_k_1_returns_one_source` | `top_k=1` returns exactly 1 source |
+| `TestRagQuery` | `test_latency_is_non_negative_float` | `latency_s >= 0` and is `float` |
+| `TestLoadPrompt` | `test_returns_nonempty_string` | `load_prompt("rag", ...)` returns non-empty string |
+| `TestLoadPrompt` | `test_contains_question` | rendered prompt contains the question text |
+| `TestLoadPrompt` | `test_renders_chunk_content` | rendered prompt includes chunk text |
+| `TestStructuredLogger` | `test_appends_one_line` | `log_run()` appends exactly one line to the log file |
+| `TestStructuredLogger` | `test_json_contains_question_and_answer` | logged JSON has `question` and `answer` keys |
+
+---
+
 ## [Phase 03] — Embeddings & FAISS — 2026-06-05
 
 **Commit:** pending  
