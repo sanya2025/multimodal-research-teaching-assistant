@@ -101,5 +101,7 @@ class TestChunkPdf:
         assert len(chunks) > 0
 
     def test_unknown_strategy_raises(self, pdf) -> None:
-        with pytest.raises(ValueError, match="Unknown strategy"):
+        from mrta.core.exceptions import IngestionError
+
+        with pytest.raises(IngestionError, match="Unknown strategy"):
             chunk_pdf(pdf, strategy="nonexistent")

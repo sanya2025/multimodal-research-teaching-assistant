@@ -1,6 +1,14 @@
 """mrta — Multimodal AI Research & Teaching Assistant library."""
 
 from mrta.core.config import Settings, settings
+from mrta.core.exceptions import (
+    EmbeddingError,
+    EvaluationError,
+    IngestionError,
+    LLMError,
+    MRTAError,
+    RetrievalError,
+)
 from mrta.core.llm import LLMClient
 from mrta.core.rag_pipeline import rag_query
 from mrta.core.schemas import Chunk, EvalReport, FigureRecord, PageRecord, PdfDocument
@@ -25,6 +33,12 @@ __version__ = "0.1.0"
 
 __all__ = [
     "__version__",
+    "MRTAError",
+    "IngestionError",
+    "EmbeddingError",
+    "RetrievalError",
+    "LLMError",
+    "EvaluationError",
     "Settings",
     "settings",
     "PageRecord",

@@ -4,6 +4,8 @@ from __future__ import annotations
 
 import numpy as np
 
+from mrta.core.exceptions import EmbeddingError
+
 
 class Embedder:
     """Encodes text to L2-normalized float32 vectors.
@@ -77,7 +79,12 @@ class Embedder:
                 json={"model": self._model_name, "prompt": text},
                 timeout=60.0,
             )
-            resp.raise_for_status()
+            try:
+                resp.raise_for_status()
+            except httpx.HTTPStatusError as e:
+                raise EmbeddingError(
+                    f"Ollama embed request failed ({e.response.status_code}): {e}"
+                ) from e
             vecs.append(resp.json()["embedding"])
 
         arr = np.array(vecs, dtype="float32")

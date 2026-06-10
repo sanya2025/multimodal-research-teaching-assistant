@@ -8,6 +8,8 @@ from typing import TYPE_CHECKING
 
 import ollama
 
+from mrta.core.exceptions import LLMError
+
 if TYPE_CHECKING:
     from PIL import Image
 
@@ -32,15 +34,18 @@ class VLMClient:
         image.save(buf, format="PNG")
         img_b64 = base64.b64encode(buf.getvalue()).decode("utf-8")
 
-        resp = ollama.chat(
-            model=self._model,
-            messages=[
-                {
-                    "role": "user",
-                    "content": prompt or self._DEFAULT_PROMPT,
-                    "images": [img_b64],
-                }
-            ],
-            options={"temperature": 0.2},
-        )
+        try:
+            resp = ollama.chat(
+                model=self._model,
+                messages=[
+                    {
+                        "role": "user",
+                        "content": prompt or self._DEFAULT_PROMPT,
+                        "images": [img_b64],
+                    }
+                ],
+                options={"temperature": 0.2},
+            )
+        except Exception as e:
+            raise LLMError(f"Ollama VLM call failed (model={self._model}): {e}") from e
         return resp["message"]["content"]

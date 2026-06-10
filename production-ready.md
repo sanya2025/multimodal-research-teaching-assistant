@@ -549,4 +549,112 @@ After each step: run `MRTA_ENV=test pytest`, commit.
 | `evaluation/eval_pipeline.py` | ✅ complete (`run_eval` returning `EvalReport`) |
 | `evaluation/metrics.py` | ✅ complete (`answer_relevance`, `faithfulness`, `citation_correctness`, `hallucination_rate`) |
 | `observability/logging.py` | ✅ complete |
-| `observability/tracing.py` | stub |
+
+---
+
+## feature/exception-hierarchy
+
+### Understanding
+
+**Current implementation:**
+
+- `src/mrta/core/exceptions.py` is a stub — one docstring, nothing else.
+- One explicit bare raise in the library: `chunker.py:158` → `ValueError`.
+- Five implicit failure points where third-party errors currently escape unwrapped: `fitz.open`
+  (IngestionError), `httpx.raise_for_status` in `embedder.py` (EmbeddingError),
+  `faiss.read_index` in `vector_store.py` (RetrievalError), `ollama.chat` in `llm.py`
+  and `vlm_client.py` (LLMError).
+- The API upload router already raises `HTTPException` for non-PDF — correct, that's a
+  boundary concern, not a library concern.
+
+**Relevant files:**
+
+- `src/mrta/core/exceptions.py` — fill in
+- `src/mrta/ingestion/chunker.py` — replace `ValueError`
+- `src/mrta/ingestion/pdf_loader.py` — wrap `fitz.open`
+- `src/mrta/retrieval/embedder.py` — wrap `httpx.raise_for_status`
+- `src/mrta/retrieval/vector_store.py` — wrap `faiss.read_index`
+- `src/mrta/core/llm.py` — wrap `ollama.chat`
+- `src/mrta/multimodal/vlm_client.py` — wrap `ollama.chat`
+- `src/mrta/__init__.py` — export all exception classes
+- `tests/unit/test_exceptions.py` — new, covers hierarchy + each raise site
+
+**Risks:**
+
+- Wrapping too broadly hides the original traceback. Mitigation: always use
+  `raise XError("...") from e` to preserve `__cause__`.
+- Changing `ValueError` to `IngestionError` is a breaking change for any caller catching
+  `ValueError`. Acceptable pre-1.0 with no external callers.
+- `ocr_page_if_needed` has an intentional silent fallback — leave it alone.
+- `clip_embedder.py` constructor errors come from optional deps not being installed;
+  wrapping them as `EmbeddingError` would obscure the "install [multimodal]" message.
+  Leave it unwrapped.
+
+### Hierarchy
+
+```python
+MRTAError(Exception)       # base
+├── IngestionError         # PDF load, chunking, figure extraction
+├── EmbeddingError         # sentence-transformers, Ollama embed, CLIP
+├── RetrievalError         # FAISS operations (load, search)
+├── LLMError               # ollama.chat in LLMClient + VLMClient
+└── EvaluationError        # eval_pipeline, metrics (future-proofing)
+```
+
+No extra fields — just subclasses. Message + `raise ... from e` pattern carries all context.
+
+### Steps
+
+**1 — Fill in `exceptions.py`** — define `MRTAError` + five subclasses, all exported.
+
+**2 — `chunker.py:158`** — replace `ValueError` with `IngestionError`.
+
+**3 — `pdf_loader.py:load_pdf`** — wrap `fitz.open`:
+
+```python
+try:
+    doc = fitz.open(path)
+except Exception as e:
+    raise IngestionError(f"Cannot open PDF {path}: {e}") from e
+```
+
+**4 — `embedder.py:_embed_ollama`** — wrap `raise_for_status`:
+
+```python
+try:
+    resp.raise_for_status()
+except httpx.HTTPStatusError as e:
+    raise EmbeddingError(f"Ollama embed request failed ({e.response.status_code}): {e}") from e
+```
+
+**5 — `vector_store.py:load`** — wrap `faiss.read_index`:
+
+```python
+try:
+    store._index = faiss.read_index(str(p / "index.faiss"))
+except Exception as e:
+    raise RetrievalError(f"Cannot load FAISS index from {p}: {e}") from e
+```
+
+**6 — `llm.py` and `vlm_client.py`** — wrap `ollama.chat`:
+
+```python
+try:
+    resp = ollama.chat(...)
+except Exception as e:
+    raise LLMError(f"Ollama chat failed (model={self._model}): {e}") from e
+```
+
+**7 — `src/mrta/__init__.py`** — add all five concrete classes + base to `__all__`.
+
+**8 — `tests/unit/test_exceptions.py`** — 9 tests:
+
+- Hierarchy: each subclass `isinstance` of `MRTAError`; `MRTAError` is an `Exception`
+- One test per wrapped raise site using mocks; assert correct subclass raised and `__cause__` set
+- Update the existing `chunker` test that asserts `ValueError` → assert `IngestionError`
+
+### Expected outcome
+
+- `from mrta import IngestionError, LLMError` etc. works.
+- All third-party errors at system boundaries re-raised with a typed mrta exception and preserved `__cause__`.
+- 9 new tests; all 107 existing tests continue to pass.

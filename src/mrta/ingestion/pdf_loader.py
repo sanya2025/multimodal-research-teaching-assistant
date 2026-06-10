@@ -7,6 +7,7 @@ from pathlib import Path
 
 import fitz  # PyMuPDF
 
+from mrta.core.exceptions import IngestionError
 from mrta.core.schemas import PageRecord, PdfDocument
 
 
@@ -17,7 +18,10 @@ def _doc_id(path: Path) -> str:
 
 def load_pdf(path: str | Path) -> PdfDocument:
     path = Path(path)
-    doc = fitz.open(path)
+    try:
+        doc = fitz.open(path)
+    except Exception as e:
+        raise IngestionError(f"Cannot open PDF {path}: {e}") from e
     doc_id = _doc_id(path)
     pages = []
     for i, page in enumerate(doc, start=1):
