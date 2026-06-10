@@ -73,6 +73,7 @@ exports/
 # notebooks
 # ==========================================================
 notebooks/scratch/
+notebooks/tutorials/
 
 # ==========================================================
 # Temporary Files
