@@ -803,3 +803,147 @@ def test_malformed_pdf_returns_422(self, client): ...
 - Oversized uploads rejected before disk write.
 - Corrupt PDFs return 422, not 500.
 - 4 new tests added to `TestUpload` (total 7); all existing tests continue to pass.
+
+---
+
+## chore/ci-quality-gates
+
+### Understanding
+
+**Current CI (`ci.yml`) — what exists:**
+
+- One job (`test`) with 5 steps: checkout, Python 3.11 setup, `pip install -e ".[dev,api]"`,
+  ruff lint, black format check, pytest.
+- No type checking (mypy/pyright).
+- No dependency vulnerability scanning (pip-audit).
+- No FastAPI smoke test (health endpoint is never hit in CI).
+- No Docker build check (Dockerfile.api could silently break).
+
+**Relevant files:**
+
+- `.github/workflows/ci.yml` — the only CI file; all changes go here
+- `docker/Dockerfile.api` — used by the Docker build check step
+- `pyproject.toml` — add `mypy` and `pip-audit` to the `dev` optional group
+
+**Risks:**
+
+- `mypy` on a mixed codebase often surfaces pre-existing annotation gaps. Run with
+  `--ignore-missing-imports` and `--no-strict-optional` initially to avoid blocking CI on
+  third-party stubs.
+- `pip-audit` exits non-zero when vulnerabilities are found. Pin a `--ignore-vuln` only
+  if a CVE has no fix yet and is documented.
+- Docker build in CI requires no secrets — `Dockerfile.api` uses only `pip install` and
+  `apt-get`, so it is safe to build without `.env`.
+- FastAPI smoke test must not depend on Ollama or FAISS being live. Use
+  `MRTA_ENV=test uvicorn ... &` + `curl /health` — the lifespan patches in test env
+  already skip model loading.
+- Adding new CI steps increases total run time. Each new step is estimated: mypy ~30s,
+  pip-audit ~20s, Docker build ~90s, smoke test ~15s. Total addition: ~2.5 min.
+
+### Design
+
+**New CI job layout** — keep the existing `test` job unchanged; add three new jobs that
+run in parallel after `test` passes:
+
+```text
+test  (existing — lint + format + pytest)
+  ├── type-check   (mypy on src/ apps/)
+  ├── audit        (pip-audit)
+  └── docker       (docker build + smoke test)
+```
+
+Each new job uses `needs: test` so they only run on a green test suite.
+
+**mypy configuration** — add to `pyproject.toml`:
+
+```toml
+[tool.mypy]
+python_version = "3.11"
+ignore_missing_imports = true
+exclude = ["tests/", "notebooks/"]
+```
+
+**pip-audit** — run as a standalone step; no configuration file needed.
+
+**Docker smoke test** — build `Dockerfile.api`, start container with `MRTA_ENV=test`,
+hit `GET /health`, assert `{"status": "ok"}`, stop container.
+
+### Steps
+
+**1 — `pyproject.toml`** — add `mypy` and `pip-audit` to the `dev` group:
+
+```toml
+dev = [
+    ...
+    "mypy>=1.10.0",
+    "pip-audit>=2.7.0",
+]
+```
+
+Also add `[tool.mypy]` section (see Design above).
+
+**2 — `.github/workflows/ci.yml`** — add three jobs after the existing `test` job:
+
+```yaml
+  type-check:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4.2.2
+      - uses: actions/setup-python@v5.4.0
+        with:
+          python-version: "3.11"
+          cache: "pip"
+      - run: pip install -e ".[dev,api]"
+      - name: Type check (mypy)
+        run: mypy src/ apps/ --ignore-missing-imports
+
+  audit:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4.2.2
+      - uses: actions/setup-python@v5.4.0
+        with:
+          python-version: "3.11"
+          cache: "pip"
+      - run: pip install -e ".[dev,api]"
+      - name: Vulnerability scan (pip-audit)
+        # --skip-editable: mrta is a local editable install, not on PyPI
+        # --ignore-vuln CVE-2025-3000: torch vulnerability with no fix available yet
+        run: pip install --upgrade pip && pip install -e ".[dev,api]"
+        run: pip-audit --skip-editable --ignore-vuln CVE-2025-3000
+
+  docker:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4.2.2
+      - name: Build API image
+        run: docker build -f docker/Dockerfile.api -t mrta-api:ci .
+      - name: Smoke test /health
+        run: |
+          docker run -d --name mrta-ci -e MRTA_ENV=test -p 8000:8000 mrta-api:ci
+          for i in 1 2 3 4 5; do
+            sleep 6
+            curl --fail --silent http://localhost:8000/health && docker stop mrta-ci && exit 0
+            echo "Attempt $i failed, retrying..."
+          done
+          echo "=== Container logs ==="
+          docker logs mrta-ci
+          docker stop mrta-ci
+          exit 1
+```
+
+### Actual outcome (shipped)
+
+- CI has 4 jobs: `test`, `type-check`, `audit`, `docker`. ✅
+- `type-check` surfaced 6 pre-existing mypy annotation gaps in 4 source files — all fixed as part of this branch:
+  - `src/mrta/core/config.py` — `settings_customise_sources` signature
+  - `src/mrta/retrieval/embedder.py` — `SentenceTransformer | None` annotation + `TYPE_CHECKING` guard
+  - `src/mrta/retrieval/vector_store.py` — `_index: faiss.Index` annotation
+  - `apps/api/routers/upload.py` — `str | None` guard on `file.filename`
+- `audit` required `--skip-editable` (mrta not on PyPI) and `--ignore-vuln CVE-2025-3000` (torch, no fix available). pip upgraded to 26.1.2 to clear PYSEC-2026-196.
+- `docker` required `COPY LICENSE ./` and `COPY README.md ./` in `Dockerfile.api` — hatchling requires both at build time. Smoke test uses a 5-attempt retry loop with container log dump on failure.
+- No new test files.
+- All 119 existing tests continue to pass.

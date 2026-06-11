@@ -106,6 +106,8 @@ dev = [
     "pandas>=2.2.0",
     "tqdm>=4.66.0",
     "watchdog>=4.0.0",
+    "mypy>=1.10.0",
+    "pip-audit>=2.7.0",
 ]
 
 # Everything
@@ -127,6 +129,11 @@ target-version = "py311"
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP"]
+
+[tool.mypy]
+python_version = "3.11"
+ignore_missing_imports = true
+exclude = ["tests/", "notebooks/"]
 
 [tool.black]
 line-length = 100

@@ -81,7 +81,7 @@ class Settings(BaseSettings):
         init_settings: PydanticBaseSettingsSource,
         env_settings: PydanticBaseSettingsSource,
         dotenv_settings: PydanticBaseSettingsSource,
-        **kwargs: Any,
+        file_secret_settings: PydanticBaseSettingsSource,
     ) -> tuple[PydanticBaseSettingsSource, ...]:
         # Priority: init > env vars > .env > YAML > Python defaults
         return (init_settings, env_settings, dotenv_settings, _YamlConfigSource(settings_cls))

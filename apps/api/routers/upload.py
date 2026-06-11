@@ -21,8 +21,10 @@ PDF_MAGIC = b"%PDF"
 @router.post("/upload", response_model=UploadResponse)
 async def upload(file: UploadFile = File(...), store=Depends(get_store)) -> UploadResponse:
     """Upload a PDF, chunk it, embed it, and persist the updated store."""
+    filename = file.filename or ""
+
     # 1. Extension check
-    if not file.filename.lower().endswith(".pdf"):
+    if not filename.lower().endswith(".pdf"):
         raise HTTPException(status_code=400, detail="Only PDF files are accepted.")
 
     # 2. Read once — reused for size and magic-byte checks
@@ -37,7 +39,7 @@ async def upload(file: UploadFile = File(...), store=Depends(get_store)) -> Uplo
         raise HTTPException(status_code=415, detail="File does not appear to be a valid PDF.")
 
     # 5. Safe filename — strip any directory components
-    safe_name = Path(file.filename).name
+    safe_name = Path(filename).name
     raw_dir = Path("data/raw")
     raw_dir.mkdir(parents=True, exist_ok=True)
     path = raw_dir / safe_name

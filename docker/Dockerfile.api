@@ -9,6 +9,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 # Copy package definition first for better layer caching
 COPY pyproject.toml ./
+COPY LICENSE ./
+COPY README.md ./
 COPY src/ ./src/
 
 # Install library + API dependencies only (no dev/eval/llm extras)

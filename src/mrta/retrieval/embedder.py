@@ -2,9 +2,14 @@
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 import numpy as np
 
 from mrta.core.exceptions import EmbeddingError
+
+if TYPE_CHECKING:
+    from sentence_transformers import SentenceTransformer
 
 
 class Embedder:
@@ -19,7 +24,7 @@ class Embedder:
         from mrta.core.config import settings
 
         self._model_name: str = model_name or settings.embedding_model
-        self._st_model = None
+        self._st_model: SentenceTransformer | None = None
         self._dim_cache: int | None = None
         # "/" in name → HuggingFace / sentence-transformers path; otherwise → Ollama
         self._use_st: bool = "/" in self._model_name
@@ -35,11 +40,14 @@ class Embedder:
         if self._dim_cache is not None:
             return self._dim_cache
         if self._use_st:
-            self._dim_cache = self._ensure_st().get_embedding_dimension()
+            dim_val = self._ensure_st().get_embedding_dimension()
+            assert dim_val is not None
+            d = int(dim_val)
         else:
             # Probe with a single embed to discover dim
-            self._dim_cache = self._embed_ollama(["probe"]).shape[1]
-        return self._dim_cache
+            d = int(self._embed_ollama(["probe"]).shape[1])
+        self._dim_cache = d
+        return d
 
     def embed(self, texts: list[str]) -> np.ndarray:
         """Return float32 array of shape (len(texts), dim), L2-normalized."""
@@ -60,7 +68,7 @@ class Embedder:
     # Private helpers
     # ------------------------------------------------------------------
 
-    def _ensure_st(self) -> object:
+    def _ensure_st(self) -> SentenceTransformer:
         if self._st_model is None:
             from sentence_transformers import SentenceTransformer
 
