@@ -148,3 +148,39 @@ class TestUpload:
     def test_non_pdf_returns_400(self, client: TestClient) -> None:
         r = client.post("/upload", files={"file": ("note.txt", b"hello", "text/plain")})
         assert r.status_code == 400
+
+    def test_oversized_file_returns_413(self, client: TestClient) -> None:
+        big = b"%PDF" + b"x" * (20 * 1024 * 1024 + 1)
+        r = client.post("/upload", files={"file": ("big.pdf", big, "application/pdf")})
+        assert r.status_code == 413
+
+    def test_non_pdf_magic_bytes_returns_415(self, client: TestClient) -> None:
+        r = client.post(
+            "/upload",
+            files={"file": ("fake.pdf", b"PK\x03\x04not-a-pdf", "application/pdf")},
+        )
+        assert r.status_code == 415
+
+    def test_path_traversal_filename_is_sanitised(self, client: TestClient) -> None:
+        pdf_path = Path("tests/fixtures/sample.pdf")
+        with patch("apps.api.routers.upload.chunk_pdf") as mock_chunk:
+            mock_chunk.return_value = FAKE_CHUNKS
+            with pdf_path.open("rb") as f:
+                r = client.post(
+                    "/upload",
+                    files={"file": ("../../evil.pdf", f, "application/pdf")},
+                )
+        assert r.status_code == 200
+        assert r.json()["source"] == "evil.pdf"
+
+    def test_malformed_pdf_returns_422(self, client: TestClient) -> None:
+        with patch("apps.api.routers.upload.load_pdf") as mock_load:
+            from mrta.core.exceptions import IngestionError
+
+            mock_load.side_effect = IngestionError("Cannot open PDF")
+            r = client.post(
+                "/upload",
+                files={"file": ("broken.pdf", b"%PDF-broken", "application/pdf")},
+            )
+        assert r.status_code == 422
+        assert r.json()["code"] == "malformed_pdf"

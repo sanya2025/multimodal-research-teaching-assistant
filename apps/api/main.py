@@ -5,12 +5,14 @@ from __future__ import annotations
 from contextlib import asynccontextmanager
 from pathlib import Path
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
+from fastapi.responses import JSONResponse
 
 from apps.api.routers import ask as ask_router
 from apps.api.routers import documents as documents_router
 from apps.api.routers import upload as upload_router
 from mrta.core.config import settings
+from mrta.core.exceptions import IngestionError
 from mrta.core.llm import LLMClient
 from mrta.retrieval.embedder import Embedder
 from mrta.retrieval.vector_store import VectorStore
@@ -36,6 +38,14 @@ app = FastAPI(
     description="Upload PDFs, ask grounded questions, explain figures.",
     lifespan=lifespan,
 )
+
+
+@app.exception_handler(IngestionError)
+async def ingestion_error_handler(request: Request, exc: IngestionError) -> JSONResponse:
+    return JSONResponse(
+        status_code=422,
+        content={"detail": str(exc), "code": "malformed_pdf"},
+    )
 
 app.include_router(ask_router.router)
 app.include_router(upload_router.router)
