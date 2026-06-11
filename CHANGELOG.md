@@ -5,6 +5,27 @@ Each entry maps tutorial notebook cells → `src/mrta/` modules → production n
 
 ---
 
+## [chore/ci-quality-gates] — CI Quality Gates — 2026-06-10
+
+**Commit:** `TBD`
+
+Strengthens CI from a single lint+test job into four parallel jobs: the existing `test`
+job plus `type-check` (mypy), `audit` (pip-audit), and `docker` (build + smoke test).
+Each new job runs only after `test` passes, keeping the fast-fail guarantee.
+
+### Changed files
+
+| File | Change | Notes |
+|------|--------|-------|
+| `.github/workflows/ci.yml` | Updated | 3 new jobs: `type-check`, `audit`, `docker` |
+| `pyproject.toml` | Updated | `mypy>=1.10.0` and `pip-audit>=2.7.0` added to `dev` group; `[tool.mypy]` section added |
+
+### No new test files
+
+This is pure CI/tooling configuration — no source code changes, no new pytest tests.
+
+---
+
 ## [feat/upload-validation] — Upload Validation & Hardening — 2026-06-10
 
 **Commit:** `ffa5171`

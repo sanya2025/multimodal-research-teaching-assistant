@@ -23,7 +23,7 @@ class VectorStore:
         import faiss
 
         self._embedder = embedder
-        self._index = faiss.IndexFlatIP(embedder.dim)
+        self._index: faiss.Index = faiss.IndexFlatIP(embedder.dim)
         self._chunks: list[Chunk] = []
 
     def add(self, chunks: list[Chunk]) -> None:
