@@ -32,3 +32,58 @@ jobs:
         env:
           MRTA_ENV: test
         run: pytest
+
+  type-check:
+    needs: test
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4.2.2
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5.4.0
+        with:
+          python-version: "3.11"
+          cache: "pip"
+
+      - name: Install dependencies
+        run: pip install -e ".[dev,api]"
+
+      - name: Type check (mypy)
+        run: mypy src/ apps/ --ignore-missing-imports
+
+  audit:
+    needs: test
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4.2.2
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5.4.0
+        with:
+          python-version: "3.11"
+          cache: "pip"
+
+      - name: Install dependencies
+        run: pip install -e ".[dev,api]"
+
+      - name: Vulnerability scan (pip-audit)
+        run: pip-audit
+
+  docker:
+    needs: test
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4.2.2
+
+      - name: Build API image
+        run: docker build -f docker/Dockerfile.api -t mrta-api:ci .
+
+      - name: Smoke test /health
+        run: |
+          docker run -d --name mrta-ci -e MRTA_ENV=test -p 8000:8000 mrta-api:ci
+          sleep 5
+          curl --fail http://localhost:8000/health
+          docker stop mrta-ci
