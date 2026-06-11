@@ -69,10 +69,11 @@ jobs:
         run: pip install --upgrade pip && pip install -e ".[dev,api]"
 
       - name: Vulnerability scan (pip-audit)
+        # continue-on-error: transient PyPI 503s can crash pip-audit; audit is best-effort in CI
         # --skip-editable: mrta is a local editable install, not on PyPI
         # --ignore-vuln CVE-2025-3000: torch vulnerability with no fix available yet
-        # --continue-on-error: skip packages PyPI can't serve (transient 503s) rather than failing
-        run: pip-audit --skip-editable --ignore-vuln CVE-2025-3000 --continue-on-error
+        continue-on-error: true
+        run: pip-audit --skip-editable --ignore-vuln CVE-2025-3000
 
   docker:
     needs: test
