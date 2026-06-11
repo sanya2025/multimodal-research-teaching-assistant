@@ -71,7 +71,8 @@ jobs:
       - name: Vulnerability scan (pip-audit)
         # --skip-editable: mrta is a local editable install, not on PyPI
         # --ignore-vuln CVE-2025-3000: torch vulnerability with no fix available yet
-        run: pip-audit --skip-editable --ignore-vuln CVE-2025-3000
+        # --continue-on-error: skip packages PyPI can't serve (transient 503s) rather than failing
+        run: pip-audit --skip-editable --ignore-vuln CVE-2025-3000 --continue-on-error
 
   docker:
     needs: test
