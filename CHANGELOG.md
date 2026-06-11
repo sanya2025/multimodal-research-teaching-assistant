@@ -7,7 +7,7 @@ Each entry maps tutorial notebook cells → `src/mrta/` modules → production n
 
 ## [feat/cross-encoder-reranking] — Cross-Encoder Reranking for RAG — 2026-06-11
 
-**Commit:** `TBD`
+**Commit:** `d3feeb2`
 
 Adds optional cross-encoder reranking to the RAG pipeline. `rag_query()` now accepts
 a `reranker` parameter; when provided, vector-search candidates are re-scored by a
