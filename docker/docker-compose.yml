@@ -13,7 +13,15 @@ services:
     volumes:
       - ../data:/app/data
     depends_on:
-      - ollama
+      ollama:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python", "-c",
+             "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
+      interval: 15s
+      timeout: 5s
+      start_period: 30s
+      retries: 3
 
   streamlit:
     build:
@@ -28,7 +36,15 @@ services:
     volumes:
       - ../data:/app/data
     depends_on:
-      - api
+      api:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python", "-c",
+             "import urllib.request; urllib.request.urlopen('http://localhost:8501/_stcore/health')"]
+      interval: 15s
+      timeout: 5s
+      start_period: 30s
+      retries: 3
 
   ollama:
     image: ollama/ollama:latest
@@ -36,6 +52,12 @@ services:
       - "11434:11434"
     volumes:
       - ollama_models:/root/.ollama
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:11434/api/tags"]
+      interval: 15s
+      timeout: 5s
+      start_period: 60s
+      retries: 5
 
 volumes:
   ollama_models:
