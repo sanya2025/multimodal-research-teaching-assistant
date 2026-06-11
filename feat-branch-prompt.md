@@ -5,7 +5,7 @@ placeholders below.
 
 ---
 
-## feat/<feature-name> — session start
+## feat/`<feature-name>` — session start
 
 I am working on branch `feat/<feature-name>`.
 
@@ -144,7 +144,7 @@ Read these files first before proposing or writing anything:
 
 #### `production-ready.md` section to add
 
-```markdown
+````markdown
 ## chore/docker-healthchecks
 
 ### Understanding
@@ -309,3 +309,219 @@ Pure Docker/Compose configuration — no library or API code changed.
 - Do not change any `src/mrta/` or `apps/` code — only Docker files.
 - Do not create an ADR — this is configuration, not an architectural decision.
 - Test locally with `docker compose up --build` and confirm `docker compose ps` shows `(healthy)` before marking done.
+
+---
+
+---
+
+## feat/cross-encoder-reranking — session start
+
+I am working on branch `feat/cross-encoder-reranking`.
+
+Read these files first before proposing or writing anything:
+
+1. `production-ready.md` — bottom section `## feat/cross-encoder-reranking` (if it exists)
+   gives the agreed Understanding, design, and step-by-step plan.
+2. `CHANGELOG.md` — top entry shows the expected changed-files table and test table for this
+   feature.
+3. `src/mrta/retrieval/vector_store.py` — the `search()` method is the insertion point.
+4. `src/mrta/core/rag_pipeline.py` — `rag_query()` is where the reranker is wired in.
+5. `src/mrta/core/schemas.py` — `Chunk` is the data type flowing through retrieval and reranking.
+6. `tests/unit/test_rag_pipeline.py` — existing pipeline tests that must continue to pass.
+
+---
+
+## Which markdown files to update — and when
+
+### Before implementation (plan phase)
+
+| File | What to add | Where |
+|------|-------------|-------|
+| `production-ready.md` | New `## feat/cross-encoder-reranking` section | Append at the bottom |
+| `CHANGELOG.md` | New `## [feat/cross-encoder-reranking]` entry | Prepend at the top |
+
+#### `production-ready.md` section to add
+
+```markdown
+## feat/cross-encoder-reranking
+
+### Understanding
+
+**Current implementation:**
+
+- `src/mrta/retrieval/` has `embedder.py` and `vector_store.py` — no `reranker.py`.
+- `src/mrta/retrieval/__init__.py` exports only `Embedder` and `VectorStore`.
+- `src/mrta/core/rag_pipeline.py` — `rag_query()` calls `vector_store.search(question, k=top_k)`
+  and passes the results directly to the prompt. No reranking step exists.
+- Cross-encoder reranking is a two-stage pattern: vector search retrieves a broad candidate
+  set (top-k), then a cross-encoder model scores each (query, chunk) pair and re-orders them
+  by relevance. Only the top-n highest-scored chunks are passed to the LLM.
+
+**Relevant files:**
+
+- `src/mrta/retrieval/reranker.py` — create: `Reranker` class wrapping `CrossEncoder`
+- `src/mrta/retrieval/__init__.py` — export `Reranker`
+- `src/mrta/core/rag_pipeline.py` — add optional `reranker` and `rerank_top_n` parameters
+- `pyproject.toml` — add `sentence-transformers` to a new `[reranker]` optional extra
+- `tests/unit/test_reranker.py` — create: unit tests for `Reranker` (mock CrossEncoder)
+
+**Dependencies:**
+
+- `sentence-transformers` provides `CrossEncoder` — add as optional extra `[reranker]` in
+  `pyproject.toml` to keep the default install lightweight.
+- Default model: `cross-encoder/ms-marco-MiniLM-L-6-v2` (small, fast, MRC-tuned).
+- `CrossEncoder` must be mocked in tests — the real model download must not run in CI.
+
+**Risks:**
+
+- `rag_query()` signature change adds parameters — existing callers (API, tests) must still
+  work when `reranker=None` (the default). Do not break the no-reranker path.
+- Model download at construction time makes the `Reranker` expensive to instantiate in tests.
+  Patch `sentence_transformers.CrossEncoder.__init__` and `predict` in the test.
+- `rerank_top_n` must be ≤ `top_k` — if the caller passes a larger value, return as many
+  chunks as available rather than raising. Keep it silent, not a hard error.
+
+### Design
+
+```text
+rag_query(question, vector_store, llm, top_k=5, reranker=None, rerank_top_n=3)
+  │
+  ├── vector_store.search(question, k=top_k)   → list[Chunk]  (broad recall)
+  │
+  ├── [optional] reranker.rerank(question, chunks, top_n=rerank_top_n)
+  │                                             → list[Chunk]  (precision-sorted)
+  │
+  └── load_prompt("rag", chunks=sources, question=question) → LLM → answer
+```
+
+`Reranker` interface:
+
+```python
+class Reranker:
+    def __init__(self, model_name: str = "cross-encoder/ms-marco-MiniLM-L-6-v2") -> None: ...
+    def rerank(self, query: str, chunks: list[Chunk], top_n: int = 3) -> list[Chunk]: ...
+```
+
+### Steps
+
+**1 — `src/mrta/retrieval/reranker.py`** — implement `Reranker`:
+
+```python
+from __future__ import annotations
+from mrta.core.schemas import Chunk
+
+class Reranker:
+    def __init__(self, model_name: str = "cross-encoder/ms-marco-MiniLM-L-6-v2") -> None:
+        from sentence_transformers import CrossEncoder
+        self._model = CrossEncoder(model_name)
+        self.model_name = model_name
+
+    def rerank(self, query: str, chunks: list[Chunk], top_n: int = 3) -> list[Chunk]:
+        if not chunks:
+            return []
+        pairs = [(query, c.text) for c in chunks]
+        scores = self._model.predict(pairs)
+        ranked = sorted(zip(scores, chunks), key=lambda x: x[0], reverse=True)
+        return [c for _, c in ranked[:top_n]]
+```
+
+**2 — `src/mrta/retrieval/__init__.py`** — add `Reranker` to exports:
+
+```python
+from mrta.retrieval.reranker import Reranker
+__all__ = ["Embedder", "VectorStore", "Reranker"]
+```
+
+**3 — `src/mrta/core/rag_pipeline.py`** — add optional reranker parameters:
+
+```python
+def rag_query(
+    question: str,
+    vector_store: VectorStore,
+    llm: LLMClient,
+    top_k: int = 5,
+    reranker: Reranker | None = None,
+    rerank_top_n: int = 3,
+) -> dict:
+    ...
+    sources = vector_store.search(question, k=top_k)
+    if reranker is not None:
+        sources = reranker.rerank(question, sources, top_n=rerank_top_n)
+    ...
+```
+
+**4 — `pyproject.toml`** — add optional extra:
+
+```toml
+[project.optional-dependencies]
+reranker = ["sentence-transformers>=3.0"]
+```
+
+**5 — `tests/unit/test_reranker.py`** — write unit tests (see Expected outcome).
+
+### Expected outcome
+
+- `from mrta.retrieval import Reranker` works.
+- `rag_query(..., reranker=None)` behaves identically to the current implementation.
+- `rag_query(..., reranker=reranker, rerank_top_n=3)` calls `reranker.rerank()` and passes
+  the reranked chunks to the prompt instead of the raw vector-search results.
+- All existing `test_rag_pipeline.py` tests pass unchanged.
+- `tests/unit/test_reranker.py` — 8–10 tests covering: basic rerank, score ordering,
+  empty input, `top_n` > len(chunks) safety, `rag_query` integration with mock reranker.
+```
+
+#### `CHANGELOG.md` entry to add
+
+```markdown
+## [feat/cross-encoder-reranking] — Cross-Encoder Reranking for RAG — 2026-06-11
+
+**Commit:** `TBD`
+
+Adds optional cross-encoder reranking to the RAG pipeline. `rag_query()` now accepts
+a `reranker` parameter; when provided, vector-search candidates are re-scored by a
+`CrossEncoder` model and only the top-n highest-relevance chunks are passed to the LLM.
+Improves answer precision without affecting callers that omit the parameter.
+
+### Changed files
+
+| File | Change | Notes |
+|------|--------|-------|
+| `src/mrta/retrieval/reranker.py` | Created | `Reranker` class wrapping `sentence-transformers` `CrossEncoder` |
+| `src/mrta/retrieval/__init__.py` | Updated | Added `Reranker` to `__all__` |
+| `src/mrta/core/rag_pipeline.py` | Updated | `rag_query()` gains `reranker` and `rerank_top_n` optional params |
+| `pyproject.toml` | Updated | New `[reranker]` optional extra: `sentence-transformers>=3.0` |
+| `tests/unit/test_reranker.py` | Created | Unit tests for `Reranker` with mocked `CrossEncoder` |
+
+### Tests created — `tests/unit/test_reranker.py` (~10 tests)
+
+| Test class | Test | Assertion |
+|------------|------|-----------|
+| `TestReranker` | `test_rerank_returns_top_n` | Returns exactly `top_n` chunks |
+| `TestReranker` | `test_rerank_orders_by_score_descending` | Higher-scored chunk appears first |
+| `TestReranker` | `test_rerank_empty_input` | Returns empty list without error |
+| `TestReranker` | `test_rerank_top_n_exceeds_chunks` | Returns all chunks when `top_n` > len |
+| `TestReranker` | `test_rerank_calls_predict_with_pairs` | `CrossEncoder.predict` receives `(query, text)` pairs |
+| `TestRagPipelineReranking` | `test_rag_query_calls_reranker_when_provided` | `reranker.rerank` is called once |
+| `TestRagPipelineReranking` | `test_rag_query_skips_reranker_when_none` | `reranker` is not called |
+| `TestRagPipelineReranking` | `test_rag_query_passes_reranked_chunks_to_prompt` | Prompt receives reranked chunks, not raw |
+```
+
+---
+
+### After implementation (close-out phase)
+
+| File | What to update | Detail |
+|------|---------------|--------|
+| `CHANGELOG.md` | Replace `TBD` with merge commit hash | `git log --oneline -1` after merge |
+| `production-ready.md` library map | Change `retrieval/reranker` stub → `✅ done` | If it was listed as stub |
+| `docs/adr/` | Create `ADR-007-cross-encoder-reranking.md` | New dependency (`sentence-transformers`) and new pipeline stage warrant an ADR |
+
+---
+
+## Rules
+
+- Read `rag_pipeline.py`, `vector_store.py`, and `schemas.py` before writing anything.
+- Do not change the `Chunk` schema — the reranker works with existing `Chunk` objects.
+- Do not make reranking mandatory — `reranker=None` must keep the pipeline working exactly as before.
+- Mock `CrossEncoder` in all tests — never download a model in CI.
+- Create ADR-007 after implementation — new dep and new pipeline stage qualify.

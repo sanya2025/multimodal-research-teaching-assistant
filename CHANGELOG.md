@@ -5,6 +5,40 @@ Each entry maps tutorial notebook cells → `src/mrta/` modules → production n
 
 ---
 
+## [feat/cross-encoder-reranking] — Cross-Encoder Reranking for RAG — 2026-06-11
+
+**Commit:** `TBD`
+
+Adds optional cross-encoder reranking to the RAG pipeline. `rag_query()` now accepts
+a `reranker` parameter; when provided, vector-search candidates are re-scored by a
+`CrossEncoder` model and only the top-n highest-relevance chunks are passed to the LLM.
+Improves answer precision without affecting callers that omit the parameter.
+`sentence-transformers` was already a core dependency — no new extras required.
+
+### Changed files
+
+| File | Change | Notes |
+|------|--------|-------|
+| `src/mrta/retrieval/reranker.py` | Created | `Reranker` class wrapping `sentence-transformers` `CrossEncoder` |
+| `src/mrta/retrieval/__init__.py` | Updated | Added `Reranker` to `__all__` |
+| `src/mrta/core/rag_pipeline.py` | Updated | `rag_query()` gains `reranker` and `rerank_top_n` optional params |
+| `tests/unit/test_reranker.py` | Created | 8 unit tests for `Reranker` with mocked `CrossEncoder` |
+
+### Tests created — `tests/unit/test_reranker.py` (8 tests)
+
+| Test class | Test | Assertion |
+|------------|------|-----------|
+| `TestReranker` | `test_rerank_returns_top_n` | Returns exactly `top_n` chunks |
+| `TestReranker` | `test_rerank_orders_by_score_descending` | Higher-scored chunk appears first |
+| `TestReranker` | `test_rerank_empty_input` | Returns empty list without error |
+| `TestReranker` | `test_rerank_top_n_exceeds_chunks` | Returns all chunks when `top_n` > len |
+| `TestReranker` | `test_rerank_calls_predict_with_pairs` | `CrossEncoder.predict` receives `(query, text)` pairs |
+| `TestRagPipelineReranking` | `test_rag_query_calls_reranker_when_provided` | `reranker.rerank` is called once |
+| `TestRagPipelineReranking` | `test_rag_query_skips_reranker_when_none` | Sources unchanged when `reranker=None` |
+| `TestRagPipelineReranking` | `test_rag_query_passes_reranked_chunks_to_prompt` | Result sources are reranked subset, not raw |
+
+---
+
 ## [chore/docker-healthchecks] — Docker Healthchecks & Startup Ordering — 2026-06-11
 
 **Commit:** `a62b56b`

@@ -39,7 +39,8 @@ Rationale for 1000 tokens (dev): research papers have dense paragraphs; smaller 
 
 Top-k: `settings.top_k = 5` (dev). Each retrieved chunk carries full metadata for citation.
 
-Optional reranker: `src/mrta/retrieval/reranker.py` stub — cross-encoder (`bge-reranker-base`) is the documented upgrade path.
+Optional reranker: `src/mrta/retrieval/reranker.py` — implemented in `feat/cross-encoder-reranking`;
+wraps `sentence-transformers` `CrossEncoder` (`ms-marco-MiniLM-L-6-v2`). See ADR-007.
 
 ### Generation
 
