@@ -909,7 +909,10 @@ Also add `[tool.mypy]` section (see Design above).
           cache: "pip"
       - run: pip install -e ".[dev,api]"
       - name: Vulnerability scan (pip-audit)
-        run: pip-audit
+        # --skip-editable: mrta is a local editable install, not on PyPI
+        # --ignore-vuln CVE-2025-3000: torch vulnerability with no fix available yet
+        run: pip install --upgrade pip && pip install -e ".[dev,api]"
+        run: pip-audit --skip-editable --ignore-vuln CVE-2025-3000
 
   docker:
     needs: test
@@ -921,16 +924,26 @@ Also add `[tool.mypy]` section (see Design above).
       - name: Smoke test /health
         run: |
           docker run -d --name mrta-ci -e MRTA_ENV=test -p 8000:8000 mrta-api:ci
-          sleep 5
-          curl --fail http://localhost:8000/health
+          for i in 1 2 3 4 5; do
+            sleep 6
+            curl --fail --silent http://localhost:8000/health && docker stop mrta-ci && exit 0
+            echo "Attempt $i failed, retrying..."
+          done
+          echo "=== Container logs ==="
+          docker logs mrta-ci
           docker stop mrta-ci
+          exit 1
 ```
 
-### Expected outcome
+### Actual outcome (shipped)
 
-- CI has 4 jobs: `test`, `type-check`, `audit`, `docker`.
-- `type-check` catches annotation regressions on every PR.
-- `audit` blocks merges when a dependency has a known CVE with a fix available.
-- `docker` confirms `Dockerfile.api` builds and the app starts cleanly.
-- No new test files — this is pure CI/tooling configuration.
-- All existing 119 tests continue to pass in the `test` job.
+- CI has 4 jobs: `test`, `type-check`, `audit`, `docker`. ✅
+- `type-check` surfaced 6 pre-existing mypy annotation gaps in 4 source files — all fixed as part of this branch:
+  - `src/mrta/core/config.py` — `settings_customise_sources` signature
+  - `src/mrta/retrieval/embedder.py` — `SentenceTransformer | None` annotation + `TYPE_CHECKING` guard
+  - `src/mrta/retrieval/vector_store.py` — `_index: faiss.Index` annotation
+  - `apps/api/routers/upload.py` — `str | None` guard on `file.filename`
+- `audit` required `--skip-editable` (mrta not on PyPI) and `--ignore-vuln CVE-2025-3000` (torch, no fix available). pip upgraded to 26.1.2 to clear PYSEC-2026-196.
+- `docker` required `COPY LICENSE ./` and `COPY README.md ./` in `Dockerfile.api` — hatchling requires both at build time. Smoke test uses a 5-attempt retry loop with container log dump on failure.
+- No new test files.
+- All 119 existing tests continue to pass.

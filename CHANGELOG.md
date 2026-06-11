@@ -17,12 +17,17 @@ Each new job runs only after `test` passes, keeping the fast-fail guarantee.
 
 | File | Change | Notes |
 |------|--------|-------|
-| `.github/workflows/ci.yml` | Updated | 3 new jobs: `type-check`, `audit`, `docker` |
+| `.github/workflows/ci.yml` | Updated | 3 new jobs: `type-check` (mypy), `audit` (pip-audit), `docker` (build + smoke test); pip upgraded before audit to clear PYSEC-2026-196; retry loop on `/health` with container logs on failure |
 | `pyproject.toml` | Updated | `mypy>=1.10.0` and `pip-audit>=2.7.0` added to `dev` group; `[tool.mypy]` section added |
+| `docker/Dockerfile.api` | Updated | Added `COPY LICENSE ./` and `COPY README.md ./` — hatchling requires both at build time |
+| `src/mrta/core/config.py` | Updated | Fixed `settings_customise_sources` signature to match pydantic-settings supertype (mypy) |
+| `src/mrta/retrieval/embedder.py` | Updated | `TYPE_CHECKING` guard for `SentenceTransformer` import; `_st_model` typed as `SentenceTransformer \| None`; `_ensure_st` return type added (mypy) |
+| `src/mrta/retrieval/vector_store.py` | Updated | `_index` typed as `faiss.Index` instead of `faiss.IndexFlatIP` to match `faiss.read_index` return type (mypy) |
+| `apps/api/routers/upload.py` | Updated | `filename = file.filename or ""` guard added — `file.filename` is `str \| None` (mypy) |
 
 ### No new test files
 
-This is pure CI/tooling configuration — no source code changes, no new pytest tests.
+CI/tooling configuration plus pre-existing mypy annotation gaps surfaced by the new `type-check` job. All 119 existing tests continue to pass.
 
 ---
 
