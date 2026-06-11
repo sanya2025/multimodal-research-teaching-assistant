@@ -32,6 +32,6 @@ class Reranker:
         if not chunks:
             return []
         pairs = [(query, c.text) for c in chunks]
-        scores = self._model.predict(pairs)
+        scores = self._model.predict(pairs)  # type: ignore[arg-type]
         ranked = sorted(zip(scores, chunks), key=lambda x: x[0], reverse=True)
         return [c for _, c in ranked[:top_n]]
