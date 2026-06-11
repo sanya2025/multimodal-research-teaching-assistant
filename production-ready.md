@@ -41,7 +41,7 @@ src/mrta/
 │   ├── schemas.py         PageRecord, PdfDocument, Chunk, FigureRecord, EvalReport  ✅ done
 │   ├── llm.py             LLMClient — provider-agnostic text generation    ✅ done
 │   ├── rag_pipeline.py    rag_query() — retrieve → prompt → generate       ✅ done
-│   └── exceptions.py      MrtaError base + subclasses                      stub
+│   └── exceptions.py      MrtaError base + subclasses                      ✅ done
 ├── ingestion/
 │   ├── pdf_loader.py      load_pdf(), _doc_id(), ocr_page_if_needed()     ✅ done
 │   ├── chunker.py         fixed_chunks(), recursive_chunks(),
@@ -536,7 +536,7 @@ After each step: run `MRTA_ENV=test pytest`, commit.
 | `core/schemas.py` | ✅ complete (`PageRecord`, `PdfDocument`, `Chunk`, `FigureRecord`, `EvalReport`) |
 | `core/llm.py` | ✅ complete |
 | `core/rag_pipeline.py` | ✅ complete |
-| `core/exceptions.py` | stub |
+| `core/exceptions.py` | ✅ done |
 | `ingestion/pdf_loader.py` | ✅ complete |
 | `ingestion/chunker.py` | ✅ complete |
 | `ingestion/figure_extractor.py` | ✅ complete |
@@ -658,3 +658,148 @@ except Exception as e:
 - `from mrta import IngestionError, LLMError` etc. works.
 - All third-party errors at system boundaries re-raised with a typed mrta exception and preserved `__cause__`.
 - 9 new tests; all 107 existing tests continue to pass.
+
+---
+
+## feature/upload-validation
+
+### Understanding
+
+**Current implementation:**
+
+- `apps/api/routers/upload.py` — single check: `file.filename.lower().endswith(".pdf")`.
+  Extension check only; no size limit, no MIME type check, no PDF magic-byte check, no
+  filename sanitisation, no structured error body.
+- `file.filename` is written directly to `data/raw/` without sanitisation — path-traversal
+  risk if a client sends `../../etc/passwd.pdf`.
+- The entire file is read into memory with `await file.read()` before any size check —
+  a large upload exhausts server memory before it can be rejected.
+- `load_pdf` receives the saved file; a malformed PDF causes `fitz` to raise a bare
+  `Exception` that propagates as a 500 Internal Server Error.
+- `apps/api/schemas/upload.py` — `UploadResponse` only. No error schema; FastAPI returns
+  its default `{"detail": "..."}` shape for 4xx.
+- `tests/unit/test_api.py` — `TestUpload` has 3 tests: 200 happy path (×2) + 400 for
+  non-PDF extension. No tests for size, MIME, path traversal, or malformed PDF.
+
+**Relevant files:**
+
+- `apps/api/routers/upload.py` — all validation logic lives here
+- `apps/api/schemas/upload.py` — add `UploadError` response schema
+- `apps/api/main.py` — add `MAX_UPLOAD_BYTES` constant; wire exception handler
+- `tests/unit/test_api.py` — extend `TestUpload` with new cases
+
+**Dependencies:**
+
+- `python-magic` (or stdlib `imghdr` alternative) for MIME sniffing — **avoid**: adds a
+  system-level `libmagic` dependency. Use the PDF magic bytes directly instead:
+  first 4 bytes of a valid PDF are `%PDF`.
+- No new library dependencies needed.
+
+**Risks:**
+
+- Reading `await file.read()` a second time returns empty bytes — must read once, store,
+  then reuse the bytes for both size check and magic-byte check before writing.
+- `Path(file.filename).name` strips directory components but not all OS-specific separators
+  on Windows paths. Use `Path(file.filename).name` and then validate no `..` remains.
+- Changing the 400 response body shape (adding `UploadError`) is technically a breaking
+  change for any client parsing `{"detail": "..."}` — acceptable pre-1.0 if Streamlit
+  `app.py` is updated at the same time.
+- `IngestionError` from `load_pdf` (added in `feat/exception-hierarchy`) should map to
+  422 Unprocessable Entity, not 500 — add an exception handler in `main.py`.
+
+### Design
+
+**Validation order** (fail-fast, cheapest first):
+
+```text
+1. Filename extension    → 400  "Only PDF files are accepted."
+2. File size             → 413  "File exceeds 20 MB limit."
+3. PDF magic bytes       → 415  "File does not appear to be a valid PDF."
+4. Safe filename         → sanitise silently (strip path components, slugify)
+5. load_pdf (fitz)       → 422  "PDF is malformed or unreadable." (via IngestionError)
+```
+
+**`UploadError` schema** (add to `apps/api/schemas/upload.py`):
+
+```python
+class UploadError(BaseModel):
+    detail: str
+    code: str   # "invalid_extension" | "file_too_large" | "invalid_mime" | "malformed_pdf"
+```
+
+**Constants** (add to `apps/api/routers/upload.py`):
+
+```python
+MAX_UPLOAD_BYTES = 20 * 1024 * 1024   # 20 MB
+PDF_MAGIC = b"%PDF"
+```
+
+### Steps
+
+**1 — `apps/api/schemas/upload.py`** — add `UploadError(BaseModel)` with `detail: str`
+and `code: str`.
+
+**2 — `apps/api/routers/upload.py`** — rewrite the upload handler:
+
+```python
+MAX_UPLOAD_BYTES = 20 * 1024 * 1024
+PDF_MAGIC = b"%PDF"
+
+@router.post("/upload", response_model=UploadResponse)
+async def upload(file: UploadFile = File(...), store=Depends(get_store)) -> UploadResponse:
+    # 1. extension
+    if not file.filename.lower().endswith(".pdf"):
+        raise HTTPException(status_code=400, detail="Only PDF files are accepted.")
+    # 2. read once
+    data = await file.read()
+    # 3. size
+    if len(data) > MAX_UPLOAD_BYTES:
+        raise HTTPException(status_code=413, detail="File exceeds 20 MB limit.")
+    # 4. magic bytes
+    if not data.startswith(PDF_MAGIC):
+        raise HTTPException(status_code=415, detail="File does not appear to be a valid PDF.")
+    # 5. safe filename
+    safe_name = Path(file.filename).name
+    raw_dir = Path("data/raw")
+    raw_dir.mkdir(parents=True, exist_ok=True)
+    path = raw_dir / safe_name
+    path.write_bytes(data)
+    # 6. parse — IngestionError caught by global handler → 422
+    pdf = load_pdf(path)
+    chunks = chunk_pdf(pdf, strategy="recursive")
+    store.add(chunks)
+    store.save(settings.vector_store_path / "default")
+    return UploadResponse(
+        doc_id=pdf.doc_id,
+        source=pdf.source,
+        n_pages=pdf.n_pages,
+        n_chunks=len(chunks),
+    )
+```
+
+**3 — `apps/api/main.py`** — add `IngestionError` exception handler:
+
+```python
+from mrta.core.exceptions import IngestionError
+
+@app.exception_handler(IngestionError)
+async def ingestion_error_handler(request, exc: IngestionError):
+    return JSONResponse(status_code=422, content={"detail": str(exc), "code": "malformed_pdf"})
+```
+
+**4 — `tests/unit/test_api.py`** — extend `TestUpload`:
+
+```python
+def test_oversized_file_returns_413(self, client): ...
+def test_non_pdf_magic_bytes_returns_415(self, client): ...
+def test_path_traversal_filename_is_sanitised(self, client): ...
+def test_malformed_pdf_returns_422(self, client): ...
+```
+
+### Expected outcome
+
+- Five validation layers in place; each reachable via a dedicated test.
+- No path-traversal risk: `../../evil.pdf` → saved as `evil.pdf`.
+- Oversized uploads rejected before disk write.
+- Corrupt PDFs return 422, not 500.
+- 4 new tests added to `TestUpload` (total 7); all existing tests continue to pass.

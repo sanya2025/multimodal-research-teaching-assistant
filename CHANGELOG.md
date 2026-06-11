@@ -5,9 +5,38 @@ Each entry maps tutorial notebook cells → `src/mrta/` modules → production n
 
 ---
 
+## [feat/upload-validation] — Upload Validation & Hardening — 2026-06-10
+
+**Commit:** `ffa5171`
+
+Hardens the `POST /upload` endpoint with five ordered validation layers: extension check,
+20 MB size limit, PDF magic-byte check, safe filename sanitisation, and structured error
+handling for malformed PDFs. Corrupt or oversized files now return explicit 4xx responses
+instead of propagating as 500 Internal Server Errors.
+
+### Changed files
+
+| File | Change | Notes |
+|------|--------|-------|
+| `apps/api/routers/upload.py` | Updated | Five-layer validation; reads file once into memory; safe filename via `Path.name` |
+| `apps/api/schemas/upload.py` | Updated | `UploadError(BaseModel)` added with `detail` and `code` fields |
+| `apps/api/main.py` | Updated | `IngestionError` exception handler → 422 with `code: "malformed_pdf"` |
+| `tests/unit/test_api.py` | Updated | 4 new tests added to `TestUpload` — see table below |
+
+### Tests added — `tests/unit/test_api.py` (4 new tests in `TestUpload`)
+
+| Test | Assertion |
+|------|-----------|
+| `test_oversized_file_returns_413` | File > 20 MB → 413 before any disk write |
+| `test_non_pdf_magic_bytes_returns_415` | `.pdf` extension but wrong magic bytes → 415 |
+| `test_path_traversal_filename_is_sanitised` | `../../evil.pdf` saved as `evil.pdf` in `data/raw/` |
+| `test_malformed_pdf_returns_422` | `IngestionError` from `load_pdf` → 422, not 500 |
+
+---
+
 ## [feat/exception-hierarchy] — Exception Hierarchy — 2026-06-10
 
-**Commit:** `TBD`
+**Commit:** `d68464f`
 
 Library-wide exception hierarchy replacing bare `ValueError` / `RuntimeError` raises and
 unwrapped third-party errors at every system boundary. All exceptions are catchable as
