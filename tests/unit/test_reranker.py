@@ -12,7 +12,13 @@ from mrta.core.schemas import Chunk
 FAKE_CHUNKS = [
     Chunk(chunk_id="d_p1_c0", doc_id="d", source="a.pdf", page=1, text="Attention is fundamental."),
     Chunk(chunk_id="d_p2_c0", doc_id="d", source="a.pdf", page=2, text="Transformers changed NLP."),
-    Chunk(chunk_id="d_p3_c0", doc_id="d", source="a.pdf", page=3, text="BERT uses bidirectional encoding."),
+    Chunk(
+        chunk_id="d_p3_c0",
+        doc_id="d",
+        source="a.pdf",
+        page=3,
+        text="BERT uses bidirectional encoding.",
+    ),
 ]
 
 
