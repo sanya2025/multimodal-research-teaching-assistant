@@ -1031,3 +1031,66 @@ HEALTHCHECK --interval=15s --timeout=5s --start-period=30s --retries=3 \
 - `docker compose ps` shows `(healthy)` for all three services once fully up.
 - API never attempts an Ollama call before Ollama is ready.
 - No new tests — this is pure Docker configuration.
+
+---
+
+## feat/cross-encoder-reranking
+
+### Understanding
+
+**Current implementation:**
+
+- `src/mrta/retrieval/` had `embedder.py` and `vector_store.py` — no `reranker.py`.
+- `src/mrta/retrieval/__init__.py` exported only `Embedder` and `VectorStore`.
+- `src/mrta/core/rag_pipeline.py` — `rag_query()` called `vector_store.search(question, k=top_k)`
+  and passed results directly to the prompt. No reranking step existed.
+
+**Relevant files:**
+
+- `src/mrta/retrieval/reranker.py` — created: `Reranker` class wrapping `CrossEncoder`
+- `src/mrta/retrieval/__init__.py` — updated: exports `Reranker`
+- `src/mrta/core/rag_pipeline.py` — updated: `rag_query()` gains optional `reranker` / `rerank_top_n`
+- `tests/unit/test_reranker.py` — created: 8 unit tests
+
+**Note on dependencies:**
+
+`sentence-transformers>=2.7.0` is already in core `dependencies` in `pyproject.toml` — no new
+optional extra was needed.
+
+**Risks addressed:**
+
+- `rag_query()` signature change is fully backwards-compatible — `reranker=None` default keeps
+  all existing callers working unchanged.
+- `CrossEncoder` is mocked in tests via `patch("sentence_transformers.CrossEncoder")` — no
+  model download in CI.
+- `rerank_top_n` > `len(chunks)` is handled silently: `ranked[:top_n]` returns all chunks.
+
+### Design
+
+```text
+rag_query(question, vector_store, llm, top_k=5, reranker=None, rerank_top_n=3)
+  │
+  ├── vector_store.search(question, k=top_k)   → list[Chunk]  (broad recall)
+  │
+  ├── [optional] reranker.rerank(question, chunks, top_n=rerank_top_n)
+  │                                             → list[Chunk]  (precision-sorted)
+  │
+  └── load_prompt("rag", chunks=sources, question=question) → LLM → answer
+```
+
+`Reranker` interface:
+
+```python
+class Reranker:
+    def __init__(self, model_name: str = "cross-encoder/ms-marco-MiniLM-L-6-v2") -> None: ...
+    def rerank(self, query: str, chunks: list[Chunk], top_n: int = 3) -> list[Chunk]: ...
+```
+
+### Expected outcome
+
+- `from mrta.retrieval import Reranker` works.
+- `rag_query(..., reranker=None)` behaves identically to the original implementation.
+- `rag_query(..., reranker=reranker, rerank_top_n=3)` calls `reranker.rerank()` and passes
+  reranked chunks to the LLM instead of raw vector-search results.
+- All existing `test_rag_pipeline.py` tests pass unchanged.
+- 8 new tests in `tests/unit/test_reranker.py` — all passing.
