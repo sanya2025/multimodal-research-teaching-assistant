@@ -4,6 +4,8 @@ from __future__ import annotations
 
 import ollama
 
+from mrta.core.exceptions import LLMError
+
 
 class LLMClient:
     """Thin wrapper around an LLM provider.
@@ -29,9 +31,12 @@ class LLMClient:
             messages: OpenAI-style list of role/content dicts.
             temperature: Sampling temperature (0.0–1.0).
         """
-        resp = ollama.chat(
-            model=self._model,
-            messages=messages,
-            options={"temperature": temperature},
-        )
+        try:
+            resp = ollama.chat(
+                model=self._model,
+                messages=messages,
+                options={"temperature": temperature},
+            )
+        except Exception as e:
+            raise LLMError(f"Ollama chat failed (model={self._model}): {e}") from e
         return resp["message"]["content"]

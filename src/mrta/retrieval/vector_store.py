@@ -5,6 +5,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+from mrta.core.exceptions import RetrievalError
 from mrta.core.schemas import Chunk
 from mrta.retrieval.embedder import Embedder
 
@@ -62,7 +63,10 @@ class VectorStore:
 
         p = Path(path)
         store = cls(embedder)
-        store._index = faiss.read_index(str(p / "index.faiss"))
+        try:
+            store._index = faiss.read_index(str(p / "index.faiss"))
+        except Exception as e:
+            raise RetrievalError(f"Cannot load FAISS index from {p}: {e}") from e
         lines = (p / "metadata.jsonl").read_text(encoding="utf-8").splitlines()
         store._chunks = [Chunk.model_validate_json(line) for line in lines if line]
         return store

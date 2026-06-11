@@ -5,6 +5,44 @@ Each entry maps tutorial notebook cells → `src/mrta/` modules → production n
 
 ---
 
+## [feat/exception-hierarchy] — Exception Hierarchy — 2026-06-10
+
+**Commit:** `TBD`
+
+Library-wide exception hierarchy replacing bare `ValueError` / `RuntimeError` raises and
+unwrapped third-party errors at every system boundary. All exceptions are catchable as
+`MRTAError` or narrowed to a specific subclass.
+
+### Changed files
+
+| File | Change | Notes |
+|------|--------|-------|
+| `src/mrta/core/exceptions.py` | Created | `MRTAError(Exception)` base + 5 subclasses: `IngestionError`, `EmbeddingError`, `RetrievalError`, `LLMError`, `EvaluationError` |
+| `src/mrta/__init__.py` | Updated | All 6 exception classes added to public API and `__all__` |
+| `src/mrta/ingestion/chunker.py` | Updated | `ValueError` → `IngestionError` at `chunk_pdf` dispatch |
+| `src/mrta/ingestion/pdf_loader.py` | Updated | `fitz.open` wrapped — corrupt/missing PDF raises `IngestionError` |
+| `src/mrta/retrieval/embedder.py` | Updated | `httpx.HTTPStatusError` from `raise_for_status` wrapped in `EmbeddingError` |
+| `src/mrta/retrieval/vector_store.py` | Updated | `faiss.read_index` failure wrapped in `RetrievalError` |
+| `src/mrta/core/llm.py` | Updated | `ollama.chat` failure wrapped in `LLMError` |
+| `src/mrta/multimodal/vlm_client.py` | Updated | `ollama.chat` failure wrapped in `LLMError` |
+| `tests/unit/test_chunker.py` | Updated | `test_unknown_strategy_raises` updated from `ValueError` → `IngestionError` |
+| `tests/unit/test_exceptions.py` | Created | 8 tests — see table below |
+
+### Tests created — `tests/unit/test_exceptions.py` (8 tests)
+
+| Test class | Test | Assertion |
+|------------|------|-----------|
+| `TestHierarchy` | `test_base_is_exception` | `MRTAError` is a subclass of `Exception` |
+| `TestHierarchy` | `test_all_subclasses_are_mrta_error` | All 5 subclasses are subclasses of `MRTAError` |
+| `TestRaiseSites` | `test_pdf_loader_raises_ingestion_error` | `fitz.open` failure → `IngestionError`; `__cause__` set |
+| `TestRaiseSites` | `test_embedder_raises_embedding_error` | `httpx.HTTPStatusError` → `EmbeddingError`; `__cause__` set |
+| `TestRaiseSites` | `test_vector_store_raises_retrieval_error` | `faiss.read_index` failure → `RetrievalError`; `__cause__` set |
+| `TestRaiseSites` | `test_llm_raises_llm_error` | `ollama.chat` failure → `LLMError`; `__cause__` set |
+| `TestRaiseSites` | `test_vlm_client_raises_llm_error` | `ollama.chat` failure → `LLMError`; `__cause__` set |
+| `TestExport` | `test_importable_from_mrta` | All 6 exception classes importable from top-level `mrta` |
+
+---
+
 ## [Phase 09] — Evaluation, Observability & Docker — 2026-06-08
 
 **Commit:** `7c0774d`

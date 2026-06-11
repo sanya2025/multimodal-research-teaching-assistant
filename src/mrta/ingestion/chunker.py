@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import re
 
+from mrta.core.exceptions import IngestionError
 from mrta.core.schemas import Chunk, PdfDocument
 
 
@@ -155,6 +156,6 @@ def chunk_pdf(
     Strategies: 'fixed', 'recursive' (default), 'token', 'semantic'.
     """
     if strategy not in _STRATEGIES:
-        raise ValueError(f"Unknown strategy {strategy!r}; choose from {list(_STRATEGIES)}")
+        raise IngestionError(f"Unknown strategy {strategy!r}; choose from {list(_STRATEGIES)}")
     fn = _STRATEGIES[strategy]
     return fn(pdf, **kwargs)  # type: ignore[operator]
