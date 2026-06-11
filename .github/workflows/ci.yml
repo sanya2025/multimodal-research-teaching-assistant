@@ -66,7 +66,7 @@ jobs:
           cache: "pip"
 
       - name: Install dependencies
-        run: pip install -e ".[dev,api]"
+        run: pip install --upgrade pip && pip install -e ".[dev,api]"
 
       - name: Vulnerability scan (pip-audit)
         # --skip-editable: mrta is a local editable install, not on PyPI
@@ -86,6 +86,12 @@ jobs:
       - name: Smoke test /health
         run: |
           docker run -d --name mrta-ci -e MRTA_ENV=test -p 8000:8000 mrta-api:ci
-          sleep 5
-          curl --fail http://localhost:8000/health
+          for i in 1 2 3 4 5; do
+            sleep 6
+            curl --fail --silent http://localhost:8000/health && docker stop mrta-ci && exit 0
+            echo "Attempt $i failed, retrying..."
+          done
+          echo "=== Container logs ==="
+          docker logs mrta-ci
           docker stop mrta-ci
+          exit 1
