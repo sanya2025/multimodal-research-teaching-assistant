@@ -47,6 +47,7 @@ async def ingestion_error_handler(request: Request, exc: IngestionError) -> JSON
         content={"detail": str(exc), "code": "malformed_pdf"},
     )
 
+
 app.include_router(ask_router.router)
 app.include_router(upload_router.router)
 app.include_router(documents_router.router)
