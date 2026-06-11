@@ -7,7 +7,7 @@ Each entry maps tutorial notebook cells → `src/mrta/` modules → production n
 
 ## [chore/docker-healthchecks] — Docker Healthchecks & Startup Ordering — 2026-06-11
 
-**Commit:** `TBD`
+**Commit:** `a62b56b`
 
 Adds `HEALTHCHECK` instructions to both Dockerfiles and `healthcheck` blocks to
 `docker-compose.yml`. Upgrades bare `depends_on` to condition-based (`service_healthy`)
@@ -30,7 +30,7 @@ Pure Docker/Compose configuration — no library or API code changed.
 
 ## [chore/ci-quality-gates] — CI Quality Gates — 2026-06-10
 
-**Commit:** `TBD`
+**Commit:** `5d3a5d7`
 
 Strengthens CI from a single lint+test job into four parallel jobs: the existing `test`
 job plus `type-check` (mypy), `audit` (pip-audit), and `docker` (build + smoke test).
