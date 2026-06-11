@@ -5,6 +5,29 @@ Each entry maps tutorial notebook cells → `src/mrta/` modules → production n
 
 ---
 
+## [chore/docker-healthchecks] — Docker Healthchecks & Startup Ordering — 2026-06-11
+
+**Commit:** `TBD`
+
+Adds `HEALTHCHECK` instructions to both Dockerfiles and `healthcheck` blocks to
+`docker-compose.yml`. Upgrades bare `depends_on` to condition-based (`service_healthy`)
+so the API waits for Ollama to be ready before starting, and Streamlit waits for the
+API. Fixes unreliable `docker compose up` in local development.
+
+### Changed files
+
+| File | Change | Notes |
+|------|--------|-------|
+| `docker/Dockerfile.api` | Updated | `HEALTHCHECK` added — polls `GET /health` via Python urllib |
+| `docker/Dockerfile.streamlit` | Updated | `HEALTHCHECK` added — polls `GET /_stcore/health` via Python urllib |
+| `docker/docker-compose.yml` | Updated | `healthcheck` blocks on all 3 services; `depends_on` upgraded to `condition: service_healthy` |
+
+### No new test files
+
+Pure Docker/Compose configuration — no library or API code changed.
+
+---
+
 ## [chore/ci-quality-gates] — CI Quality Gates — 2026-06-10
 
 **Commit:** `TBD`
