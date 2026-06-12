@@ -31,15 +31,24 @@ def rag_query(
     Returns:
         {"answer": str, "sources": list[Chunk], "latency_s": float}
     """
+    from mrta.observability.tracing import trace_span
     from mrta.prompts import load_prompt
 
     t0 = time.time()
-    sources: list[Chunk] = vector_store.search(question, k=top_k)
-    if reranker is not None:
-        sources = reranker.rerank(question, sources, top_n=rerank_top_n)
-    prompt = load_prompt("rag", chunks=sources, question=question)
-    answer: str = llm.chat(
-        [{"role": "system", "content": SYSTEM}, {"role": "user", "content": prompt}]
-    )
-    latency_s = time.time() - t0
+    with trace_span("mrta.rag_query") as span:
+        span.set_attribute("query.length", len(question))
+        span.set_attribute("retrieval.top_k", top_k)
+        span.set_attribute("reranker.enabled", reranker is not None)
+        span.set_attribute("reranker.top_n", rerank_top_n)
+        span.set_attribute("model.llm", llm.model)
+        sources: list[Chunk] = vector_store.search(question, k=top_k)
+        span.set_attribute("retrieval.chunk_count", len(sources))
+        if reranker is not None:
+            sources = reranker.rerank(question, sources, top_n=rerank_top_n)
+        prompt = load_prompt("rag", chunks=sources, question=question)
+        answer: str = llm.chat(
+            [{"role": "system", "content": SYSTEM}, {"role": "user", "content": prompt}]
+        )
+        latency_s = time.time() - t0
+        span.set_attribute("latency_ms", latency_s * 1000)
     return {"answer": answer, "sources": sources, "latency_s": latency_s}

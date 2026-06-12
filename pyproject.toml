@@ -40,6 +40,7 @@ dependencies = [
     # Prompts + observability
     "jinja2>=3.1.4",
     "structlog>=24.1.0",
+    "opentelemetry-api>=1.25.0",
 ]
 
 # ---------------------------------------------------------------------------
@@ -90,8 +91,13 @@ streamlit = [
 eval = [
     "ragas>=0.1.10",
     "deepeval>=0.21.0",
+]
+
+# OpenTelemetry tracing (console + OTLP/gRPC export)
+otel = [
     "opentelemetry-api>=1.25.0",
     "opentelemetry-sdk>=1.25.0",
+    "opentelemetry-exporter-otlp-proto-grpc>=1.25.0",
 ]
 
 # Development tooling + notebooks
@@ -108,11 +114,12 @@ dev = [
     "watchdog>=4.0.0",
     "mypy>=1.10.0",
     "pip-audit>=2.7.0",
+    "opentelemetry-sdk>=1.25.0",
 ]
 
 # Everything
 all = [
-    "mrta[llm,multimodal,ocr,qdrant,api,streamlit,eval,dev]",
+    "mrta[llm,multimodal,ocr,qdrant,api,streamlit,eval,otel,dev]",
 ]
 
 # ---------------------------------------------------------------------------
