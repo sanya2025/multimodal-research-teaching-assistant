@@ -95,6 +95,8 @@ temp/
 # ==========================================================
 data/raw/
 data/processed/
+data/vector_store/
+
 
 # Keep sample datasets for demos/tutorials
 !data/sample/
