@@ -4,10 +4,14 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 from mrta.core.exceptions import RetrievalError
 from mrta.core.schemas import Chunk
 from mrta.retrieval.embedder import Embedder
+
+if TYPE_CHECKING:
+    import faiss
 
 
 class VectorStore:
@@ -20,24 +24,31 @@ class VectorStore:
     """
 
     def __init__(self, embedder: Embedder) -> None:
-        import faiss
-
         self._embedder = embedder
-        self._index: faiss.Index = faiss.IndexFlatIP(embedder.dim)
+        self._index: faiss.Index | None = None  # created on first add()
         self._chunks: list[Chunk] = []
+
+    def _ensure_index(self) -> faiss.Index:
+        if self._index is None:
+            import faiss
+
+            self._index = faiss.IndexFlatIP(self._embedder.dim)
+        return self._index
 
     def add(self, chunks: list[Chunk]) -> None:
         """Embed chunks and add them to the index."""
         if not chunks:
             return
         embs = self._embedder.embed([c.text for c in chunks])
-        self._index.add(embs)
+        self._ensure_index().add(embs)
         self._chunks.extend(chunks)
 
     def search(self, query: str, k: int = 5) -> list[Chunk]:
         """Return top-k Chunks by cosine similarity to query."""
+        if not self._chunks:
+            return []
         q = self._embedder.embed([query])
-        scores, idx = self._index.search(q, k)
+        scores, idx = self._ensure_index().search(q, k)
         return [self._chunks[i] for i in idx[0] if 0 <= i < len(self._chunks)]
 
     def save(self, path: Path | str) -> None:
@@ -46,7 +57,7 @@ class VectorStore:
 
         p = Path(path)
         p.mkdir(parents=True, exist_ok=True)
-        faiss.write_index(self._index, str(p / "index.faiss"))
+        faiss.write_index(self._ensure_index(), str(p / "index.faiss"))
         (p / "metadata.jsonl").write_text(
             "\n".join(c.model_dump_json() for c in self._chunks),
             encoding="utf-8",
