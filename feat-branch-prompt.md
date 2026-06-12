@@ -525,3 +525,317 @@ Improves answer precision without affecting callers that omit the parameter.
 - Do not make reranking mandatory — `reranker=None` must keep the pipeline working exactly as before.
 - Mock `CrossEncoder` in all tests — never download a model in CI.
 - Create ADR-007 after implementation — new dep and new pipeline stage qualify.
+
+---
+
+---
+
+## test/rag-evaluation-gates — session start
+
+I am working on branch `test/rag-evaluation-gates`.
+
+Read these files first before proposing or writing anything:
+
+1. `production-ready.md` — bottom section `## test/rag-evaluation-gates` (if it exists)
+   gives the agreed Understanding, design, and step-by-step plan.
+2. `CHANGELOG.md` — top entry shows the expected changed-files table and test table for this
+   branch.
+3. `src/mrta/evaluation/metrics.py` — existing 4 metrics; this file is extended (not replaced).
+4. `src/mrta/evaluation/eval_pipeline.py` — `run_eval()` calls a live LLM + VectorStore; read
+   it to understand the boundary between library metrics and end-to-end eval. Do NOT change it.
+5. `src/mrta/core/schemas.py` — `Chunk` and `EvalReport` are the shared data types.
+6. `tests/evaluation/datasets/golden_qa.yaml` — 30 questions; fields are `id`, `question`,
+   `expected_answer`, `expected_documents`, `expected_keywords`. The `source` field is
+   documented in the YAML header but absent from individual questions — loader must use
+   `.get("source", "")` safely.
+7. `tests/unit/test_metrics.py` — existing tests for the 4 current metrics; must still pass.
+
+---
+
+## Which markdown files to update — and when
+
+### Before implementation (plan phase)
+
+| File | What to add | Where |
+|------|-------------|-------|
+| `production-ready.md` | New `## test/rag-evaluation-gates` section | Append at the bottom |
+| `CHANGELOG.md` | New `## [test/rag-evaluation-gates]` entry | Prepend at the top |
+
+#### `production-ready.md` section to add
+
+````markdown
+## test/rag-evaluation-gates
+
+### Understanding
+
+**Current implementation:**
+
+- `src/mrta/evaluation/metrics.py` has `answer_relevance`, `faithfulness`,
+  `citation_correctness`, `hallucination_rate` — no Recall@k, MRR, nDCG@10, or
+  retrieval-side source coverage.
+  **Important distinction:** `citation_correctness` (existing) is answer-side — it checks
+  whether `[page N]` citation patterns in the generated answer refer to real pages in the
+  retrieved chunks. The new `citation_coverage` function is retrieval-side — it checks
+  whether the right source documents were retrieved at all. They measure different things;
+  do not confuse or merge them.
+- `src/mrta/evaluation/eval_pipeline.py` calls real `rag_query()` with a live LLM and
+  VectorStore — cannot run in CI without deployed services. Do not change it.
+- `tests/evaluation/` exists but has no `__init__.py`, no tests, and no baselines.
+- `tests/evaluation/datasets/golden_qa.yaml` — 30 questions with `expected_documents`
+  (PDF filename list) and `expected_keywords` (keyword list). No `source` field on items.
+- `pyproject.toml` — `testpaths = ["tests"]` already covers `tests/evaluation/**` recursively.
+  No CI or pyproject change needed.
+
+**Relevant files:**
+
+- `src/mrta/evaluation/metrics.py` — add `recall_at_k`, `mrr`, `ndcg_at_k`, `citation_coverage`
+- `tests/evaluation/__init__.py` — create (package marker)
+- `tests/evaluation/conftest.py` — create: `load_golden_qa()` + `golden_qa` pytest fixture
+- `tests/evaluation/test_retrieval_metrics.py` — create: unit tests for the 3 new functions
+- `tests/evaluation/test_rag_gates.py` — create: threshold gate tests using golden QA + mocked
+  retrieval
+- `tests/evaluation/test_citation_coverage.py` — create: citation coverage tests using golden
+  QA `expected_keywords`
+- `tests/evaluation/baselines/retrieval_metrics.json` — create: starting thresholds
+- `tests/evaluation/README.md` — create: documentation
+
+**Dependencies:**
+
+- `PyYAML>=6.0` already in core deps — no new deps.
+- `pytest>=8.2.0` already in `[dev]` — no new deps.
+- No LLM calls, no network access, no model downloads — all tests must be deterministic.
+
+**Risks:**
+
+- `eval_pipeline.py` imports `LLMClient` and calls real `rag_query()`. Do NOT import it
+  in the new evaluation tests — only test the metric functions directly.
+- Adding 3 new functions to `metrics.py` must not break `tests/unit/test_metrics.py`.
+- The `source` field is absent from golden QA items — use `.get("source", "")` in loader.
+
+### Design
+
+**New metric functions** — add to `src/mrta/evaluation/metrics.py`:
+
+```python
+def recall_at_k(retrieved_sources: list[str], expected_docs: list[str], k: int) -> float:
+    """Fraction of expected_docs found in the first k entries of retrieved_sources."""
+    top = retrieved_sources[:k]
+    if not expected_docs:
+        return 1.0
+    return sum(1 for d in expected_docs if d in top) / len(expected_docs)
+
+
+def mrr(retrieved_sources: list[str], expected_docs: list[str]) -> float:
+    """Reciprocal rank of the first retrieved_source that is in expected_docs."""
+    expected_set = set(expected_docs)
+    for rank, src in enumerate(retrieved_sources, start=1):
+        if src in expected_set:
+            return 1.0 / rank
+    return 0.0
+
+
+def ndcg_at_k(retrieved_sources: list[str], expected_docs: list[str], k: int = 10) -> float:
+    """nDCG@k — rewards placing expected_docs near the top of retrieved_sources."""
+    import math
+    expected_set = set(expected_docs)
+    top = retrieved_sources[:k]
+    dcg = sum(
+        1.0 / math.log2(rank + 1)
+        for rank, src in enumerate(top, start=1)
+        if src in expected_set
+    )
+    ideal = sum(1.0 / math.log2(rank + 1) for rank in range(1, min(len(expected_docs), k) + 1))
+    return dcg / ideal if ideal > 0 else 1.0
+
+
+def citation_coverage(retrieved_sources: list[str], expected_docs: list[str]) -> float:
+    """Retrieval-side: fraction of expected_docs found anywhere in retrieved_sources (no k cutoff)."""
+    if not expected_docs:
+        return 1.0
+    retrieved_set = set(retrieved_sources)
+    return sum(1 for d in expected_docs if d in retrieved_set) / len(expected_docs)
+```
+
+Note: All four functions take `list[str]` where `retrieved_sources = [c.source for c in
+retrieved_chunks]`. `Chunk.source` stores the PDF filename (e.g., `"CLIP.pdf"`), matching
+`expected_documents` in the golden QA.
+
+**Two citation metrics — keep them separate:**
+
+| Function | Side | What it measures |
+|----------|------|-----------------|
+| `citation_coverage` (new) | Retrieval | Did the retriever surface the right source documents? |
+| `citation_correctness` (existing) | Answer | Does the generated answer cite real page numbers? |
+
+**Golden QA loader** — `tests/evaluation/conftest.py`:
+
+```python
+from pathlib import Path
+import pytest
+import yaml
+
+GOLDEN_QA_PATH = Path(__file__).parent / "datasets" / "golden_qa.yaml"
+
+
+def load_golden_qa(path: Path = GOLDEN_QA_PATH) -> list[dict]:
+    data = yaml.safe_load(path.read_text())
+    return [
+        {
+            "id": q["id"],
+            "question": q["question"],
+            "expected_answer": q.get("expected_answer", ""),
+            "expected_documents": q.get("expected_documents", []),
+            "expected_keywords": q.get("expected_keywords", []),
+            "source": q.get("source", ""),
+        }
+        for q in data.get("questions", [])
+    ]
+
+
+@pytest.fixture(scope="session")
+def golden_qa() -> list[dict]:
+    return load_golden_qa()
+```
+
+**Baseline thresholds** — `tests/evaluation/baselines/retrieval_metrics.json`:
+
+```json
+{
+  "recall_at_5":       { "baseline": 0.85, "tolerance": 0.05 },
+  "recall_at_10":      { "baseline": 0.90, "tolerance": 0.05 },
+  "mrr":               { "baseline": 0.70, "tolerance": 0.05 },
+  "ndcg_at_10":        { "baseline": 0.75, "tolerance": 0.05 },
+  "citation_coverage": { "baseline": 0.90, "tolerance": 0.05 }
+}
+```
+
+Gate assertion pattern: `assert score >= entry["baseline"] - entry["tolerance"]`.
+A 5% regression from baseline fails CI; small natural variation within tolerance passes.
+To tighten a gate after measuring the real retriever, update `"baseline"` — do not reduce
+`"tolerance"` without deliberate decision.
+
+### Steps
+
+**1 — `src/mrta/evaluation/metrics.py`** — append `recall_at_k`, `mrr`, `ndcg_at_k`,
+`citation_coverage`; add all four to `__all__`. `ndcg_at_k` uses `import math` inside the
+function body — no top-level import needed.
+
+**2 — `tests/evaluation/__init__.py`** — create as empty file.
+
+**3 — `tests/evaluation/conftest.py`** — implement `load_golden_qa()` and `golden_qa` fixture
+as shown above.
+
+**4 — `tests/evaluation/test_retrieval_metrics.py`** — ~12 pure unit tests for the 4 new
+metric functions; no golden QA, no YAML, no Chunk objects. Test edge cases: empty inputs,
+k=0, no overlap, partial overlap, exact match at boundary k. For `ndcg_at_k` specifically:
+verify that a relevant doc at rank 1 produces a higher score than the same doc at rank 3.
+
+**5 — `tests/evaluation/test_citation_coverage.py`** — ~5 tests using golden QA items:
+load the dataset, construct fake `Chunk` sources matching `expected_documents`, verify
+`citation_coverage` score is correct. Add a TODO comment explaining how to replace fake
+chunks with real VectorStore output.
+
+**6 — `tests/evaluation/test_rag_gates.py`** — ~6 tests: load
+`tests/evaluation/baselines/retrieval_metrics.json`, construct a "perfect" mock retrieval
+(all `expected_documents` at the top of the result list), compute each metric, and assert
+`score >= entry["baseline"] - entry["tolerance"]`. Add a TODO comment per test explaining
+how to replace mock retrieval with `VectorStore.search()` output after indexing. Include one
+`test_baselines_file_structure` test that verifies every key in the JSON has both `"baseline"`
+and `"tolerance"` fields. These tests verify the gate mechanism is wired correctly, not that
+the real retriever currently meets the thresholds.
+
+**7 — `tests/evaluation/baselines/retrieval_metrics.json`** — create with starting thresholds.
+
+**8 — `tests/evaluation/README.md`** — document: purpose of golden QA set, how to run
+`pytest tests/evaluation`, how to update thresholds, how to add new questions, why PDFs are
+not committed.
+
+### Expected outcome
+
+- `pytest tests/evaluation` passes with no network calls and no model downloads.
+- All 4 new metric functions importable: `from mrta.evaluation.metrics import recall_at_k, mrr, ndcg_at_k, citation_coverage`.
+- `tests/unit/test_metrics.py` continues to pass unchanged.
+- ~22 new deterministic tests across 3 test files.
+- `tests/evaluation/baselines/retrieval_metrics.json` committed with delta-based thresholds
+  (`baseline` + `tolerance` per metric).
+- `tests/evaluation/README.md` present and accurate.
+````
+
+#### `CHANGELOG.md` entry to add
+
+````markdown
+## [test/rag-evaluation-gates] — RAG Evaluation Gates — 2026-06-11
+
+**Commit:** `TBD`
+
+Adds deterministic retrieval evaluation gates. Extends `metrics.py` with four retrieval
+metrics: `recall_at_k`, `mrr`, `ndcg_at_k`, and `citation_coverage` (retrieval-side source
+coverage; distinct from the existing answer-side `citation_correctness`). Wires the golden
+QA dataset into a pytest fixture and three test files. Gate tests load delta-based thresholds
+from `baselines/retrieval_metrics.json` — each entry has `baseline` and `tolerance` — and
+assert `score >= baseline − tolerance`, allowing small natural variation while failing on
+regressions. No LLM calls, no network access.
+
+### Changed files
+
+| File | Change | Notes |
+|------|--------|-------|
+| `src/mrta/evaluation/metrics.py` | Updated | Added `recall_at_k`, `mrr`, `ndcg_at_k`, `citation_coverage` (retrieval-side) |
+| `tests/evaluation/__init__.py` | Created | Package marker |
+| `tests/evaluation/conftest.py` | Created | `load_golden_qa()` + `golden_qa` session fixture |
+| `tests/evaluation/test_retrieval_metrics.py` | Created | Unit tests for 3 new metric functions |
+| `tests/evaluation/test_citation_coverage.py` | Created | Citation coverage tests with golden QA |
+| `tests/evaluation/test_rag_gates.py` | Created | Threshold gate tests with mocked retrieval |
+| `tests/evaluation/baselines/retrieval_metrics.json` | Created | Starting thresholds |
+| `tests/evaluation/README.md` | Created | Evaluation documentation |
+
+### Tests created — `tests/evaluation/` (~22 tests)
+
+| Test file | Test | Assertion |
+|-----------|------|-----------|
+| `test_retrieval_metrics.py` | `test_recall_at_k_perfect` | All expected docs in top-k → 1.0 |
+| `test_retrieval_metrics.py` | `test_recall_at_k_partial` | Half in top-k → 0.5 |
+| `test_retrieval_metrics.py` | `test_recall_at_k_none` | No match → 0.0 |
+| `test_retrieval_metrics.py` | `test_recall_at_k_respects_cutoff` | Doc at rank k+1 not counted |
+| `test_retrieval_metrics.py` | `test_recall_at_k_empty_expected` | Empty expected → 1.0 |
+| `test_retrieval_metrics.py` | `test_mrr_first_rank` | Relevant at rank 1 → 1.0 |
+| `test_retrieval_metrics.py` | `test_mrr_second_rank` | Relevant at rank 2 → 0.5 |
+| `test_retrieval_metrics.py` | `test_mrr_no_match` | No relevant doc → 0.0 |
+| `test_retrieval_metrics.py` | `test_citation_coverage_full` | All expected docs in retrieved → 1.0 |
+| `test_retrieval_metrics.py` | `test_citation_coverage_partial` | Some missing → fractional |
+| `test_retrieval_metrics.py` | `test_ndcg_at_k_rank1_beats_rank3` | Relevant doc at rank 1 > rank 3 |
+| `test_retrieval_metrics.py` | `test_ndcg_at_k_empty_expected` | Empty expected → 1.0 |
+| `test_citation_coverage.py` | `test_coverage_clip_question` | CLIP.pdf in sources → 1.0 |
+| `test_citation_coverage.py` | `test_coverage_wrong_source` | BLIP-2.pdf for CLIP question → 0.0 |
+| `test_citation_coverage.py` | `test_coverage_empty_expected` | Empty expected → 1.0 |
+| `test_citation_coverage.py` | `test_load_golden_qa_returns_all_items` | Loader returns 30 items |
+| `test_citation_coverage.py` | `test_loader_handles_missing_optional_fields` | Missing source → "" |
+| `test_rag_gates.py` | `test_recall_at_5_gate` | score ≥ baseline − tolerance (0.85 − 0.05) |
+| `test_rag_gates.py` | `test_recall_at_10_gate` | score ≥ baseline − tolerance (0.90 − 0.05) |
+| `test_rag_gates.py` | `test_mrr_gate` | score ≥ baseline − tolerance (0.70 − 0.05) |
+| `test_rag_gates.py` | `test_ndcg_at_10_gate` | score ≥ baseline − tolerance (0.75 − 0.05) |
+| `test_rag_gates.py` | `test_citation_coverage_gate` | score ≥ baseline − tolerance (0.90 − 0.05) |
+| `test_rag_gates.py` | `test_baselines_file_structure` | Every key has `"baseline"` and `"tolerance"` |
+````
+
+---
+
+### After implementation (close-out phase)
+
+| File | What to update | Detail |
+|------|---------------|--------|
+| `CHANGELOG.md` | Replace `TBD` with merge commit hash | `git log --oneline -1` after merge |
+| `production-ready.md` | Mark `evaluation/metrics.py` functions as `✅ done` | If listed as stubs |
+
+---
+
+## Rules
+
+- Read `metrics.py`, `eval_pipeline.py`, `schemas.py`, and `golden_qa.yaml` before writing anything.
+- Do not change `eval_pipeline.py` — it calls a live LLM and is not part of this branch.
+- Do not import `eval_pipeline` or `LLMClient` in any `tests/evaluation/` file.
+- All tests must be deterministic — no network calls, no model downloads, no Ollama.
+- New functions in `metrics.py` use `list[str]` (sources), not `list[Chunk]` — keep them
+  pure and easy to unit-test.
+- Do not create an ADR — no new dependencies and no architectural decision.
+- Do not change `README.md` — no public API or install instructions changed.

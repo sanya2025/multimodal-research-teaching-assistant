@@ -5,6 +5,63 @@ Each entry maps tutorial notebook cells → `src/mrta/` modules → production n
 
 ---
 
+## [test/rag-evaluation-gates] — RAG Evaluation Gates — 2026-06-11
+
+**Commit:** `TBD`
+
+Adds deterministic retrieval evaluation gates. Extends `metrics.py` with four retrieval
+metrics: `recall_at_k`, `mrr`, `ndcg_at_k`, and `citation_coverage` (retrieval-side source
+coverage; distinct from the existing answer-side `citation_correctness`). Wires the golden
+QA dataset (40 questions) into a pytest fixture and three test files. Gate tests load
+delta-based thresholds from `baselines/retrieval_metrics.json` — each entry has `baseline`
+and `tolerance` — and assert `score >= baseline − tolerance`, allowing small natural
+variation while failing on regressions. No LLM calls, no network access.
+
+### Changed files
+
+| File | Change | Notes |
+|------|--------|-------|
+| `src/mrta/evaluation/metrics.py` | Updated | Added `recall_at_k`, `mrr`, `ndcg_at_k`, `citation_coverage` (retrieval-side) |
+| `tests/evaluation/__init__.py` | Created | Package marker |
+| `tests/evaluation/conftest.py` | Created | `load_golden_qa()` + `golden_qa` session fixture |
+| `tests/evaluation/test_retrieval_metrics.py` | Created | Unit tests for 4 new metric functions |
+| `tests/evaluation/test_citation_coverage.py` | Created | Citation coverage tests with golden QA |
+| `tests/evaluation/test_rag_gates.py` | Created | Threshold gate tests with mocked retrieval |
+| `tests/evaluation/baselines/retrieval_metrics.json` | Created | Starting thresholds |
+| `tests/evaluation/README.md` | Created | Evaluation documentation |
+
+### Tests created — `tests/evaluation/` (25 tests)
+
+| Test file | Test | Assertion |
+|-----------|------|-----------|
+| `test_retrieval_metrics.py` | `test_recall_at_k_perfect` | All expected docs in top-k → 1.0 |
+| `test_retrieval_metrics.py` | `test_recall_at_k_partial` | Half in top-k → 0.5 |
+| `test_retrieval_metrics.py` | `test_recall_at_k_none` | No match → 0.0 |
+| `test_retrieval_metrics.py` | `test_recall_at_k_respects_cutoff` | Doc at rank k+1 not counted |
+| `test_retrieval_metrics.py` | `test_recall_at_k_empty_expected` | Empty expected → 1.0 |
+| `test_retrieval_metrics.py` | `test_mrr_first_rank` | Relevant at rank 1 → 1.0 |
+| `test_retrieval_metrics.py` | `test_mrr_second_rank` | Relevant at rank 2 → 0.5 |
+| `test_retrieval_metrics.py` | `test_mrr_no_match` | No relevant doc → 0.0 |
+| `test_retrieval_metrics.py` | `test_citation_coverage_full` | All expected docs in retrieved → 1.0 |
+| `test_retrieval_metrics.py` | `test_citation_coverage_partial` | Some missing → fractional |
+| `test_retrieval_metrics.py` | `test_ndcg_at_k_rank1_beats_rank3` | Relevant doc at rank 1 > rank 3 |
+| `test_retrieval_metrics.py` | `test_ndcg_at_k_empty_expected` | Empty expected → 1.0 |
+| `test_retrieval_metrics.py` | `test_ndcg_at_k_perfect` | All expected in top → 1.0 |
+| `test_retrieval_metrics.py` | `test_ndcg_at_k_no_match` | No relevant → 0.0 |
+| `test_citation_coverage.py` | `test_load_golden_qa_returns_all_items` | Loader returns 40 items |
+| `test_citation_coverage.py` | `test_loader_handles_missing_optional_fields` | Missing source → "" |
+| `test_citation_coverage.py` | `test_coverage_clip_question` | CLIP.pdf in sources → 1.0 |
+| `test_citation_coverage.py` | `test_coverage_wrong_source` | BLIP-2.pdf for CLIP question → 0.0 |
+| `test_citation_coverage.py` | `test_coverage_empty_expected` | Empty expected → 1.0 |
+| `test_rag_gates.py` | `test_baselines_file_structure` | Every key has `"baseline"` and `"tolerance"` |
+| `test_rag_gates.py` | `test_recall_at_5_gate` | score ≥ baseline − tolerance (0.85 − 0.05) |
+| `test_rag_gates.py` | `test_recall_at_10_gate` | score ≥ baseline − tolerance (0.90 − 0.05) |
+| `test_rag_gates.py` | `test_mrr_gate` | score ≥ baseline − tolerance (0.70 − 0.05) |
+| `test_rag_gates.py` | `test_ndcg_at_10_gate` | score ≥ baseline − tolerance (0.75 − 0.05) |
+| `test_rag_gates.py` | `test_citation_coverage_gate` | score ≥ baseline − tolerance (0.90 − 0.05) |
+
+---
+
 ## [feat/cross-encoder-reranking] — Cross-Encoder Reranking for RAG — 2026-06-11
 
 **Commit:** `d3feeb2`

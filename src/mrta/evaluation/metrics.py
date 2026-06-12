@@ -67,4 +67,51 @@ def hallucination_rate(answer: str, chunks: list[Chunk]) -> float:
     return 1.0 - faithfulness(answer, chunks)
 
 
-__all__ = ["answer_relevance", "faithfulness", "citation_correctness", "hallucination_rate"]
+def recall_at_k(retrieved_sources: list[str], expected_docs: list[str], k: int) -> float:
+    """Fraction of expected_docs found in the first k entries of retrieved_sources."""
+    top = retrieved_sources[:k]
+    if not expected_docs:
+        return 1.0
+    return sum(1 for d in expected_docs if d in top) / len(expected_docs)
+
+
+def mrr(retrieved_sources: list[str], expected_docs: list[str]) -> float:
+    """Reciprocal rank of the first retrieved_source that is in expected_docs."""
+    expected_set = set(expected_docs)
+    for rank, src in enumerate(retrieved_sources, start=1):
+        if src in expected_set:
+            return 1.0 / rank
+    return 0.0
+
+
+def ndcg_at_k(retrieved_sources: list[str], expected_docs: list[str], k: int = 10) -> float:
+    """nDCG@k — rewards placing expected_docs near the top of retrieved_sources."""
+    import math
+
+    expected_set = set(expected_docs)
+    top = retrieved_sources[:k]
+    dcg = sum(
+        1.0 / math.log2(rank + 1) for rank, src in enumerate(top, start=1) if src in expected_set
+    )
+    ideal = sum(1.0 / math.log2(rank + 1) for rank in range(1, min(len(expected_docs), k) + 1))
+    return dcg / ideal if ideal > 0 else 1.0
+
+
+def citation_coverage(retrieved_sources: list[str], expected_docs: list[str]) -> float:
+    """Retrieval-side: fraction of expected_docs found anywhere in retrieved_sources."""
+    if not expected_docs:
+        return 1.0
+    retrieved_set = set(retrieved_sources)
+    return sum(1 for d in expected_docs if d in retrieved_set) / len(expected_docs)
+
+
+__all__ = [
+    "answer_relevance",
+    "citation_correctness",
+    "citation_coverage",
+    "faithfulness",
+    "hallucination_rate",
+    "mrr",
+    "ndcg_at_k",
+    "recall_at_k",
+]
