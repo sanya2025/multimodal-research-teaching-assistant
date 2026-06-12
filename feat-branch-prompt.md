@@ -839,3 +839,326 @@ regressions. No LLM calls, no network access.
   pure and easy to unit-test.
 - Do not create an ADR — no new dependencies and no architectural decision.
 - Do not change `README.md` — no public API or install instructions changed.
+
+---
+
+## feat/opentelemetry-tracing — session start
+
+I am working on branch `feat/opentelemetry-tracing`.
+
+Read these files first before proposing or writing anything:
+
+1. `production-ready.md` — bottom section `## feat/opentelemetry-tracing` for the agreed plan.
+2. `CHANGELOG.md` — top entry for the expected changed-files and test tables.
+3. `src/mrta/observability/logging.py` — existing observability pattern; match its style.
+4. `src/mrta/observability/__init__.py` — current exports; extend, don't replace.
+5. `src/mrta/core/config.py` — `Settings` class; `enable_tracing: bool = False` already exists;
+   three new OTEL fields need adding.
+6. `src/mrta/core/rag_pipeline.py` — primary instrumentation target; read before touching.
+7. `src/mrta/ingestion/chunker.py` — secondary instrumentation target (`chunk_pdf`).
+8. `src/mrta/evaluation/eval_pipeline.py` — tertiary target (`run_eval`); calls live LLM —
+   do not change its signature or behavior, only wrap with spans.
+
+---
+
+## Which markdown files to update — and when
+
+### Before implementation (plan phase)
+
+| File | What to add | Where |
+|------|-------------|-------|
+| `production-ready.md` | New `## feat/opentelemetry-tracing` section | Append at the bottom |
+| `CHANGELOG.md` | New `## [feat/opentelemetry-tracing]` entry | Prepend at the top |
+
+---
+
+### Understanding
+
+**Current implementation:**
+
+- `src/mrta/observability/` has `logging.py` (`StructuredLogger`) and `__init__.py` only.
+  `tracing.py` does not exist.
+- `src/mrta/core/config.py` `Settings` has `enable_tracing: bool = False` but no OTEL
+  endpoint, service name, or console exporter fields.
+- `src/mrta/core/rag_pipeline.py` `rag_query()` times its own execution but has no spans.
+- `src/mrta/ingestion/chunker.py` `chunk_pdf()` has no observability.
+- `src/mrta/evaluation/eval_pipeline.py` `run_eval()` has no observability.
+- `pyproject.toml` has no `opentelemetry-*` dependencies in any group.
+
+**Relevant files:**
+
+- `src/mrta/observability/tracing.py` — create: tracer init, `get_tracer()`, `trace_span()`
+- `src/mrta/observability/__init__.py` — extend: add `get_tracer`, `trace_span` to `__all__`
+- `src/mrta/core/config.py` — extend: add `otel_service_name`, `otel_exporter_otlp_endpoint`,
+  `otel_console_exporter` to `Settings`
+- `src/mrta/core/rag_pipeline.py` — extend: add spans inside `rag_query()`
+- `src/mrta/ingestion/chunker.py` — extend: add `mrta.ingestion` span inside `chunk_pdf()`
+- `src/mrta/evaluation/eval_pipeline.py` — extend: add `mrta.evaluation` span inside `run_eval()`
+- `pyproject.toml` — extend: add `[otel]` optional dep group; add OTEL API + SDK to `[dev]`
+- `tests/unit/test_tracing.py` — create: ~10 tests using `InMemorySpanExporter`
+- `docs/observability.md` — create: how to enable and interpret traces
+- `docs/adr/ADR-007-opentelemetry-tracing.md` — create: why OTEL, why optional, why SDK not SaaS
+
+**Dependencies:**
+
+- `opentelemetry-api>=1.24` — tracer API; no-op by default when SDK not configured.
+  Required in base deps (needed at import time even without tracing enabled).
+- `opentelemetry-sdk>=1.24` — configures exporters; only activated when `enable_tracing=True`.
+  Add to `[dev]` (needed for tests) and `[otel]` (needed for production use).
+- `opentelemetry-exporter-otlp-proto-grpc>=1.24` — OTLP/gRPC export to Jaeger/Tempo.
+  Add to `[otel]` only — not required for local console tracing.
+
+**Risks:**
+
+- `opentelemetry-api` must go in base deps (not optional) because `rag_pipeline.py` and
+  `chunker.py` will call `get_tracer()` at the call site. If it were optional, importing
+  those modules without the dep installed would raise `ImportError`. `opentelemetry-api`
+  is a pure-Python, zero-dependency package — safe as a base dep.
+- Do not call `TracerProvider` configuration inside `rag_query()` or any hot path. Call
+  `configure_tracer()` once at process startup (from the API lifespan or `__main__`).
+- `eval_pipeline.py` calls a live LLM. Only wrap `run_eval()` with a span — do not change
+  its signature, behavior, or imports.
+- `configure_tracer()` must be idempotent — calling it twice should not register duplicate
+  exporters. Use a module-level `_configured: bool` guard.
+
+### Design
+
+**`src/mrta/observability/tracing.py`** — full interface:
+
+```python
+"""mrta.observability.tracing — optional OpenTelemetry instrumentation."""
+
+from __future__ import annotations
+
+from contextlib import contextmanager
+from typing import Generator
+
+from opentelemetry import trace
+from opentelemetry.trace import Span
+
+_configured: bool = False
+
+
+def configure_tracer(
+    service_name: str = "mrta",
+    console: bool = False,
+    otlp_endpoint: str = "",
+) -> None:
+    """Set up the OTEL SDK once. Call at process startup when enable_tracing=True.
+
+    console=True → logs spans to stdout (useful for local dev).
+    otlp_endpoint → exports spans via OTLP/gRPC to Jaeger, Tempo, etc.
+    """
+    global _configured
+    if _configured:
+        return
+    from opentelemetry.sdk.resources import SERVICE_NAME, Resource
+    from opentelemetry.sdk.trace import TracerProvider
+    from opentelemetry.sdk.trace.export import BatchSpanProcessor
+
+    resource = Resource.create({SERVICE_NAME: service_name})
+    provider = TracerProvider(resource=resource)
+    if console:
+        from opentelemetry.sdk.trace.export import ConsoleSpanExporter, SimpleSpanProcessor
+        provider.add_span_processor(SimpleSpanProcessor(ConsoleSpanExporter()))
+    if otlp_endpoint:
+        from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import OTLPSpanExporter
+        provider.add_span_processor(BatchSpanProcessor(OTLPSpanExporter(endpoint=otlp_endpoint)))
+    trace.set_tracer_provider(provider)
+    _configured = True
+
+
+def get_tracer(name: str = "mrta") -> trace.Tracer:
+    """Return the module-level tracer. No-op proxy when not configured."""
+    return trace.get_tracer(name)
+
+
+@contextmanager
+def trace_span(
+    span_name: str,
+    attributes: dict | None = None,
+) -> Generator[Span, None, None]:
+    """Context manager that wraps a block in a named span.
+
+    Attributes are set after span creation. Exceptions are recorded and re-raised.
+    No-op when tracing is not configured.
+    """
+    tracer = get_tracer()
+    with tracer.start_as_current_span(span_name) as span:
+        if attributes:
+            for key, value in attributes.items():
+                span.set_attribute(key, value)
+        try:
+            yield span
+        except Exception as exc:
+            span.record_exception(exc)
+            raise
+```
+
+Note: all SDK imports are lazy (inside `configure_tracer`) so the module is importable
+without `opentelemetry-sdk` installed — only `opentelemetry-api` is required.
+
+**Three new `Settings` fields** (add in the `# --- Observability ---` block of `config.py`):
+
+```python
+otel_service_name: str = "mrta"
+otel_exporter_otlp_endpoint: str = ""   # empty = no OTLP export
+otel_console_exporter: bool = False
+```
+
+**Span names and attributes per operation:**
+
+| Span name | Where | Key attributes |
+|-----------|-------|----------------|
+| `mrta.rag_query` | `rag_pipeline.rag_query()` | `query.length`, `retrieval.top_k`, `reranker.enabled`, `reranker.top_n`, `retrieval.chunk_count`, `model.llm`, `latency_ms` |
+| `mrta.ingestion` | `chunker.chunk_pdf()` | `document.path`, `chunk.strategy`, `chunk.count` |
+| `mrta.evaluation` | `eval_pipeline.run_eval()` | `benchmark.size` |
+
+**Startup wiring** — in `apps/api/main.py` lifespan (read-only guidance, not a file to change
+in this branch unless it is trivial — see Rules):
+
+```python
+if settings.enable_tracing:
+    from mrta.observability.tracing import configure_tracer
+    configure_tracer(
+        service_name=settings.otel_service_name,
+        console=settings.otel_console_exporter,
+        otlp_endpoint=settings.otel_exporter_otlp_endpoint,
+    )
+```
+
+**ADR-007** — create `docs/adr/ADR-007-opentelemetry-tracing.md`. Cover:
+
+- Why OTEL (vendor-neutral, industry standard, no SaaS lock-in)
+- Why optional (avoids forced dependency on a backend for local dev and CI)
+- Why API as base dep + SDK as optional dep (keeps import graph clean)
+- Alternatives considered: structlog-only, custom timing dict, Jaeger client direct
+
+### Steps
+
+**1 — `pyproject.toml`** — add `opentelemetry-api>=1.24` to base `dependencies`; add
+`opentelemetry-sdk>=1.24` to `[dev]`; add a new `[otel]` group with
+`opentelemetry-api>=1.24`, `opentelemetry-sdk>=1.24`,
+`opentelemetry-exporter-otlp-proto-grpc>=1.24`.
+
+**2 — `src/mrta/observability/tracing.py`** — implement exactly as shown in Design above.
+Module-level `_configured` guard. All SDK imports are lazy inside `configure_tracer()`.
+
+**3 — `src/mrta/observability/__init__.py`** — add `get_tracer` and `trace_span` to imports
+and `__all__`.
+
+**4 — `src/mrta/core/config.py`** — add the three new `otel_*` fields to `Settings` in the
+`# --- Observability ---` block, after `enable_tracing`.
+
+**5 — `src/mrta/core/rag_pipeline.py`** — wrap `rag_query()` body in a `trace_span`
+context manager for `mrta.rag_query`; set attributes after `vector_store.search()` returns
+(so `retrieval.chunk_count` is known) and after the full function completes. Import
+`trace_span` lazily inside the function body to avoid circular imports.
+
+**6 — `src/mrta/ingestion/chunker.py`** — wrap `chunk_pdf()` body in `trace_span` for
+`mrta.ingestion`; set `document.path`, `chunk.strategy`, `chunk.count`. Lazy import.
+
+**7 — `src/mrta/evaluation/eval_pipeline.py`** — wrap `run_eval()` body in `trace_span`
+for `mrta.evaluation`; set `benchmark.size = len(benchmark)`. Lazy import. Do not change
+function signature or return type.
+
+**8 — `tests/unit/test_tracing.py`** — ~10 tests using `InMemorySpanExporter` from
+`opentelemetry.sdk.trace.export.in_memory_span_exporter`. Reset `_configured` between
+tests using `monkeypatch` on `mrta.observability.tracing._configured`. Verify:
+
+- `get_tracer()` returns a tracer without crashing when not configured
+- `trace_span` yields a span and sets attributes
+- `trace_span` records an exception and re-raises it
+- `configure_tracer(console=True)` registers a `ConsoleSpanExporter`
+- `configure_tracer` is idempotent (calling twice does not register two exporters)
+- spans appear in `InMemorySpanExporter` after a traced block
+
+**9 — `docs/observability.md`** — create: what is traced, how to enable console tracing
+locally (`OTEL_CONSOLE_EXPORTER=true` + `ENABLE_TRACING=true`), how to point at Jaeger,
+what attributes to look for in spans, why tracing helps debug RAG latency.
+
+**10 — `docs/adr/ADR-007-opentelemetry-tracing.md`** — create ADR as described in Design.
+
+### Expected outcome
+
+- `from mrta.observability.tracing import get_tracer, trace_span, configure_tracer` works.
+- All existing tests continue to pass — tracing is no-op when not configured.
+- `ENABLE_TRACING=true OTEL_CONSOLE_EXPORTER=true` prints spans to stdout for `rag_query`.
+- ~10 new tests in `tests/unit/test_tracing.py`, all deterministic (no network, no Ollama).
+- `docs/observability.md` explains how to use tracing locally.
+- `docs/adr/ADR-007-opentelemetry-tracing.md` exists and is linked from `docs/adr/`.
+
+---
+
+#### `CHANGELOG.md` entry to add
+
+````markdown
+## [feat/opentelemetry-tracing] — OpenTelemetry Tracing — 2026-06-12
+
+**Commit:** `TBD`
+
+Adds optional OpenTelemetry tracing to the RAG lifecycle. Creates
+`src/mrta/observability/tracing.py` with `configure_tracer()`, `get_tracer()`, and
+`trace_span()`. Instruments `rag_query()`, `chunk_pdf()`, and `run_eval()` with named spans
+and structured attributes. Tracing is disabled by default (`enable_tracing=False`) and
+requires no external backend — enable console output with `OTEL_CONSOLE_EXPORTER=true`.
+Three new `otel_*` settings fields added. `opentelemetry-api` added to base deps (no-op
+proxy when SDK not configured); `opentelemetry-sdk` added to `[dev]` and new `[otel]` group.
+
+### Changed files
+
+| File | Change | Notes |
+|------|--------|-------|
+| `src/mrta/observability/tracing.py` | Created | `configure_tracer`, `get_tracer`, `trace_span` |
+| `src/mrta/observability/__init__.py` | Updated | Added `get_tracer`, `trace_span` to `__all__` |
+| `src/mrta/core/config.py` | Updated | Added `otel_service_name`, `otel_exporter_otlp_endpoint`, `otel_console_exporter` |
+| `src/mrta/core/rag_pipeline.py` | Updated | `mrta.rag_query` span with query/retrieval/model attributes |
+| `src/mrta/ingestion/chunker.py` | Updated | `mrta.ingestion` span with path/strategy/count attributes |
+| `src/mrta/evaluation/eval_pipeline.py` | Updated | `mrta.evaluation` span with benchmark size |
+| `pyproject.toml` | Updated | `opentelemetry-api` in base deps; `opentelemetry-sdk` in `[dev]`; new `[otel]` group |
+| `tests/unit/test_tracing.py` | Created | ~10 tests using `InMemorySpanExporter` |
+| `docs/observability.md` | Created | How to enable and interpret traces |
+| `docs/adr/ADR-007-opentelemetry-tracing.md` | Created | ADR for OTEL adoption |
+
+### Tests created — `tests/unit/test_tracing.py` (~10 tests)
+
+| Test | Assertion |
+|------|-----------|
+| `test_get_tracer_returns_tracer` | `get_tracer()` returns a `Tracer` without error |
+| `test_trace_span_yields_span` | `trace_span` context manager yields without error |
+| `test_trace_span_sets_attributes` | Attributes appear in exported span |
+| `test_trace_span_records_exception` | Exception is recorded on span and re-raised |
+| `test_configure_tracer_console` | `ConsoleSpanExporter` registered after configure |
+| `test_configure_tracer_idempotent` | Second `configure_tracer` call does not add extra processors |
+| `test_spans_captured_by_in_memory_exporter` | Span name appears in `InMemorySpanExporter` |
+| `test_trace_span_noop_when_not_configured` | No crash when SDK not configured |
+| `test_existing_rag_tests_unaffected` | `rag_query` with mock LLM still passes (import smoke) |
+````
+
+---
+
+### After implementation (close-out phase)
+
+| File | What to update | Detail |
+|------|---------------|--------|
+| `CHANGELOG.md` | Replace `TBD` with merge commit hash | `git log --oneline -1` after merge |
+| `production-ready.md` | Mark `observability/tracing.py` as `✅ done` | It is currently a stub |
+| `docs/adr/` README or index | Link `ADR-007` | If an ADR index file exists |
+
+---
+
+## Rules
+
+- Read all 8 files listed under **Read these files first** before writing anything.
+- `opentelemetry-api` must be in base deps (not optional) — `rag_pipeline.py` and
+  `chunker.py` will call `get_tracer()` unconditionally.
+- All SDK imports (`TracerProvider`, `ConsoleSpanExporter`, etc.) must be lazy — inside
+  `configure_tracer()` only. This keeps `tracing.py` importable without `opentelemetry-sdk`.
+- Do not change `eval_pipeline.py` function signature — only wrap the body with a span.
+- Do not add tracing to `apps/api/main.py` lifespan in this branch unless it is a
+  one-liner addition that does not risk breaking the API tests.
+- All tests must be deterministic — no network calls, no Ollama, no real OTLP endpoint.
+- `_configured` must be reset between tests using `monkeypatch` — never rely on test
+  execution order.
+- Create ADR-007 — OpenTelemetry is a non-obvious architectural dependency decision.
+- Do not change `README.md`.
