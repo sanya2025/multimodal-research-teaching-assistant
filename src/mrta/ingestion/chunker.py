@@ -155,7 +155,16 @@ def chunk_pdf(
 
     Strategies: 'fixed', 'recursive' (default), 'token', 'semantic'.
     """
+    from mrta.observability.tracing import trace_span
+
     if strategy not in _STRATEGIES:
         raise IngestionError(f"Unknown strategy {strategy!r}; choose from {list(_STRATEGIES)}")
     fn = _STRATEGIES[strategy]
-    return fn(pdf, **kwargs)  # type: ignore[operator]
+    doc_source = pdf.pages[0].source if pdf.pages else ""
+    with trace_span(
+        "mrta.ingestion",
+        {"document.path": doc_source, "chunk.strategy": strategy},
+    ) as span:
+        result: list[Chunk] = fn(pdf, **kwargs)  # type: ignore[operator]
+        span.set_attribute("chunk.count", len(result))
+    return result

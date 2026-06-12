@@ -73,6 +73,9 @@ class Settings(BaseSettings):
     log_level: str = "INFO"
     log_file: Path = Field(default=Path("data/logs/runs.jsonl"))
     enable_tracing: bool = False
+    otel_service_name: str = "mrta"
+    otel_exporter_otlp_endpoint: str = ""
+    otel_console_exporter: bool = False
 
     @classmethod
     def settings_customise_sources(
