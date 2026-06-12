@@ -7,7 +7,7 @@ Each entry maps tutorial notebook cells → `src/mrta/` modules → production n
 
 ## [test/rag-evaluation-gates] — RAG Evaluation Gates — 2026-06-11
 
-**Commit:** `TBD`
+**Commit:** `906ae0f`
 
 Adds deterministic retrieval evaluation gates. Extends `metrics.py` with four retrieval
 metrics: `recall_at_k`, `mrr`, `ndcg_at_k`, and `citation_coverage` (retrieval-side source
