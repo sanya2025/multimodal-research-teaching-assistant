@@ -1,0 +1,749 @@
+# Golden QA Dataset for MRTA RAG Evaluation
+# Generated from source papers in data/raw/
+# LLaVA questions added after LLaVa.pdf was uploaded.
+# Schema: id, question, expected_answer, expected_documents, expected_keywords
+
+questions:
+
+  # ── CLIP ────────────────────────────────────────────────────────────────────
+
+  - id: clip_01
+    question: "What is CLIP?"
+    expected_answer: >
+      CLIP (Contrastive Language-Image Pre-training) is a neural network trained
+      on 400 million image-text pairs from the internet using a contrastive
+      objective. It learns a shared embedding space for images and text, enabling
+      zero-shot transfer to downstream vision tasks without task-specific training.
+    expected_documents:
+      - "CLIP.pdf"
+    expected_keywords:
+      - contrastive learning
+      - language-image pre-training
+      - shared embedding space
+      - zero-shot transfer
+      - 400 million
+
+  - id: clip_02
+    question: "What is contrastive learning in the context of CLIP?"
+    expected_answer: >
+      Contrastive learning trains a model by maximizing similarity between
+      matched image-text pairs while minimizing similarity between unmatched
+      pairs in a batch. CLIP uses this to align image and text representations
+      in a shared embedding space across N pairs per batch, treating each pair
+      as a positive and all N²−N remaining combinations as negatives.
+    expected_documents:
+      - "CLIP.pdf"
+    expected_keywords:
+      - contrastive learning
+      - positive pairs
+      - negative pairs
+      - cosine similarity
+      - embedding space
+
+  - id: clip_03
+    question: "What is InfoNCE loss and how does CLIP use it?"
+    expected_answer: >
+      InfoNCE (Noise Contrastive Estimation) loss treats contrastive training as
+      an N-way softmax classification problem over a batch. For each image, it
+      maximizes the similarity to its paired text while minimizing similarity to
+      all other texts in the batch (and vice versa). CLIP uses a symmetric
+      version of this loss, popularized by Oord et al. 2018, over very large
+      batch sizes (up to 32,768).
+    expected_documents:
+      - "CLIP.pdf"
+    expected_keywords:
+      - InfoNCE
+      - noise contrastive estimation
+      - symmetric cross-entropy
+      - batch size
+      - softmax
+
+  - id: clip_04
+    question: "What is zero-shot classification and how does CLIP achieve it?"
+    expected_answer: >
+      Zero-shot classification assigns labels to images without any task-specific
+      fine-tuning. CLIP achieves this by encoding candidate class names as text
+      prompts (e.g., "a photo of a {class}") and comparing their text embeddings
+      to the image embedding via cosine similarity. The class with the highest
+      similarity is chosen as the prediction. CLIP achieves 76.2% zero-shot
+      top-1 accuracy on ImageNet.
+    expected_documents:
+      - "CLIP.pdf"
+    expected_keywords:
+      - zero-shot classification
+      - prompt engineering
+      - cosine similarity
+      - ImageNet
+      - text embeddings
+
+  - id: clip_05
+    question: "How many image-text pairs were used to train CLIP?"
+    expected_answer: >
+      CLIP was trained on 400 million image-text pairs collected from the
+      internet, referred to as the WebImageText (WIT) dataset. The dataset was
+      constructed by searching for image-text pairs whose text contains one of
+      500,000 queried words.
+    expected_documents:
+      - "CLIP.pdf"
+    expected_keywords:
+      - 400 million
+      - WebImageText
+      - WIT
+      - image-text pairs
+      - internet data
+
+  - id: clip_06
+    question: "Why is CLIP useful for multimodal AI systems?"
+    expected_answer: >
+      CLIP provides a shared embedding space for images and text, enabling
+      cross-modal retrieval, zero-shot classification, and flexible prompt-based
+      task transfer without fine-tuning. Its visual encoder can be plugged into
+      multimodal pipelines (e.g., BLIP-2, LLaVA) as a frozen feature extractor,
+      and its aligned representations support tasks like visual question answering,
+      image captioning, and image-text matching.
+    expected_documents:
+      - "CLIP.pdf"
+    expected_keywords:
+      - shared embedding space
+      - cross-modal retrieval
+      - frozen encoder
+      - multimodal
+      - zero-shot
+
+  # ── SigLIP ──────────────────────────────────────────────────────────────────
+
+  - id: siglip_01
+    question: "What is SigLIP?"
+    expected_answer: >
+      SigLIP (Sigmoid Loss for Language Image Pre-training) is a vision-language
+      model that replaces CLIP's softmax-based contrastive loss with a pairwise
+      sigmoid loss. This removes the dependency on global normalization across
+      the batch, improving training efficiency and performance, especially at
+      smaller batch sizes. The best SigLIP model (ViT-g/14) achieves 84.5%
+      zero-shot ImageNet accuracy.
+    expected_documents:
+      - "SigLIP.pdf"
+    expected_keywords:
+      - sigmoid loss
+      - language image pre-training
+      - pairwise sigmoid
+      - global normalization
+      - zero-shot
+
+  - id: siglip_02
+    question: "How does SigLIP differ from CLIP?"
+    expected_answer: >
+      SigLIP replaces CLIP's softmax contrastive objective with a pairwise
+      sigmoid loss. CLIP's softmax requires computing a normalization term over
+      all negatives in the batch (global normalization), while SigLIP applies
+      binary sigmoid cross-entropy independently to each image-text pair. This
+      makes SigLIP more efficient and better performing at small batch sizes.
+    expected_documents:
+      - "SigLIP.pdf"
+    expected_keywords:
+      - pairwise sigmoid
+      - softmax replacement
+      - global normalization
+      - binary cross-entropy
+      - batch independence
+
+  - id: siglip_03
+    question: "Why does SigLIP replace softmax with sigmoid loss?"
+    expected_answer: >
+      Softmax contrastive loss requires global normalization across all pairs in
+      a batch, creating a dependency on batch size and making distributed training
+      complex. Sigmoid loss treats each image-text pair independently with binary
+      cross-entropy, removing the need for global normalization. This simplifies
+      training, reduces inter-device communication, and improves performance at
+      smaller batch sizes.
+    expected_documents:
+      - "SigLIP.pdf"
+    expected_keywords:
+      - global normalization
+      - sigmoid
+      - softmax
+      - batch size independence
+      - binary cross-entropy
+
+  - id: siglip_04
+    question: "How does SigLIP performance scale with batch size?"
+    expected_answer: >
+      SigLIP outperforms softmax (CLIP-style) loss at batch sizes below 16k
+      pairs, and achieves optimal performance at 32k batch size. Unlike softmax
+      which degrades without large batches, sigmoid loss is more robust to
+      smaller batch sizes. The SigLIP ViT-g/14 model achieves 84.5% zero-shot
+      ImageNet top-1 accuracy at 32k batch size.
+    expected_documents:
+      - "SigLIP.pdf"
+    expected_keywords:
+      - batch size
+      - 32k
+      - scaling
+      - softmax comparison
+      - 84.5% ImageNet
+
+  - id: siglip_05
+    question: "What are the advantages of pairwise sigmoid loss in SigLIP?"
+    expected_answer: >
+      Pairwise sigmoid loss eliminates global normalization across all negatives,
+      making each pair's loss independent. This enables: (1) simpler distributed
+      training with no all-gather operations across devices, (2) better
+      performance at small batch sizes, (3) reduced communication overhead, and
+      (4) the ability to process more examples per step at the same memory budget.
+    expected_documents:
+      - "SigLIP.pdf"
+    expected_keywords:
+      - pairwise sigmoid
+      - no global normalization
+      - distributed training
+      - all-gather
+      - efficiency
+
+  # ── Whisper ─────────────────────────────────────────────────────────────────
+
+  - id: whisper_01
+    question: "What is Whisper?"
+    expected_answer: >
+      Whisper is a weakly supervised automatic speech recognition (ASR) model
+      using an encoder-decoder Transformer architecture. It was trained on
+      680,000 hours of multilingual and multitask audio from the internet.
+      Whisper performs transcription, translation, language identification,
+      voice activity detection, and timestamp prediction in a single model.
+    expected_documents:
+      - "Whisper.pdf"
+    expected_keywords:
+      - automatic speech recognition
+      - encoder-decoder
+      - Transformer
+      - multilingual
+      - multitask
+
+  - id: whisper_02
+    question: "How much audio data was used to train Whisper?"
+    expected_answer: >
+      Whisper was trained on approximately 680,000 hours of multilingual and
+      multitask audio data collected from the internet. Of this, 117,000 hours
+      cover 96 non-English languages. The data was weakly supervised using
+      transcripts found alongside the audio online rather than human-verified
+      annotations.
+    expected_documents:
+      - "Whisper.pdf"
+    expected_keywords:
+      - 680,000 hours
+      - multilingual
+      - 96 languages
+      - internet audio
+      - weak supervision
+
+  - id: whisper_03
+    question: "What tasks can Whisper perform?"
+    expected_answer: >
+      Whisper is trained as a multitask model and can perform: multilingual
+      speech transcription, speech-to-English translation, voice activity
+      detection (VAD), language identification, and timestamp/word-level
+      alignment. All tasks are handled by a single model using special tokens
+      in the decoder to specify the desired task.
+    expected_documents:
+      - "Whisper.pdf"
+    expected_keywords:
+      - transcription
+      - translation
+      - voice activity detection
+      - language identification
+      - multitask
+      - special tokens
+
+  - id: whisper_04
+    question: "What is weak supervision in the context of Whisper training?"
+    expected_answer: >
+      Weak supervision refers to training on noisy, automatically-obtained
+      labels rather than carefully human-verified annotations. For Whisper,
+      this means using transcripts found on the internet alongside audio files
+      (e.g., subtitles, captions) as training targets, without manual quality
+      checks. This enables training on massive scale but introduces label noise.
+    expected_documents:
+      - "Whisper.pdf"
+    expected_keywords:
+      - weak supervision
+      - noisy labels
+      - internet transcripts
+      - subtitles
+      - label noise
+
+  - id: whisper_05
+    question: "Why does Whisper generalize well to unseen domains and languages?"
+    expected_answer: >
+      Whisper generalizes well because it was trained on 680,000 hours of
+      diverse multilingual audio spanning 96 languages, multiple domains
+      (broadcast, telephone, audiobooks, etc.), and multiple tasks. This
+      diversity encourages robust representations that transfer zero-shot to
+      new languages and conditions without fine-tuning, unlike models trained
+      on narrow datasets like LibriSpeech.
+    expected_documents:
+      - "Whisper.pdf"
+    expected_keywords:
+      - zero-shot transfer
+      - diversity
+      - multilingual
+      - generalization
+      - out-of-distribution
+
+  # ── BLIP-2 ──────────────────────────────────────────────────────────────────
+
+  - id: blip2_01
+    question: "What is the Querying Transformer (Q-Former) in BLIP-2?"
+    expected_answer: >
+      The Q-Former is a lightweight Transformer module in BLIP-2 that bridges
+      a frozen image encoder and a frozen large language model. It uses 32
+      learnable query tokens that interact with frozen image features via
+      cross-attention to extract a fixed set of visual representations. The
+      Q-Former has 188M parameters and is the only trained component during
+      BLIP-2's pre-training stages.
+    expected_documents:
+      - "BLIP-2.pdf"
+    expected_keywords:
+      - Q-Former
+      - Querying Transformer
+      - learnable query tokens
+      - cross-attention
+      - 32 queries
+      - 188M parameters
+
+  - id: blip2_02
+    question: "Why does BLIP-2 freeze the vision encoder and LLM during training?"
+    expected_answer: >
+      BLIP-2 freezes both the image encoder and the LLM to avoid catastrophic
+      forgetting and reduce computational cost. Since large pretrained encoders
+      and LLMs are expensive to train and already contain rich representations,
+      BLIP-2 only trains the Q-Former (188M params) to bridge them. This allows
+      BLIP-2 to outperform Flamingo80B with 54x fewer trainable parameters on VQAv2.
+    expected_documents:
+      - "BLIP-2.pdf"
+    expected_keywords:
+      - frozen encoder
+      - frozen LLM
+      - catastrophic forgetting
+      - trainable parameters
+      - efficiency
+      - 54x fewer
+
+  - id: blip2_03
+    question: "How does BLIP-2 connect visual and language modalities?"
+    expected_answer: >
+      BLIP-2 uses a two-stage training strategy with a Q-Former. In stage 1,
+      the Q-Former is trained with a frozen image encoder using contrastive,
+      matching, and generative objectives (vision-language representation
+      learning). In stage 2, the Q-Former output is fed to a frozen LLM via a
+      linear projection layer, fine-tuning the Q-Former for generative tasks.
+      This allows visual features to condition language generation.
+    expected_documents:
+      - "BLIP-2.pdf"
+    expected_keywords:
+      - Q-Former
+      - two-stage training
+      - linear projection
+      - frozen LLM
+      - vision-language alignment
+
+  # ── RAG ─────────────────────────────────────────────────────────────────────
+
+  - id: rag_01
+    question: "What is Retrieval-Augmented Generation (RAG)?"
+    expected_answer: >
+      RAG is a framework that combines a pretrained parametric memory (a seq2seq
+      language model, BART) with a non-parametric memory (a dense vector index
+      of Wikipedia accessed via DPR) for knowledge-intensive NLP tasks. At
+      inference time, the retriever fetches top-K relevant documents for the
+      input query, which are concatenated with the input and fed to the generator
+      to produce the output.
+    expected_documents:
+      - "RAG.pdf"
+    expected_keywords:
+      - retrieval-augmented generation
+      - parametric memory
+      - non-parametric memory
+      - DPR
+      - BART
+      - knowledge-intensive
+
+  - id: rag_02
+    question: "Why use retrieval in language generation systems?"
+    expected_answer: >
+      Retrieval addresses key limitations of purely parametric LLMs: (1) they
+      cannot easily update or expand their knowledge without retraining, (2) they
+      lack transparency about the sources behind predictions, and (3) they
+      hallucinate facts. Retrieval allows models to access up-to-date factual
+      knowledge from an external index, provide provenance for answers, and
+      be updated by simply swapping the document index.
+    expected_documents:
+      - "RAG.pdf"
+    expected_keywords:
+      - hallucination
+      - knowledge update
+      - provenance
+      - non-parametric
+      - factual grounding
+
+  - id: rag_03
+    question: "What is the difference between parametric and non-parametric memory in RAG?"
+    expected_answer: >
+      Parametric memory refers to knowledge encoded in the model's weights (e.g.,
+      the BART generator in RAG) during pre-training — it cannot be updated
+      without retraining. Non-parametric memory is an external knowledge store
+      (e.g., a dense vector index of 21M Wikipedia passages) that can be updated
+      by replacing or re-indexing documents without touching the model weights.
+    expected_documents:
+      - "RAG.pdf"
+    expected_keywords:
+      - parametric memory
+      - non-parametric memory
+      - model weights
+      - Wikipedia index
+      - knowledge update
+
+  - id: rag_04
+    question: "How does RAG use dense retrieval?"
+    expected_answer: >
+      RAG uses DPR (Dense Passage Retriever) as its retrieval component. A BERT
+      query encoder encodes the input, and a BERT document encoder encodes all
+      Wikipedia passages into a FAISS vector index. Retrieval is Maximum Inner
+      Product Search (MIPS) to find the top-K documents. Only the query encoder
+      is fine-tuned during RAG training; the document encoder and index remain
+      fixed.
+    expected_documents:
+      - "RAG.pdf"
+    expected_keywords:
+      - DPR
+      - BERT encoder
+      - FAISS
+      - MIPS
+      - top-K retrieval
+      - dense passage
+
+  # ── DPR ─────────────────────────────────────────────────────────────────────
+
+  - id: dpr_01
+    question: "What is Dense Passage Retrieval (DPR)?"
+    expected_answer: >
+      DPR is a retrieval method that uses dual BERT encoders (bi-encoders) to
+      map questions and passages to dense vectors in a shared embedding space.
+      Relevance is measured by dot-product similarity. DPR is trained on
+      question-passage pairs using in-batch negatives and outperforms BM25 by
+      9–19% on top-20 retrieval accuracy on open-domain QA benchmarks.
+    expected_documents:
+      - "DPR.pdf"
+    expected_keywords:
+      - dense passage retrieval
+      - bi-encoder
+      - BERT
+      - dot product
+      - in-batch negatives
+
+  - id: dpr_02
+    question: "How does DPR differ from BM25?"
+    expected_answer: >
+      BM25 is a sparse lexical retrieval method based on term frequency and
+      inverse document frequency — it requires query terms to appear in the
+      document. DPR uses dense vector representations learned by BERT encoders
+      and captures semantic similarity even without exact term overlap.
+      DPR outperforms BM25 by 9–19% on top-20 accuracy, with particularly
+      large gains on NaturalQuestions and TriviaQA.
+    expected_documents:
+      - "DPR.pdf"
+    expected_keywords:
+      - BM25
+      - sparse retrieval
+      - dense retrieval
+      - semantic similarity
+      - term overlap
+      - top-20 accuracy
+
+  - id: dpr_03
+    question: "What are bi-encoders in DPR?"
+    expected_answer: >
+      Bi-encoders are two independent BERT-based encoders in DPR — one for
+      encoding questions and one for encoding passages — that produce dense
+      vector representations. Similarity is computed as the dot product of the
+      question and passage vectors. Because the encoders are independent, passage
+      embeddings can be pre-computed and indexed offline with FAISS, enabling
+      fast retrieval at inference time.
+    expected_documents:
+      - "DPR.pdf"
+    expected_keywords:
+      - bi-encoder
+      - question encoder
+      - passage encoder
+      - dot product
+      - FAISS
+      - offline indexing
+
+  # ── G-Eval ──────────────────────────────────────────────────────────────────
+
+  - id: geval_01
+    question: "What is LLM-as-a-Judge?"
+    expected_answer: >
+      LLM-as-a-Judge is an evaluation paradigm in which a large language model
+      (typically GPT-4) acts as an automatic evaluator for NLG outputs, replacing
+      or supplementing human raters. The LLM rates outputs on quality dimensions
+      (e.g., coherence, fluency, relevance) using a scoring rubric provided in
+      the prompt. G-Eval demonstrates this approach achieves higher correlation
+      with human judgments than prior automatic metrics.
+    expected_documents:
+      - "G-Eval.pdf"
+    expected_keywords:
+      - LLM-as-a-Judge
+      - GPT-4 evaluator
+      - NLG evaluation
+      - automatic evaluation
+      - human correlation
+
+  - id: geval_02
+    question: "What is G-Eval and how does it work?"
+    expected_answer: >
+      G-Eval is an NLG evaluation framework using GPT-4 with a chain-of-thought
+      prompt followed by a structured evaluation form. The model generates
+      intermediate reasoning steps (chain-of-thought) before scoring, and final
+      scores are computed as a weighted average over the probabilities of each
+      score token. G-Eval achieves a Spearman correlation of 0.514 on SummEval
+      for summarization evaluation, outperforming all prior automatic metrics.
+    expected_documents:
+      - "G-Eval.pdf"
+    expected_keywords:
+      - G-Eval
+      - chain-of-thought
+      - form-filling
+      - probability-weighted scoring
+      - 0.514 Spearman
+      - SummEval
+
+  - id: geval_03
+    question: "How is GPT-4 used for evaluation in G-Eval?"
+    expected_answer: >
+      G-Eval prompts GPT-4 with a task description, evaluation criteria, and
+      chain-of-thought instructions before asking it to fill in a scoring form
+      for a given output. Rather than using the final discrete score, G-Eval
+      computes the score as a probability-weighted sum over all possible score
+      values using the token probabilities from GPT-4's output distribution.
+      This reduces variance and increases correlation with human judgments.
+    expected_documents:
+      - "G-Eval.pdf"
+    expected_keywords:
+      - GPT-4
+      - chain-of-thought
+      - probability-weighted
+      - token probabilities
+      - evaluation form
+      - scoring rubric
+
+  # ── MT-Bench ─────────────────────────────────────────────────────────────────
+
+  - id: mtbench_01
+    question: "What is MT-Bench?"
+    expected_answer: >
+      MT-Bench is a benchmark of 80 multi-turn conversation questions across
+      8 categories (writing, roleplay, extraction, reasoning, math, coding,
+      STEM, and humanities) designed to evaluate the instruction-following and
+      reasoning abilities of chat assistants. GPT-4 is used as an automated
+      judge and achieves >80% agreement with human raters on pairwise comparisons.
+    expected_documents:
+      - "MT-Bench.pdf"
+    expected_keywords:
+      - MT-Bench
+      - multi-turn
+      - 80 questions
+      - 8 categories
+      - GPT-4 judge
+      - chat assistant
+
+  - id: mtbench_02
+    question: "What is pairwise evaluation in the context of MT-Bench?"
+    expected_answer: >
+      Pairwise evaluation presents two model responses side-by-side to a judge
+      (GPT-4 or human) and asks which is better (or if they are tied). This
+      avoids the need for absolute score calibration and is more reliable than
+      single-answer grading for comparing models. MT-Bench uses GPT-4 for
+      pairwise comparison and reports win/tie/loss rates between models.
+    expected_documents:
+      - "MT-Bench.pdf"
+    expected_keywords:
+      - pairwise comparison
+      - win rate
+      - tie
+      - GPT-4 judge
+      - side-by-side evaluation
+
+  - id: mtbench_03
+    question: "What is Chatbot Arena?"
+    expected_answer: >
+      Chatbot Arena is a crowdsourced evaluation platform where users interact
+      with two anonymous chatbots simultaneously and vote for the better response.
+      It uses an Elo rating system to rank models based on accumulated pairwise
+      votes. As of the MT-Bench paper, Chatbot Arena had collected over 30,000
+      votes, and GPT-4 achieves >80% agreement with the crowd votes on pairwise
+      comparisons.
+    expected_documents:
+      - "MT-Bench.pdf"
+    expected_keywords:
+      - Chatbot Arena
+      - crowdsourced evaluation
+      - Elo rating
+      - anonymous comparison
+      - 30,000 votes
+
+  # ── BEIR ─────────────────────────────────────────────────────────────────────
+
+  - id: beir_01
+    question: "What is BEIR?"
+    expected_answer: >
+      BEIR (Benchmarking Information Retrieval) is a heterogeneous zero-shot
+      evaluation benchmark for information retrieval systems. It comprises 18
+      publicly available datasets spanning 9 retrieval task types including fact
+      checking, question answering, argument retrieval, bio-medical IR, and
+      entity retrieval. BEIR evaluates models in a zero-shot setting — models
+      trained on one domain (e.g., MS MARCO) are tested on all 18 datasets
+      without additional fine-tuning.
+    expected_documents:
+      - "BEIR.pdf"
+    expected_keywords:
+      - BEIR
+      - zero-shot evaluation
+      - 18 datasets
+      - 9 task types
+      - heterogeneous benchmark
+      - out-of-distribution
+
+  - id: beir_02
+    question: "What is Recall@k in information retrieval evaluation?"
+    expected_answer: >
+      Recall@k measures the fraction of all relevant documents for a query that
+      appear in the top-k retrieved results. A score of 1.0 means all relevant
+      documents were retrieved in the top-k. It is useful for assessing whether
+      a retriever can surface all relevant passages within a candidate set, which
+      is especially important in pipeline systems where a re-ranker operates on
+      the top-k. BEIR reports Recall@100 as a supplementary metric alongside
+      nDCG@10.
+    expected_documents:
+      - "BEIR.pdf"
+    expected_keywords:
+      - Recall@k
+      - relevant documents
+      - top-k
+      - retrieval coverage
+      - pipeline evaluation
+
+  - id: beir_03
+    question: "What is nDCG and why does BEIR use it as the primary metric?"
+    expected_answer: >
+      nDCG (Normalized Discounted Cumulative Gain) is a ranking metric that
+      rewards placing highly relevant documents at the top of the ranked list,
+      applying a logarithmic discount to lower ranks. It handles both binary and
+      graded relevance judgments. BEIR uses nDCG@10 as its primary metric
+      because it provides a good balance for tasks with binary and graded
+      relevance, unlike MRR and MAP which only suit binary relevance tasks.
+    expected_documents:
+      - "BEIR.pdf"
+    expected_keywords:
+      - nDCG
+      - normalized discounted cumulative gain
+      - graded relevance
+      - ranking metric
+      - nDCG@10
+
+  - id: beir_04
+    question: "What is MRR (Mean Reciprocal Rank) in retrieval evaluation?"
+    expected_answer: >
+      MRR (Mean Reciprocal Rate/Rank) is a retrieval metric computed as the
+      average of the reciprocal rank of the first relevant document across all
+      queries. If the first relevant document appears at rank 1, the reciprocal
+      rank is 1.0; at rank 2, it is 0.5; at rank 5, it is 0.2. MRR suits tasks
+      with binary relevance where finding the first correct answer matters most.
+      BEIR notes MRR is less suitable for tasks with graded relevance judgments.
+    expected_documents:
+      - "BEIR.pdf"
+    expected_keywords:
+      - MRR
+      - mean reciprocal rank
+      - reciprocal rank
+      - binary relevance
+      - first relevant document
+
+  # ── LLaVA ───────────────────────────────────────────────────────────────────
+
+  - id: llava_01
+    question: "What is visual instruction tuning?"
+    expected_answer: >
+      Visual instruction tuning extends the idea of LLM instruction tuning to
+      the multimodal (vision-language) domain. LLaVA uses GPT-4 to generate
+      158K multimodal instruction-following samples from COCO images — covering
+      conversations (58K), detailed descriptions (23K), and complex reasoning
+      (77K) — and fine-tunes a large multimodal model on this data to follow
+      diverse visual instructions at test time.
+    expected_documents:
+      - "LLaVa.pdf"
+    expected_keywords:
+      - visual instruction tuning
+      - instruction-following data
+      - multimodal
+      - GPT-4 generated
+      - 158K samples
+      - fine-tuning
+
+  - id: llava_02
+    question: "How does LLaVA connect CLIP and an LLM?"
+    expected_answer: >
+      LLaVA uses CLIP's ViT-L/14 as a frozen visual encoder to extract image
+      features Zv. A trainable linear projection matrix W maps these visual
+      features into the word embedding space of the language model (Vicuna),
+      producing visual tokens Hv. These tokens are prepended to the text
+      instruction and fed to the LLM for autoregressive response generation.
+      The visual encoder stays frozen; only W and the LLM are fine-tuned.
+    expected_documents:
+      - "LLaVa.pdf"
+    expected_keywords:
+      - CLIP ViT-L/14
+      - linear projection
+      - Vicuna
+      - visual tokens
+      - frozen encoder
+      - word embedding space
+
+  - id: llava_03
+    question: "What role does GPT-4 play in LLaVA's training data generation?"
+    expected_answer: >
+      GPT-4 acts as a text-only teacher to generate multimodal instruction-
+      following data. Since GPT-4 cannot process images directly, images are
+      encoded as symbolic representations (captions and bounding boxes) and
+      fed to GPT-4 as text. GPT-4 then generates three types of responses:
+      conversational QA, detailed descriptions, and complex reasoning chains.
+      This produces 158K high-quality instruction-following samples used to
+      fine-tune LLaVA, with GPT-4 producing higher quality data than ChatGPT.
+    expected_documents:
+      - "LLaVa.pdf"
+    expected_keywords:
+      - GPT-4
+      - instruction-following data generation
+      - symbolic representation
+      - captions
+      - bounding boxes
+      - text-only teacher
+
+  # ── BEIR ─────────────────────────────────────────────────────────────────────
+
+  - id: beir_05
+    question: "How does BEIR evaluate retrieval systems?"
+    expected_answer: >
+      BEIR evaluates retrieval systems in a zero-shot setting: models trained
+      on standard datasets (MS MARCO or NQ) are applied directly to 18 diverse
+      test datasets without task-specific fine-tuning. The primary metric is
+      nDCG@10. BEIR compares five architecture families: lexical (BM25),
+      sparse (SPLADE), dense (DPR, ANCE), late-interaction (ColBERT), and
+      re-ranking models. BM25 is found to be a strong zero-shot baseline.
+    expected_documents:
+      - "BEIR.pdf"
+    expected_keywords:
+      - zero-shot
+      - nDCG@10
+      - BM25 baseline
+      - dense retrieval
+      - re-ranking
+      - generalization
