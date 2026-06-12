@@ -63,8 +63,10 @@ src/mrta/
 │   └── expert.j2          grad-student depth                               stub
 ├── evaluation/
 │   ├── eval_pipeline.py   run_eval(benchmark) → EvalReport                 stub
-│   └── metrics.py         answer_relevance(), faithfulness(),
-│                          citation_correctness(), hallucination_rate()     stub
+│   └── metrics.py         answer_relevance(), faithfulness(),              ✅ done
+│                          citation_correctness(), hallucination_rate(),
+│                          recall_at_k(), mrr(), ndcg_at_k(),
+│                          citation_coverage()
 └── observability/
     ├── logging.py         StructuredLogger — JSONL per run                 ✅ done
     └── tracing.py         OpenTelemetry spans (optional)                   stub
@@ -542,12 +544,12 @@ After each step: run `MRTA_ENV=test pytest`, commit.
 | `ingestion/figure_extractor.py` | ✅ complete |
 | `retrieval/embedder.py` | ✅ complete |
 | `retrieval/vector_store.py` | ✅ complete |
-| `retrieval/reranker.py` | stub |
+| `retrieval/reranker.py` | ✅ complete (`Reranker` wrapping `CrossEncoder`; integrated into `rag_query`) |
 | `multimodal/clip_embedder.py` | ✅ complete |
 | `multimodal/vlm_client.py` | ✅ complete |
 | `prompts/` | ✅ complete (all templates done: rag, _base, beginner, expert, quiz, explain, interview, lecture_notes) |
 | `evaluation/eval_pipeline.py` | ✅ complete (`run_eval` returning `EvalReport`) |
-| `evaluation/metrics.py` | ✅ complete (`answer_relevance`, `faithfulness`, `citation_correctness`, `hallucination_rate`) |
+| `evaluation/metrics.py` | ✅ complete (`answer_relevance`, `faithfulness`, `citation_correctness`, `hallucination_rate`, `recall_at_k`, `mrr`, `ndcg_at_k`, `citation_coverage`) |
 | `observability/logging.py` | ✅ complete |
 
 ---
