@@ -69,7 +69,7 @@ src/mrta/
 │                          citation_coverage()
 └── observability/
     ├── logging.py         StructuredLogger — JSONL per run                 ✅ done
-    └── tracing.py         OpenTelemetry spans (optional)                   stub
+    └── tracing.py         OpenTelemetry spans (optional)                   ✅ done
 ```
 
 ---

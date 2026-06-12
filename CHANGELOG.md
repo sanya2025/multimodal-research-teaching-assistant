@@ -5,6 +5,53 @@ Each entry maps tutorial notebook cells → `src/mrta/` modules → production n
 
 ---
 
+## [feat/opentelemetry-tracing] — OpenTelemetry Tracing — 2026-06-12
+
+**Commit:** `903baa1`
+
+Adds optional OpenTelemetry tracing to the RAG lifecycle. Creates
+`src/mrta/observability/tracing.py` with `configure_tracer()`, `get_tracer()`, and
+`trace_span()`. Instruments `rag_query()`, `chunk_pdf()`, and `run_eval()` with named spans
+and structured attributes. Tracing is disabled by default (`enable_tracing=False`) and
+requires no external backend — enable console output with `OTEL_CONSOLE_EXPORTER=true`.
+Three new `otel_*` settings fields added. `opentelemetry-api` added to base deps (no-op
+proxy when SDK not configured); `opentelemetry-sdk` added to `[dev]` and new `[otel]` group.
+Also fixes `VectorStore.__init__` to defer FAISS index creation to first `add()` call,
+eliminating a HuggingFace model download on container startup.
+
+### Changed files
+
+| File | Change | Notes |
+|------|--------|-------|
+| `src/mrta/observability/tracing.py` | Created | `configure_tracer`, `get_tracer`, `trace_span` |
+| `src/mrta/observability/__init__.py` | Updated | Added `get_tracer`, `trace_span` to `__all__` |
+| `src/mrta/core/config.py` | Updated | Added `otel_service_name`, `otel_exporter_otlp_endpoint`, `otel_console_exporter` |
+| `src/mrta/core/rag_pipeline.py` | Updated | `mrta.rag_query` span with query/retrieval/model attributes |
+| `src/mrta/ingestion/chunker.py` | Updated | `mrta.ingestion` span with path/strategy/count attributes |
+| `src/mrta/evaluation/eval_pipeline.py` | Updated | `mrta.evaluation` span with benchmark size |
+| `src/mrta/retrieval/vector_store.py` | Updated | Lazy FAISS index — created on first `add()`, not on `__init__` |
+| `pyproject.toml` | Updated | `opentelemetry-api` in base deps; `opentelemetry-sdk` in `[dev]`; new `[otel]` group |
+| `tests/unit/test_tracing.py` | Created | 10 tests using `InMemorySpanExporter` |
+| `docs/observability.md` | Created | How to enable and interpret traces |
+| `docs/adr/ADR-007-opentelemetry-tracing.md` | Created | ADR for OTEL adoption |
+
+### Tests created — `tests/unit/test_tracing.py` (10 tests)
+
+| Test | Assertion |
+|------|-----------|
+| `test_get_tracer_returns_tracer` | `get_tracer()` returns a `Tracer` without error |
+| `test_trace_span_noop_when_not_configured` | No crash when SDK not configured |
+| `test_trace_span_yields_span` | Context manager yields without error |
+| `test_trace_span_sets_attributes` | Attributes appear in exported span |
+| `test_trace_span_records_exception` | Exception is recorded on span and re-raised |
+| `test_spans_captured_by_in_memory_exporter` | Span name appears in `InMemorySpanExporter` |
+| `test_configure_tracer_sets_configured_flag` | `_configured` is True after configure |
+| `test_configure_tracer_idempotent` | Second call does not add extra processors |
+| `test_configure_tracer_console_does_not_crash` | Console exporter path does not raise |
+| `test_span_name_preserved` | `span.name` matches the argument passed to `trace_span` |
+
+---
+
 ## [test/rag-evaluation-gates] — RAG Evaluation Gates — 2026-06-11
 
 **Commit:** `906ae0f`
