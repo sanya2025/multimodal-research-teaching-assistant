@@ -35,7 +35,7 @@ class _YamlConfigSource(PydanticBaseSettingsSource):
 
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(
-        env_file=".env",
+        env_file=str(_REPO_ROOT / ".env"),
         env_file_encoding="utf-8",
         extra="ignore",
     )
@@ -44,8 +44,8 @@ class Settings(BaseSettings):
     llm_provider: Literal["ollama", "huggingface", "openai", "anthropic", "google"] = "ollama"
 
     ollama_host: str = "http://localhost:11434"
-    ollama_llm_model: str = "llama3.2:3b"
-    ollama_vlm_model: str = "qwen2.5vl:7b"
+    ollama_llm_model: str = "llama3.2:latest"
+    ollama_vlm_model: str = "qwen2.5vl:latest"
 
     huggingface_hub_token: str | None = None
     hf_llm_model: str = "meta-llama/Llama-3.2-3B-Instruct"
