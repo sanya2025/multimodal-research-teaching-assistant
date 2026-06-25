@@ -5,6 +5,62 @@ Each entry maps tutorial notebook cells → `src/mrta/` modules → production n
 
 ---
 
+## [feat/retrieval-scores] — Retrieval scores in Streamlit UI — 2026-06-22
+
+**Commit:** pending
+
+Threads FAISS cosine similarity scores from the vector store through to the Streamlit UI.
+`VectorStore.search()` previously discarded the scores returned by `faiss.IndexFlatIP.search()`.
+A new `search_with_scores()` method returns `(Chunk, float)` pairs; `search()` delegates to it
+so all existing callers are unaffected. `rag_query()` now calls `search_with_scores()` and
+includes a `"scores"` key in its return dict. The `SourceChunk` API schema gains an optional
+`score: float | None` field, populated by the `/ask` router. The Streamlit UI renders the score
+next to each retrieved chunk header with a colour cue: green ≥ 0.70, orange ≥ 0.40, red < 0.40.
+Score is cosine similarity in `[0, 1]` — scores consistently below 0.40 signal that the indexed
+documents do not contain the answer to the question.
+
+### Changed files
+
+| File | Change | Notes |
+|------|--------|-------|
+| `src/mrta/retrieval/vector_store.py` | Updated | Added `search_with_scores() -> list[tuple[Chunk, float]]`; `search()` delegates to it |
+| `src/mrta/core/rag_pipeline.py` | Updated | Calls `search_with_scores()`; returns `scores: list[float]` alongside `sources` and `answer` |
+| `apps/api/schemas/ask.py` | Updated | `SourceChunk` gains `score: float \| None = None` |
+| `apps/api/routers/ask.py` | Updated | Populates `score` on each `SourceChunk` from `result["scores"]` |
+| `apps/streamlit/app.py` | Updated | Retrieved chunks expander shows score with colour label (green/orange/red) |
+
+### No new test files
+
+`search_with_scores()` is covered transitively by the existing `TestVectorStore.test_search_*`
+tests via the delegating `search()`. A direct test for score range and ordering can be added to
+`tests/unit/test_vector_store.py` if score correctness becomes a gate requirement.
+
+---
+
+## [fix/config-env-path] — Config: absolute .env path + slim dev.yaml — 2026-06-22
+
+**Commit:** pending
+
+Fixes `.env` values being silently ignored when `os.getcwd()` was not the repo root (e.g.
+inside a Jupyter kernel). `env_file` in `Settings.model_config` was a relative path `".env"`;
+pydantic-settings resolved it against `os.getcwd()` at instantiation time, which is not
+guaranteed inside notebooks. Changed to `str(_REPO_ROOT / ".env")` — an absolute path derived
+from the module file's location, always pointing to the repo root regardless of cwd.
+
+Also removes the 10 values in `configs/dev.yaml` that were identical to the Python-level
+defaults in `config.py`, leaving only the 5 that are true dev overrides. `config.py` is now
+the single source of truth for fallback defaults; `dev.yaml` only overrides what actually
+differs in the dev environment.
+
+### Changed files
+
+| File | Change | Notes |
+|------|--------|-------|
+| `src/mrta/core/config.py` | Updated | `env_file=".env"` → `env_file=str(_REPO_ROOT / ".env")` |
+| `configs/dev.yaml` | Updated | Trimmed to 5 true dev overrides: `embedding_model`, `clip_model`, `chunk_size`, `chunk_overlap`, `log_level` |
+
+---
+
 ## [feat/opentelemetry-tracing] — OpenTelemetry Tracing — 2026-06-12
 
 **Commit:** `903baa1`

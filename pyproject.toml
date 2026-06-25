@@ -89,8 +89,9 @@ streamlit = [
 
 # Evaluation + observability
 eval = [
-    "ragas>=0.1.10",
+    "ragas>=0.2,<0.3",
     "deepeval>=0.21.0",
+    "nest-asyncio>=1.6.0",
 ]
 
 # OpenTelemetry tracing (console + OTLP/gRPC export)
