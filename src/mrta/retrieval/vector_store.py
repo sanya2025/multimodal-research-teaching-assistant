@@ -45,11 +45,19 @@ class VectorStore:
 
     def search(self, query: str, k: int = 5) -> list[Chunk]:
         """Return top-k Chunks by cosine similarity to query."""
+        return [chunk for chunk, _ in self.search_with_scores(query, k)]
+
+    def search_with_scores(self, query: str, k: int = 5) -> list[tuple[Chunk, float]]:
+        """Return top-k (Chunk, cosine_score) pairs. Score is in [0, 1]."""
         if not self._chunks:
             return []
         q = self._embedder.embed([query])
         scores, idx = self._ensure_index().search(q, k)
-        return [self._chunks[i] for i in idx[0] if 0 <= i < len(self._chunks)]
+        return [
+            (self._chunks[i], float(scores[0][rank]))
+            for rank, i in enumerate(idx[0])
+            if 0 <= i < len(self._chunks)
+        ]
 
     def save(self, path: Path | str) -> None:
         """Write index.faiss + metadata.jsonl + config.json to path."""

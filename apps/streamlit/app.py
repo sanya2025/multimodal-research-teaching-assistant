@@ -74,6 +74,12 @@ if st.button("Ask", type="primary", disabled=not question):
 
     with st.expander("Retrieved chunks"):
         for s in resp["sources"]:
-            st.markdown(f"**page {s['page']}**  \n_{s['chunk_id']}_")
+            score = s.get("score")
+            score_label = ""
+            if score is not None:
+                s_rounded = round(score, 3)
+                colour = "green" if s_rounded >= 0.7 else "orange" if s_rounded >= 0.4 else "red"
+                score_label = f" :{colour}[score {s_rounded:.3f}]"
+            st.markdown(f"**page {s['page']}**{score_label}  \n_{s['chunk_id']}_")
             st.markdown(f"> {s['preview']}")
             st.divider()

@@ -14,6 +14,7 @@ class SourceChunk(BaseModel):
     page: int
     chunk_id: str
     preview: str  # first 200 chars of Chunk.text
+    score: float | None = None  # cosine similarity in [0, 1]
 
 
 class AskResponse(BaseModel):

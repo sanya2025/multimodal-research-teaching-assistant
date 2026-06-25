@@ -29,7 +29,7 @@ def rag_query(
     cross-encoder and only the top rerank_top_n chunks are passed to the LLM.
 
     Returns:
-        {"answer": str, "sources": list[Chunk], "latency_s": float}
+        {"answer": str, "sources": list[Chunk], "scores": list[float], "latency_s": float}
     """
     from mrta.observability.tracing import trace_span
     from mrta.prompts import load_prompt
@@ -41,14 +41,17 @@ def rag_query(
         span.set_attribute("reranker.enabled", reranker is not None)
         span.set_attribute("reranker.top_n", rerank_top_n)
         span.set_attribute("model.llm", llm.model)
-        sources: list[Chunk] = vector_store.search(question, k=top_k)
+        retrieved = vector_store.search_with_scores(question, k=top_k)
+        sources: list[Chunk] = [c for c, _ in retrieved]
+        retrieval_scores: list[float] = [s for _, s in retrieved]
         span.set_attribute("retrieval.chunk_count", len(sources))
         if reranker is not None:
             sources = reranker.rerank(question, sources, top_n=rerank_top_n)
+            retrieval_scores = retrieval_scores[: len(sources)]
         prompt = load_prompt("rag", chunks=sources, question=question)
         answer: str = llm.chat(
             [{"role": "system", "content": SYSTEM}, {"role": "user", "content": prompt}]
         )
         latency_s = time.time() - t0
         span.set_attribute("latency_ms", latency_s * 1000)
-    return {"answer": answer, "sources": sources, "latency_s": latency_s}
+    return {"answer": answer, "sources": sources, "scores": retrieval_scores, "latency_s": latency_s}
