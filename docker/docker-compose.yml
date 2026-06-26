@@ -8,13 +8,11 @@ services:
       - "8000:8000"
     environment:
       - MRTA_ENV=dev
+      - OLLAMA_HOST=http://host.docker.internal:11434
     env_file:
       - ../.env
     volumes:
       - ../data:/app/data
-    depends_on:
-      ollama:
-        condition: service_healthy
     healthcheck:
       test: ["CMD", "python", "-c",
              "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
@@ -31,6 +29,7 @@ services:
       - "8501:8501"
     environment:
       - MRTA_ENV=dev
+      - OLLAMA_HOST=http://host.docker.internal:11434
     env_file:
       - ../.env
     volumes:
@@ -45,19 +44,3 @@ services:
       timeout: 5s
       start_period: 30s
       retries: 3
-
-  ollama:
-    image: ollama/ollama:latest
-    ports:
-      - "11434:11434"
-    volumes:
-      - ollama_models:/root/.ollama
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:11434/api/tags"]
-      interval: 15s
-      timeout: 5s
-      start_period: 60s
-      retries: 5
-
-volumes:
-  ollama_models:
