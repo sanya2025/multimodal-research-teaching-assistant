@@ -11,6 +11,7 @@ __pycache__/
 .venv/
 venv/
 env/
+.venv311/
 
 # ==========================================================
 # Environment Variables
@@ -39,6 +40,7 @@ env/
 # Testing
 # ==========================================================
 .pytest_cache/
+.deepeval/
 .coverage
 .coverage.*
 htmlcov/
@@ -68,6 +70,7 @@ outputs/
 reports/
 artifacts/
 exports/
+docs/screenshots/
 
 # ==========================================================
 # notebooks
