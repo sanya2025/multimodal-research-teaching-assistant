@@ -41,7 +41,7 @@ MOCK_ANSWER = "According to [page 1], attention is the core mechanism."
 @pytest.fixture
 def mock_store() -> MagicMock:
     store = MagicMock()
-    store.search.return_value = FAKE_CHUNKS
+    store.search_with_scores.return_value = [(c, 0.9) for c in FAKE_CHUNKS]
     store._chunks = FAKE_CHUNKS
     return store
 

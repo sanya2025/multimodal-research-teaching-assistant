@@ -55,7 +55,7 @@ class TestRagQuery:
     @pytest.fixture
     def mock_store(self) -> MagicMock:
         store = MagicMock()
-        store.search.return_value = FAKE_CHUNKS
+        store.search_with_scores.return_value = [(c, 0.9) for c in FAKE_CHUNKS]
         return store
 
     @pytest.fixture
@@ -79,7 +79,7 @@ class TestRagQuery:
 
     def test_top_k_1_returns_one_source(self, mock_llm: MagicMock) -> None:
         store = MagicMock()
-        store.search.return_value = [FAKE_CHUNKS[0]]
+        store.search_with_scores.return_value = [(FAKE_CHUNKS[0], 0.9)]
         result = rag_query("test?", store, mock_llm, top_k=1)
         assert len(result["sources"]) == 1
 
