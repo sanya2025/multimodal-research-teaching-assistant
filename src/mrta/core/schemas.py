@@ -16,6 +16,7 @@ class PageRecord(BaseModel):
     text: str
     n_images: int
     source: str
+    blocks: list[tuple[float, float, float, float, str, int, int]] = []
 
 
 class PdfDocument(BaseModel):

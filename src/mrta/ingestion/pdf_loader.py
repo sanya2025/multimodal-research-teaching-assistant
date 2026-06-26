@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import hashlib
+import re
 from pathlib import Path
 
 import fitz  # PyMuPDF
@@ -16,7 +17,7 @@ def _doc_id(path: Path) -> str:
     return f"{path.stem}_{h}"
 
 
-def load_pdf(path: str | Path) -> PdfDocument:
+def load_pdf(path: str | Path, *, dehyphenate: bool = True) -> PdfDocument:
     path = Path(path)
     try:
         doc = fitz.open(path)
@@ -25,13 +26,17 @@ def load_pdf(path: str | Path) -> PdfDocument:
     doc_id = _doc_id(path)
     pages = []
     for i, page in enumerate(doc, start=1):
-        text = page.get_text("text")  # plain text; "blocks" gives layout boxes
+        text = page.get_text("text")
+        if dehyphenate:
+            text = re.sub(r"-\n(\S)", r"\1", text)
+        blocks = page.get_text("blocks")
         n_images = len(page.get_images(full=True))
         pages.append(
             PageRecord(
                 doc_id=doc_id,
                 page=i,
                 text=text,
+                blocks=blocks,
                 n_images=n_images,
                 source=path.name,
             )
