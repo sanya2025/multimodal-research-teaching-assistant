@@ -17,7 +17,12 @@ def ask(req: AskRequest, store=Depends(get_store), llm=Depends(get_llm)) -> AskR
     result = rag_query(req.question, vector_store=store, llm=llm, top_k=req.top_k)
     scores = result.get("scores", [])
     sources = [
-        SourceChunk(page=c.page, chunk_id=c.chunk_id, preview=c.text[:200], score=scores[i] if i < len(scores) else None)
+        SourceChunk(
+            page=c.page,
+            chunk_id=c.chunk_id,
+            preview=c.text[:200],
+            score=scores[i] if i < len(scores) else None,
+        )
         for i, c in enumerate(result["sources"])
     ]
     return AskResponse(answer=result["answer"], sources=sources, latency_s=result["latency_s"])

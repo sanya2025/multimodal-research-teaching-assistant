@@ -54,4 +54,9 @@ def rag_query(
         )
         latency_s = time.time() - t0
         span.set_attribute("latency_ms", latency_s * 1000)
-    return {"answer": answer, "sources": sources, "scores": retrieval_scores, "latency_s": latency_s}
+    return {
+        "answer": answer,
+        "sources": sources,
+        "scores": retrieval_scores,
+        "latency_s": latency_s,
+    }
