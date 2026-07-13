@@ -52,7 +52,7 @@ PDFs / Slides / Images
         ↓
    FastAPI backend  →  Streamlit UI
         ↑
-   Logs + Ragas evaluation + Docker
+   Logs + DeepEval evaluation + Docker
 ```
 
 ## Tech stack
@@ -68,9 +68,9 @@ PDFs / Slides / Images
 | VLM              | Ollama `qwen2.5vl:7b` / HF `Qwen2-VL-2B-Instruct`                      | Open-source, runnable on consumer hardware.                                          |
 | Backend          | FastAPI + Pydantic v2                                                  | Typed, async-ready, auto-docs at `/docs`.                                            |
 | Frontend         | Streamlit                                                              | Single-file UI, fast iteration.                                                      |
-| Evaluation       | Ragas, DeepEval                                                        | Groundedness, faithfulness, context precision; CI-friendly assertions.               |
+| Evaluation       | DeepEval (+ Ragas as optional baseline)                                | Groundedness, faithfulness, context precision; CI-friendly assertions.               |
 | Observability    | Structured JSONL logs + OpenTelemetry hooks                            | Per-run traceability, low overhead.                                                  |
-| Infra            | Docker + docker-compose                                                | Reproducible local + production environment.                                         |
+| Infra            | Docker + Compose (`compose.yaml`)                                      | Reproducible local + production environment; `docker compose up` from repo root.     |
 | CI               | GitHub Actions (ruff, black, pytest)                                   | Standard senior-engineer hygiene.                                                    |
 
 ## Setup
@@ -78,6 +78,11 @@ PDFs / Slides / Images
 ```bash
 git clone <your-fork-url>
 cd multimodal-research-teaching-assistant
+
+cp .env.example .env
+# Edit .env if needed:
+#   OLLAMA_HOST=http://localhost:11434        ← running the app directly (default)
+#   OLLAMA_HOST=http://host.docker.internal:11434  ← running inside Docker
 
 python -m venv .venv
 source .venv/bin/activate   # Windows: .venv\Scripts\activate
@@ -89,8 +94,6 @@ pip install -e ".[all]"
 pip install -e ".[api,eval]"   # backend + evaluation
 pip install -e ".[dev]"        # development tooling only
 
-cp .env.example .env
-
 # Install Ollama (https://ollama.com) then pull the default models:
 ollama pull llama3.2:3b
 ollama pull qwen2.5vl:7b
@@ -99,14 +102,26 @@ ollama pull nomic-embed-text
 
 ## Quick start
 
+### Option A — run locally
+
 ```bash
-# 1. Walk through the tutorials end-to-end
+# Walk through the tutorials end-to-end
 jupyter lab notebooks/
 
-# 2. Or run the app directly:
+# Or run the app directly (Ollama must be running on localhost:11434):
 uvicorn apps.api.main:app --reload --port 8000    # backend
 streamlit run apps/streamlit/app.py               # frontend (separate terminal)
 ```
+
+### Option B — Docker (recommended for a clean environment)
+
+```bash
+# Requires Docker Desktop and Ollama running on the host machine.
+# The compose file sets OLLAMA_HOST=http://host.docker.internal:11434 automatically.
+docker compose up --build
+```
+
+API: <http://localhost:8000/docs> · UI: <http://localhost:8501>
 
 Upload a paper, ask a question, see the answer with page citations.
 
@@ -128,6 +143,8 @@ multimodal-research-teaching-assistant/
 ├── RESEARCH_NOTES.md
 ├── pyproject.toml
 ├── requirements.txt
+├── compose.yaml          ← Docker entry point (run from repo root)
+├── .env.example          ← copy to .env before first run
 ├── src/
 │   └── mrta/             installable Python library (pip install -e .)
 │       ├── core/         config.py, schemas.py, llm.py, rag_pipeline.py
@@ -142,12 +159,17 @@ multimodal-research-teaching-assistant/
 │   ├── api/              FastAPI entry point (imports from mrta.*)
 │   └── streamlit/        Streamlit UI
 ├── configs/              dev.yaml, test.yaml — environment-specific defaults
-├── data/                 raw/, processed/, vector_store/, logs/
+├── data/
+│   ├── sample/           demo PDF (Attention Is All You Need)
+│   ├── uploads/          runtime — user-uploaded files (gitignored)
+│   ├── logs/             runtime — structured JSONL logs (gitignored)
+│   └── vector_store/     runtime — FAISS indexes (gitignored)
+├── examples/             standalone usage examples
 ├── notebooks/
 │   ├── tutorials/        Original series (00 → 09) — inline implementations
 │   └── production/       Same series — imports from mrta.* library
 ├── tests/                pytest unit + integration + fixtures
-├── docker/               Dockerfile.api, Dockerfile.streamlit, docker-compose.yml
+├── docker/               Dockerfile.api, Dockerfile.streamlit
 ├── docs/                 adr/, architecture/, evaluation/, deployment/
 └── .github/workflows/    ci.yml
 ```
@@ -172,7 +194,7 @@ Both are fully runnable on local models (Ollama + Hugging Face, no API keys):
 | 6 | `2026-05-25-phase06-streamlit-frontend.ipynb`           | UI walkthrough, upload/ask/cite flow            |
 | 7 | `2026-05-25-phase07-figure-extraction-and-vlm.ipynb`    | Figure extraction, CLIP, LLaVA captioning       |
 | 8 | `2026-05-25-phase08-teaching-modes-and-prompts.ipynb`   | Beginner/grad/interview/quiz prompt patterns    |
-| 9 | `2026-05-25-phase09-evaluation-logging-docker.ipynb`    | Ragas, structured logs, Docker, README polish   |
+| 9 | `2026-05-25-phase09-evaluation-logging-docker.ipynb`    | DeepEval metrics, structured logs, Docker       |
 
 ## Evaluation
 
@@ -185,7 +207,7 @@ We track six metrics per question:
 - **Latency** — end-to-end seconds, p50/p95.
 - **Hallucination rate** — claims not in any retrieved chunk.
 
-Notebook 09 builds the eval pipeline with Ragas and a small hand-labeled benchmark.
+Notebook 09 builds the eval pipeline with DeepEval and a small hand-labeled benchmark (`tests/evaluation/datasets/golden_qa.yaml`).
 
 ## Design tradeoffs
 
@@ -205,7 +227,9 @@ Key decisions are documented as Architecture Decision Records in [`docs/adr/`](d
 | [ADR-003](docs/adr/ADR-003-llm-provider-strategy.md) | Ollama default, provider-agnostic LLM client |
 | [ADR-004](docs/adr/ADR-004-embedding-model-selection.md) | Two-tier embeddings (MiniLM for CI, nomic-embed-text for dev) |
 | [ADR-005](docs/adr/ADR-005-rag-architecture.md) | Chunking, retrieval, generation, and citation design |
-| [ADR-006](docs/adr/ADR-006-evaluation-framework.md) | Ragas + DeepEval, 6 evaluation metrics |
+| [ADR-006](docs/adr/ADR-006-evaluation-framework.md) | DeepEval primary evaluation framework, 6 metrics |
+| [ADR-007](docs/adr/ADR-007-cross-encoder-reranking.md) | Cross-encoder reranking strategy |
+| [ADR-007](docs/adr/ADR-007-opentelemetry-tracing.md) | OpenTelemetry tracing and observability |
 
 ## Limitations & future work
 
