@@ -64,6 +64,39 @@ Open:
 2. Click **Index document**
 3. Ask: *"What problem does self-attention solve?"*
 
+## Python package
+
+The core library is distributed as `mrta-rag` on PyPI:
+
+```bash
+# Core only (config, schemas, LLM client, prompts)
+pip install mrta-rag
+
+# Add PDF ingestion
+pip install "mrta-rag[pdf]"
+
+# Add chunking, embeddings, and FAISS vector search
+pip install "mrta-rag[retrieval]"
+
+# Full install (matches the Docker environment)
+pip install "mrta-rag[all]"
+```
+
+```python
+import mrta
+
+print(mrta.__version__)   # 0.1.0
+
+# Core API available after pip install mrta-rag:
+from mrta import rag_query, LLMClient, Settings, load_prompt
+
+# Requires mrta-rag[pdf]:
+from mrta import load_pdf, chunk_pdf
+
+# Requires mrta-rag[retrieval]:
+from mrta import Embedder, VectorStore
+```
+
 ## Development
 
 ### Local setup (without Docker)

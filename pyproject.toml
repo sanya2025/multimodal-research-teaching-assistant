@@ -9,47 +9,69 @@ packages = ["src/mrta"]
 # Package metadata
 # ---------------------------------------------------------------------------
 [project]
-name = "mrta"
+name = "mrta-rag"
 version = "0.1.0"
-description = "Multimodal AI Research & Teaching Assistant — PDF ingestion, RAG, VLM, evaluation"
+description = "A local citation-aware research and teaching assistant for technical PDFs"
 readme = "README.md"
 license = { file = "LICENSE" }
 requires-python = ">=3.11"
 
+authors = [
+    { name = "Sanja Damjanovic" },
+]
+
+# Core dependencies — always installed. Heavy ML libs live in extras below.
 dependencies = [
     # Config / env
     "pydantic>=2.6.0",
     "pydantic-settings>=2.2.0",
     "python-dotenv>=1.0.0",
     "PyYAML>=6.0",
-    # Ingestion
+    # Prompts
+    "jinja2>=3.1.4",
+    # Observability
+    "structlog>=24.1.0",
+    "opentelemetry-api>=1.25.0",
+    # LLM client (Ollama server is an external runtime requirement)
+    "ollama>=0.2.0",
+    # HTTP client — used by Embedder for Ollama embeddings
+    "httpx>=0.27.0",
+    # Numerics — used by Embedder and VectorStore
+    "numpy>=1.26.0",
+    # Image handling — used by VLMClient and figure extractor
+    "Pillow>=10.0.0",
+]
+
+# project.urls must come after all scalar/array keys in [project]
+[project.urls]
+Homepage = "https://github.com/sanya2025/multimodal-research-teaching-assistant"
+Repository = "https://github.com/sanya2025/multimodal-research-teaching-assistant"
+Issues = "https://github.com/sanya2025/multimodal-research-teaching-assistant/issues"
+
+# ---------------------------------------------------------------------------
+# Optional dependency groups
+# Install with: pip install "mrta-rag[group]"
+# ---------------------------------------------------------------------------
+[project.optional-dependencies]
+
+# PDF parsing and figure extraction
+pdf = [
     "PyMuPDF>=1.24.0",
     "pdfplumber>=0.11.0",
-    "Pillow>=10.0.0",
-    # Chunking + embeddings
+]
+
+# Text chunking + embedding + vector search
+retrieval = [
     "sentence-transformers>=2.7.0",
     "tiktoken>=0.7.0",
     "langchain-text-splitters>=0.2.0",
     "langchain>=0.2.0",
     "langchain-core>=0.2.0",
     "langchain-community>=0.2.0",
-    # Vector store
     "faiss-cpu>=1.8.0",
-    # LLM client (lightweight HTTP wrapper — Ollama server itself is external)
-    "ollama>=0.2.0",
-    # Prompts + observability
-    "jinja2>=3.1.4",
-    "structlog>=24.1.0",
-    "opentelemetry-api>=1.25.0",
 ]
 
-# ---------------------------------------------------------------------------
-# Optional dependency groups
-# Install with: pip install -e ".[group]"
-# ---------------------------------------------------------------------------
-[project.optional-dependencies]
-
-# Local LLM inference (heavy — torch, transformers, HuggingFace models)
+# Local LLM inference via HuggingFace (heavy — torch, transformers)
 llm = [
     "transformers>=4.41.0",
     "accelerate>=0.30.0",
@@ -79,7 +101,6 @@ api = [
     "fastapi>=0.111.0",
     "uvicorn[standard]>=0.30.0",
     "python-multipart>=0.0.9",
-    "httpx>=0.27.0",
 ]
 
 # Streamlit frontend
@@ -87,7 +108,7 @@ streamlit = [
     "streamlit>=1.35.0",
 ]
 
-# Evaluation + observability
+# Evaluation
 eval = [
     "ragas>=0.2,<0.3",
     "deepeval>=0.21.0",
@@ -96,7 +117,6 @@ eval = [
 
 # OpenTelemetry tracing (console + OTLP/gRPC export)
 otel = [
-    "opentelemetry-api>=1.25.0",
     "opentelemetry-sdk>=1.25.0",
     "opentelemetry-exporter-otlp-proto-grpc>=1.25.0",
 ]
@@ -107,6 +127,8 @@ dev = [
     "pytest-asyncio>=0.23.0",
     "ruff>=0.4.0",
     "black>=24.4.0",
+    "build>=1.2.0",
+    "twine>=5.0.0",
     "jupyterlab>=4.2.0",
     "ipykernel>=6.29.0",
     "matplotlib>=3.8.0",
@@ -120,7 +142,7 @@ dev = [
 
 # Everything
 all = [
-    "mrta[llm,multimodal,ocr,qdrant,api,streamlit,eval,otel,dev]",
+    "mrta-rag[pdf,retrieval,llm,multimodal,ocr,qdrant,api,streamlit,eval,otel,dev]",
 ]
 
 # ---------------------------------------------------------------------------
