@@ -4,7 +4,7 @@
 # Override anything here with .env or shell env vars.
 # Switch environment: export MRTA_ENV=dev (default)
 
-embedding_model: nomic-embed-text
+embedding_model: sentence-transformers/all-MiniLM-L6-v2
 clip_model: ViT-B-32
 
 chunk_size: 1000

@@ -11,16 +11,19 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4.2.2
+      - uses: actions/checkout@v4
 
       - name: Set up Python 3.11
-        uses: actions/setup-python@v5.4.0
+        uses: actions/setup-python@v5
         with:
           python-version: "3.11"
           cache: "pip"
 
       - name: Install dependencies
-        run: pip install -e ".[dev,api]"
+        # Include all extras needed to collect and run every test module.
+        # llm/ocr/qdrant are excluded: torch (~2 GB) and system OCR deps
+        # are not required by any current test.
+        run: pip install -e ".[dev,api,pdf,retrieval,multimodal,eval]"
 
       - name: Lint (ruff)
         run: ruff check src/ tests/ apps/
@@ -38,16 +41,16 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4.2.2
+      - uses: actions/checkout@v4
 
       - name: Set up Python 3.11
-        uses: actions/setup-python@v5.4.0
+        uses: actions/setup-python@v5
         with:
           python-version: "3.11"
           cache: "pip"
 
       - name: Install dependencies
-        run: pip install -e ".[dev,api]"
+        run: pip install -e ".[dev,api,pdf,retrieval,multimodal,eval]"
 
       - name: Type check (mypy)
         run: mypy src/ apps/ --ignore-missing-imports
@@ -57,16 +60,16 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4.2.2
+      - uses: actions/checkout@v4
 
       - name: Set up Python 3.11
-        uses: actions/setup-python@v5.4.0
+        uses: actions/setup-python@v5
         with:
           python-version: "3.11"
           cache: "pip"
 
       - name: Install dependencies
-        run: pip install --upgrade pip && pip install -e ".[dev,api]"
+        run: pip install --upgrade pip && pip install -e ".[dev,api,pdf,retrieval,multimodal,eval]"
 
       - name: Vulnerability scan (pip-audit)
         # continue-on-error: transient PyPI 503s can crash pip-audit; audit is best-effort in CI
@@ -80,7 +83,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4.2.2
+      - uses: actions/checkout@v4
 
       - name: Build API image
         run: docker build -f docker/Dockerfile.api -t mrta-api:ci .
