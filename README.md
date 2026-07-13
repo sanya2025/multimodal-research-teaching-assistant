@@ -1,247 +1,152 @@
 # Multimodal AI Research & Teaching Assistant
 
-A production-style multimodal AI system that ingests PDFs, slides, diagrams, and images, and produces grounded answers, figure explanations, summaries, quizzes, and teaching plans — all with citations back to the source.
+Upload a research paper PDF, index it locally, and get answers grounded in the
+document with exact page citations — no cloud API required. The system runs
+entirely on your machine using Ollama for language models and FAISS for vector
+search. This repository is also a 10-notebook tutorial series covering every
+component end-to-end, from PDF ingestion to evaluation.
 
-> **MVP promise:** Upload a research paper PDF, ask questions, get answers grounded in the paper with page citations. Then explain figures with a vision-language model.
+## Features
 
-This repo is the flagship portfolio project paired with a 10-notebook tutorial series in [`notebooks/`](notebooks/) that walks through every phase end-to-end on local open-source models (Ollama + Hugging Face) — no API keys required.
+- Upload a PDF and build a searchable FAISS index
+- Ask questions and receive answers with page citations
+- Five teaching modes: beginner, graduate, interview prep, quiz generation, and figure explanation
+- Optional figure captioning with a vision-language model
+- Fully local: Ollama + Hugging Face, no API keys required
+- Production-grade structure: typed library, FastAPI backend, Streamlit UI, Docker, CI
 
----
+## Prerequisites
 
-## Table of Contents
+**Required:**
 
-- [Multimodal AI Research \& Teaching Assistant](#multimodal-ai-research--teaching-assistant)
-  - [Table of Contents](#table-of-contents)
-  - [Problem statement](#problem-statement)
-  - [Architecture](#architecture)
-  - [Tech stack](#tech-stack)
-  - [Setup](#setup)
-  - [Quick start](#quick-start)
-  - [Repo layout](#repo-layout)
-  - [Tutorial notebooks](#tutorial-notebooks)
-  - [Evaluation](#evaluation)
-  - [Design tradeoffs](#design-tradeoffs)
-  - [Architecture decisions](#architecture-decisions)
-  - [Limitations \& future work](#limitations--future-work)
-  - [License](#license)
+- [Docker Desktop](https://www.docker.com/products/docker-desktop)
+- [Ollama](https://ollama.com)
+- Git
 
----
-
-## Problem statement
-
-Researchers, graduate students, and engineers regularly need to read and reason over PDFs that mix prose, math, diagrams, and code. General-purpose chatbots hallucinate, lose page context, and cannot reliably reason over figures. This project builds a *grounded* assistant: every answer is traced to the page (and ideally the figure) it came from.
-
-## Architecture
-
-```text
-PDFs / Slides / Images
-        ↓
-   Ingestion (PyMuPDF + pdfplumber)
-        ↓
-   Chunking (page-aware, metadata-preserving)
-        ↓
-   Embeddings (sentence-transformers / BGE)   +   Image embeddings (CLIP)
-        ↓                                                  ↓
-            Vector store (FAISS  ↔  Qdrant)
-        ↓
-   Retrieval + optional reranker
-        ↓
-   LLM (Ollama / HF)  +  VLM (LLaVA / Qwen2-VL) for figures
-        ↓
-   Grounded answer with citations
-        ↓
-   FastAPI backend  →  Streamlit UI
-        ↑
-   Logs + DeepEval evaluation + Docker
-```
-
-## Tech stack
-
-| Layer            | Choice                                                                 | Why                                                                                  |
-| ---------------- | ---------------------------------------------------------------------- | ------------------------------------------------------------------------------------ |
-| PDF parsing      | PyMuPDF (`fitz`), pdfplumber                                           | Fast, page-accurate, exposes images and layout boxes.                                |
-| Chunking         | LangChain `RecursiveCharacterTextSplitter` + custom page-aware wrapper | Token-aware, preserves `{doc_id, page, section}` metadata.                           |
-| Text embeddings  | `sentence-transformers/all-MiniLM-L6-v2` (default), BGE-large optional | Free, runs on CPU; BGE for higher quality.                                           |
-| Image embeddings | CLIP (`openai/clip-vit-base-patch32`)                                  | Shared text-image space, standard for multimodal retrieval.                          |
-| Vector store     | FAISS (default), Qdrant (Docker)                                       | FAISS for tutorial simplicity, Qdrant for the production swap demo.                  |
-| LLM              | Ollama (`llama3.2`, `mistral`, `qwen2.5`)                              | Local, no API key, swappable; HF Transformers fallback supported.                    |
-| VLM              | Ollama `qwen2.5vl:7b` / HF `Qwen2-VL-2B-Instruct`                      | Open-source, runnable on consumer hardware.                                          |
-| Backend          | FastAPI + Pydantic v2                                                  | Typed, async-ready, auto-docs at `/docs`.                                            |
-| Frontend         | Streamlit                                                              | Single-file UI, fast iteration.                                                      |
-| Evaluation       | DeepEval (+ Ragas as optional baseline)                                | Groundedness, faithfulness, context precision; CI-friendly assertions.               |
-| Observability    | Structured JSONL logs + OpenTelemetry hooks                            | Per-run traceability, low overhead.                                                  |
-| Infra            | Docker + Compose (`compose.yaml`)                                      | Reproducible local + production environment; `docker compose up` from repo root.     |
-| CI               | GitHub Actions (ruff, black, pytest)                                   | Standard senior-engineer hygiene.                                                    |
-
-## Setup
+Text model:
 
 ```bash
-git clone <your-fork-url>
-cd multimodal-research-teaching-assistant
-
-cp .env.example .env
-# Edit .env if needed:
-#   OLLAMA_HOST=http://localhost:11434        ← running the app directly (default)
-#   OLLAMA_HOST=http://host.docker.internal:11434  ← running inside Docker
-
-python -m venv .venv
-source .venv/bin/activate   # Windows: .venv\Scripts\activate
-
-# Full install (recommended for tutorials):
-pip install -e ".[all]"
-
-# Or install only what you need:
-pip install -e ".[api,eval]"   # backend + evaluation
-pip install -e ".[dev]"        # development tooling only
-
-# Install Ollama (https://ollama.com) then pull the default models:
 ollama pull llama3.2:3b
-ollama pull qwen2.5vl:7b
-ollama pull nomic-embed-text
 ```
+
+**Optional** — enables figure and image captioning (~4 GB):
+
+```bash
+ollama pull qwen2.5vl:7b
+```
+
+The vision model is not required for text-only PDF question answering. When it
+is not installed, the **Explain figure** mode falls back to text-based
+retrieval and shows an in-app prompt with the install command.
 
 ## Quick start
 
-### Option A — run locally
-
 ```bash
-# Walk through the tutorials end-to-end
-jupyter lab notebooks/
-
-# Or run the app directly (Ollama must be running on localhost:11434):
-uvicorn apps.api.main:app --reload --port 8000    # backend
-streamlit run apps/streamlit/app.py               # frontend (separate terminal)
-```
-
-### Option B — Docker (recommended for a clean environment)
-
-```bash
-# Requires Docker Desktop and Ollama running on the host machine.
-# The compose file sets OLLAMA_HOST=http://host.docker.internal:11434 automatically.
+cp .env.example .env
+ollama pull llama3.2:3b
 docker compose up --build
 ```
 
-API: <http://localhost:8000/docs> · UI: <http://localhost:8501>
+Optional — enable figure captioning:
 
-Upload a paper, ask a question, see the answer with page citations.
+```bash
+ollama pull qwen2.5vl:7b
+```
+
+Open:
+
+- UI: <http://localhost:8501>
+- API docs: <http://localhost:8000/docs>
+
+**Demo workflow:**
+
+1. In the sidebar, upload `data/sample/attention_is_all_you_need.pdf`
+2. Click **Index document**
+3. Ask: *"What problem does self-attention solve?"*
+
+## Development
+
+### Local setup (without Docker)
+
+```bash
+python -m venv .venv
+source .venv/bin/activate  # Windows: .venv\Scripts\activate
+pip install -e ".[all]"
+```
+
+Run the backend and frontend in separate terminals:
+
+```bash
+uvicorn apps.api.main:app --reload --port 8000
+streamlit run apps/streamlit/app.py
+```
 
 ### Environment switching
 
-Config is loaded from `configs/{MRTA_ENV}.yaml` with env vars taking priority:
+Config is loaded from `configs/{MRTA_ENV}.yaml`, with env vars and `.env`
+taking priority:
 
 ```bash
-MRTA_ENV=dev pytest    # default — uses configs/dev.yaml
-MRTA_ENV=test pytest   # uses configs/test.yaml (lighter models, test paths)
+MRTA_ENV=test pytest   # lighter models, fast CI
+MRTA_ENV=dev pytest    # full dev config
 ```
 
-## Repo layout
+### Tests
 
-```text
-multimodal-research-teaching-assistant/
-├── README.md
-├── CLAUDE.md
-├── RESEARCH_NOTES.md
-├── pyproject.toml
-├── requirements.txt
-├── compose.yaml          ← Docker entry point (run from repo root)
-├── .env.example          ← copy to .env before first run
-├── src/
-│   └── mrta/             installable Python library (pip install -e .)
-│       ├── core/         config.py, schemas.py, llm.py, rag_pipeline.py
-│       ├── ingestion/    pdf_loader.py, chunker.py
-│       ├── retrieval/    embedder.py, vector_store.py
-│       ├── multimodal/
-│       ├── evaluation/
-│       ├── generation/
-│       ├── prompts/      Jinja2 prompt templates
-│       └── observability/ logging.py
-├── apps/
-│   ├── api/              FastAPI entry point (imports from mrta.*)
-│   └── streamlit/        Streamlit UI
-├── configs/              dev.yaml, test.yaml — environment-specific defaults
-├── data/
-│   ├── sample/           demo PDF (Attention Is All You Need)
-│   ├── uploads/          runtime — user-uploaded files (gitignored)
-│   ├── logs/             runtime — structured JSONL logs (gitignored)
-│   └── vector_store/     runtime — FAISS indexes (gitignored)
-├── examples/             standalone usage examples
-├── notebooks/
-│   ├── tutorials/        Original series (00 → 09) — inline implementations
-│   └── production/       Same series — imports from mrta.* library
-├── tests/                pytest unit + integration + fixtures
-├── docker/               Dockerfile.api, Dockerfile.streamlit
-├── docs/                 adr/, architecture/, evaluation/, deployment/
-└── .github/workflows/    ci.yml
+```bash
+pytest
+pytest tests/unit/        # unit tests only
+pytest tests/evaluation/  # retrieval gate tests
 ```
 
-## Tutorial notebooks
+### Linting and type checking
+
+```bash
+ruff check src/ tests/ apps/
+black --check src/ tests/ apps/
+.venv311/bin/mypy src/ apps/ --ignore-missing-imports
+```
+
+> **Note:** Use a Python 3.11 virtual environment for `mypy`. The default
+> `.venv` uses Python 3.14, whose NumPy stubs use syntax that mypy rejects
+> when `python_version = "3.11"` is set. CI uses Python 3.11 and passes.
+
+### Tutorial notebooks
+
+```bash
+jupyter lab notebooks/
+```
 
 Two parallel versions of the 10-part series:
 
-- **`notebooks/tutorials/`** — original teaching version; every function is defined inline so students can see exactly how it works.
-- **`notebooks/production/`** — same content; functions are imported from `src/mrta/` instead. Use this as the reference for what each notebook looks like once the library module is complete.
+- **`notebooks/production/`** — imports from `src/mrta/`; the reference implementation
+- **`notebooks/tutorials/`** — every function defined inline; use for learning
 
-Both are fully runnable on local models (Ollama + Hugging Face, no API keys):
+| # | Phase | Topic |
+|---|-------|-------|
+| 0 | Setup | Repo scaffold, Ollama, Hugging Face |
+| 1 | Ingestion | PyMuPDF text and image extraction |
+| 2 | Chunking | Fixed, recursive, and semantic strategies |
+| 3 | Embeddings | sentence-transformers + FAISS index |
+| 4 | RAG | End-to-end pipeline with citations |
+| 5 | Backend | FastAPI endpoints and Pydantic schemas |
+| 6 | Frontend | Streamlit upload, ask, cite |
+| 7 | Multimodal | Figure extraction, CLIP, VLM captioning |
+| 8 | Teaching modes | Prompt templates for different audiences |
+| 9 | Evaluation | DeepEval metrics, structured logs, Docker |
 
-| # | Notebook                                                | What you learn                                  |
-|---|---------------------------------------------------------|-------------------------------------------------|
-| 0 | `2026-05-25-phase00-foundations-and-setup.ipynb`        | Repo scaffold, venv, Ollama, HF setup           |
-| 1 | `2026-05-25-phase01-pdf-ingestion.ipynb`                | PyMuPDF text/image extraction, doc schema       |
-| 2 | `2026-05-25-phase02-chunking-strategies.ipynb`          | Fixed/recursive/semantic chunking + metadata    |
-| 3 | `2026-05-25-phase03-embeddings-and-faiss.ipynb`         | sentence-transformers + FAISS index lifecycle   |
-| 4 | `2026-05-25-phase04-rag-pipeline.ipynb`                 | End-to-end RAG with Ollama + citations          |
-| 5 | `2026-05-25-phase05-fastapi-backend.ipynb`              | Endpoints, Pydantic schemas, async patterns     |
-| 6 | `2026-05-25-phase06-streamlit-frontend.ipynb`           | UI walkthrough, upload/ask/cite flow            |
-| 7 | `2026-05-25-phase07-figure-extraction-and-vlm.ipynb`    | Figure extraction, CLIP, LLaVA captioning       |
-| 8 | `2026-05-25-phase08-teaching-modes-and-prompts.ipynb`   | Beginner/grad/interview/quiz prompt patterns    |
-| 9 | `2026-05-25-phase09-evaluation-logging-docker.ipynb`    | DeepEval metrics, structured logs, Docker       |
+### Architecture and design decisions
 
-## Evaluation
+- Tech stack, system diagram, and repo layout: [`docs/architecture/overview.md`](docs/architecture/overview.md)
+- Key design decisions (FAISS vs Qdrant, Ollama vs API, etc.): [`docs/adr/`](docs/adr/)
 
-We track six metrics per question:
-
-- **Answer relevance** — does the answer address the question?
-- **Groundedness** — is every claim supported by retrieved context?
-- **Citation correctness** — do cited pages actually contain the claim?
-- **Retrieval precision** — fraction of retrieved chunks that were useful.
-- **Latency** — end-to-end seconds, p50/p95.
-- **Hallucination rate** — claims not in any retrieved chunk.
-
-Notebook 09 builds the eval pipeline with DeepEval and a small hand-labeled benchmark (`tests/evaluation/datasets/golden_qa.yaml`).
-
-## Design tradeoffs
-
-- **FAISS vs Qdrant.** FAISS is in-process, zero infra, and perfect for the tutorial. We swap to Qdrant in Docker once we want persistence + filtering on metadata. The vector store interface (`src/mrta/retrieval/vector_store.py`) is identical for both.
-- **Local models vs API.** Defaulting to Ollama keeps the project free, private, and reproducible. The LLM client (`src/mrta/core/llm.py`) is provider-agnostic — flipping to OpenAI is one config change.
-- **Chunk size.** 500–800 tokens with 100-token overlap is the sweet spot for research papers; we revisit this in Notebook 02 with a side-by-side recall comparison.
-- **Citations.** We store `{doc_id, page, section, chunk_id}` on every chunk so the LLM can quote exact pages, and we re-verify cited pages in the eval pipeline.
-
-## Architecture decisions
-
-Key decisions are documented as Architecture Decision Records in [`docs/adr/`](docs/adr/):
-
-| ADR | Decision |
-| --- | -------- |
-| [ADR-001](docs/adr/ADR-001-src-layout-and-library-design.md) | `src/` layout and library design |
-| [ADR-002](docs/adr/ADR-002-vector-store-faiss-vs-qdrant.md) | FAISS default with Qdrant swap path |
-| [ADR-003](docs/adr/ADR-003-llm-provider-strategy.md) | Ollama default, provider-agnostic LLM client |
-| [ADR-004](docs/adr/ADR-004-embedding-model-selection.md) | Two-tier embeddings (MiniLM for CI, nomic-embed-text for dev) |
-| [ADR-005](docs/adr/ADR-005-rag-architecture.md) | Chunking, retrieval, generation, and citation design |
-| [ADR-006](docs/adr/ADR-006-evaluation-framework.md) | DeepEval primary evaluation framework, 6 metrics |
-| [ADR-007](docs/adr/ADR-007-cross-encoder-reranking.md) | Cross-encoder reranking strategy |
-| [ADR-007](docs/adr/ADR-007-opentelemetry-tracing.md) | OpenTelemetry tracing and observability |
-
-## Limitations & future work
+## Limitations
 
 - Math is rendered as text; LaTeX-aware parsing would improve recall on equation-heavy papers.
 - Table extraction is basic; ColPali or `unstructured` would help for table-heavy domains.
 - Reranking is a stub; adding a cross-encoder (`bge-reranker-base`) is a one-day improvement.
 - No multi-document graph reasoning yet — a clear next step toward an "agentic" research assistant.
 
----
-
-Made for portfolio review, interview discussion, and actually being useful when reading papers.
-
 ## License
 
-This project is licensed under the MIT License. See the LICENSE file for details.
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.

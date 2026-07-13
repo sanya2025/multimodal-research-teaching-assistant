@@ -16,7 +16,7 @@ import pytest
 from mrta.evaluation.metrics import citation_coverage
 from tests.evaluation.conftest import load_golden_qa
 
-GOLDEN_QA_PATH = Path(__file__).parent / "datasets" / "golden_qa.yaml"
+GOLDEN_QA_PATH = Path(__file__).parents[2] / "data" / "golden_qa.yaml"
 
 
 def test_load_golden_qa_returns_all_items() -> None:

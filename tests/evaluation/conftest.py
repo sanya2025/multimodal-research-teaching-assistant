@@ -5,7 +5,7 @@ from pathlib import Path
 import pytest
 import yaml
 
-GOLDEN_QA_PATH = Path(__file__).parent / "datasets" / "golden_qa.yaml"
+GOLDEN_QA_PATH = Path(__file__).parents[2] / "data" / "golden_qa.yaml"
 
 
 def load_golden_qa(path: Path = GOLDEN_QA_PATH) -> list[dict]:

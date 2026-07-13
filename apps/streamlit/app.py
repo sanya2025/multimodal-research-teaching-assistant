@@ -49,6 +49,15 @@ mode_prefix = {
     "Explain figure": "Explain the figure(s) on the relevant page(s) and what they show. ",
 }[mode]
 
+if mode == "Explain figure":
+    st.info(
+        "This mode retrieves relevant text chunks and asks the language model to describe "
+        "figures from the document context. It does not extract or analyse image pixels"
+        " directly.\n\n"
+        "For visual figure captioning (pixel-level analysis), install the optional vision model:\n"
+        "```\nollama pull qwen2.5vl:7b\n```"
+    )
+
 question = st.text_input("Ask a question about the indexed documents", "")
 k = st.slider("Top-k retrieved chunks", 1, 10, 5)
 

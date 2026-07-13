@@ -20,7 +20,7 @@ from mrta.evaluation.metrics import citation_coverage, mrr, ndcg_at_k, recall_at
 from tests.evaluation.conftest import load_golden_qa
 
 BASELINES_PATH = Path(__file__).parent / "baselines" / "retrieval_metrics.json"
-GOLDEN_QA_PATH = Path(__file__).parent / "datasets" / "golden_qa.yaml"
+GOLDEN_QA_PATH = Path(__file__).parents[2] / "data" / "golden_qa.yaml"
 
 
 @pytest.fixture(scope="module")
