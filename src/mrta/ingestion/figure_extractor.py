@@ -4,8 +4,6 @@ from __future__ import annotations
 
 from pathlib import Path
 
-import fitz  # PyMuPDF
-
 from mrta.core.schemas import FigureRecord
 from mrta.ingestion.pdf_loader import _doc_id
 
@@ -16,6 +14,8 @@ def extract_figures(pdf_path: str | Path) -> list[FigureRecord]:
     CMYK pixmaps are converted to RGB before encoding. Vector-only figures are
     not captured (see production-ready.md caveats for layout-model approach).
     """
+    import fitz  # noqa: PLC0415 — lazy: only needed when [pdf] extra is installed
+
     pdf_path = Path(pdf_path)
     doc = fitz.open(pdf_path)
     did = _doc_id(pdf_path)

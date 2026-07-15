@@ -5,8 +5,10 @@ from __future__ import annotations
 import hashlib
 import re
 from pathlib import Path
+from typing import TYPE_CHECKING
 
-import fitz  # PyMuPDF
+if TYPE_CHECKING:
+    import fitz  # PyMuPDF — runtime import is lazy (requires mrta-rag[pdf])
 
 from mrta.core.exceptions import IngestionError
 from mrta.core.schemas import PageRecord, PdfDocument
@@ -18,6 +20,8 @@ def _doc_id(path: Path) -> str:
 
 
 def load_pdf(path: str | Path, *, dehyphenate: bool = True) -> PdfDocument:
+    import fitz  # noqa: PLC0415 — lazy: only needed when [pdf] extra is installed
+
     path = Path(path)
     try:
         doc = fitz.open(path)
