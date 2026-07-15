@@ -10,6 +10,7 @@ from fastapi.responses import JSONResponse
 
 from apps.api.routers import ask as ask_router
 from apps.api.routers import documents as documents_router
+from apps.api.routers import figures as figures_router
 from apps.api.routers import upload as upload_router
 from mrta.core.config import settings
 from mrta.core.exceptions import IngestionError
@@ -51,6 +52,7 @@ async def ingestion_error_handler(request: Request, exc: IngestionError) -> JSON
 app.include_router(ask_router.router)
 app.include_router(upload_router.router)
 app.include_router(documents_router.router)
+app.include_router(figures_router.router)
 
 
 @app.get("/health")
