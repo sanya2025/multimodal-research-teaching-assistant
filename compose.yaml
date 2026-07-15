@@ -30,6 +30,7 @@ services:
     environment:
       - MRTA_ENV=dev
       - OLLAMA_HOST=http://host.docker.internal:11434
+      - API_URL=http://api:8000
     env_file:
       - .env
     volumes:

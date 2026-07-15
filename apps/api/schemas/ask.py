@@ -12,6 +12,7 @@ class AskRequest(BaseModel):
 
 class SourceChunk(BaseModel):
     page: int
+    source: str  # PDF filename, e.g. "attention_is_all_you_need.pdf"
     chunk_id: str
     preview: str  # first 200 chars of Chunk.text
     score: float | None = None  # cosine similarity in [0, 1]

@@ -19,6 +19,7 @@ def ask(req: AskRequest, store=Depends(get_store), llm=Depends(get_llm)) -> AskR
     sources = [
         SourceChunk(
             page=c.page,
+            source=c.source,
             chunk_id=c.chunk_id,
             preview=c.text[:200],
             score=scores[i] if i < len(scores) else None,
