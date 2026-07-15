@@ -4,6 +4,8 @@ WORKDIR /app
 
 # Copy package definition first for better layer caching
 COPY pyproject.toml ./
+COPY LICENSE ./
+COPY README.md ./
 COPY src/ ./src/
 
 # Install library + Streamlit dependencies only
