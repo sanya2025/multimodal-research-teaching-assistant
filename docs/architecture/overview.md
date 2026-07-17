@@ -37,7 +37,7 @@ PDFs / Slides / Images
 | VLM              | Ollama `qwen2.5vl:7b` / HF `Qwen2-VL-2B-Instruct`                     | Open-source, runnable on consumer hardware.                                          |
 | Backend          | FastAPI + Pydantic v2                                                  | Typed, async-ready, auto-docs at `/docs`.                                            |
 | Frontend         | Streamlit                                                              | Single-file UI, fast iteration.                                                      |
-| Evaluation       | DeepEval (+ Ragas as optional baseline)                                | Groundedness, faithfulness, context precision; CI-friendly assertions.               |
+| Evaluation       | DeepEval                                                               | Groundedness, faithfulness, context precision; CI-friendly assertions.               |
 | Observability    | Structured JSONL logs + OpenTelemetry hooks                            | Per-run traceability, low overhead.                                                  |
 | Infra            | Docker + Compose (`compose.yaml`)                                      | Reproducible local and production environment.                                       |
 | CI               | GitHub Actions (ruff, black, pytest)                                   | Standard senior-engineer hygiene.                                                    |

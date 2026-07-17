@@ -73,7 +73,6 @@ Living document for paper summaries, experiment observations, open questions, an
 ## References
 
 - [MTEB Leaderboard (embedding benchmarks)](https://huggingface.co/spaces/mteb/leaderboard)
-- [Ragas documentation](https://docs.ragas.io/)
 - [Ollama model library](https://ollama.com/library)
 - [PyMuPDF documentation](https://pymupdf.readthedocs.io/)
 - ADRs: [docs/adr/](docs/adr/)

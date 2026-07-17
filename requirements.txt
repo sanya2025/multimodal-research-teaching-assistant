@@ -9,7 +9,7 @@
 # For a specific slice:
 #   pip install -e ".[api]"          FastAPI backend only
 #   pip install -e ".[llm]"          local LLM inference (torch, transformers)
-#   pip install -e ".[eval]"         Ragas + DeepEval evaluation
+#   pip install -e ".[eval]"         DeepEval evaluation
 #   pip install -e ".[all]"          everything
 #
 # This file installs all optional groups (tutorial default):

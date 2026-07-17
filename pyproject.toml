@@ -110,7 +110,6 @@ streamlit = [
 
 # Evaluation
 eval = [
-    "ragas>=0.2,<0.3",
     "deepeval>=0.21.0",
     "nest-asyncio>=1.6.0",
 ]
