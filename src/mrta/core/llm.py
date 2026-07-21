@@ -39,4 +39,8 @@ class LLMClient:
             )
         except Exception as e:
             raise LLMError(f"Ollama chat failed (model={self._model}): {e}") from e
+        self._last_usage = {
+            "prompt_tokens": resp.get("prompt_eval_count", 0),
+            "response_tokens": resp.get("eval_count", 0),
+        }
         return resp["message"]["content"]

@@ -46,6 +46,9 @@ def rag_query(
         sources: list[Chunk] = [c for c, _ in retrieved]
         retrieval_scores: list[float] = [s for _, s in retrieved]
         span.set_attribute("retrieval.chunk_count", len(sources))
+        span.set_attribute("retrieval.top_scores", [round(s, 3) for s in retrieval_scores])
+        span.set_attribute("retrieval.sources", sorted({c.source for c in sources}))
+        span.set_attribute("retrieval.source_filter", source_filter or "")
         if reranker is not None:
             sources = reranker.rerank(question, sources, top_n=rerank_top_n)
             retrieval_scores = retrieval_scores[: len(sources)]
@@ -53,6 +56,10 @@ def rag_query(
         answer: str = llm.chat(
             [{"role": "system", "content": SYSTEM}, {"role": "user", "content": prompt}]
         )
+        usage = getattr(llm, "_last_usage", {})
+        span.set_attribute("llm.prompt_tokens", usage.get("prompt_tokens", 0))
+        span.set_attribute("llm.response_tokens", usage.get("response_tokens", 0))
+        span.set_attribute("answer.length", len(answer))
         latency_s = time.time() - t0
         span.set_attribute("latency_ms", latency_s * 1000)
     return {
