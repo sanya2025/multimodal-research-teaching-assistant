@@ -48,16 +48,29 @@ class VectorStore:
         return [chunk for chunk, _ in self.search_with_scores(query, k)]
 
     def search_with_scores(self, query: str, k: int = 5) -> list[tuple[Chunk, float]]:
-        """Return top-k (Chunk, cosine_score) pairs. Score is in [0, 1]."""
+        """Return top-k unique (Chunk, cosine_score) pairs, deduplicated by chunk_id.
+
+        Over-fetches k*3 candidates from FAISS so that duplicates (e.g. from a
+        document indexed more than once) are absorbed before the k-cap is applied.
+        """
         if not self._chunks:
             return []
         q = self._embedder.embed([query])
-        scores, idx = self._ensure_index().search(q, k)
-        return [
-            (self._chunks[i], float(scores[0][rank]))
-            for rank, i in enumerate(idx[0])
-            if 0 <= i < len(self._chunks)
-        ]
+        fetch_k = min(k * 3, len(self._chunks))
+        scores, idx = self._ensure_index().search(q, fetch_k)
+        seen: set[str] = set()
+        results: list[tuple[Chunk, float]] = []
+        for rank, i in enumerate(idx[0]):
+            if not (0 <= i < len(self._chunks)):
+                continue
+            chunk = self._chunks[i]
+            if chunk.chunk_id in seen:
+                continue
+            seen.add(chunk.chunk_id)
+            results.append((chunk, float(scores[0][rank])))
+            if len(results) == k:
+                break
+        return results
 
     def save(self, path: Path | str) -> None:
         """Write index.faiss + metadata.jsonl + config.json to path."""

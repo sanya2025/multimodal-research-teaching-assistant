@@ -126,3 +126,13 @@ class TestVectorStore:
         vs = VectorStore(embedder)
         vs.add([])  # must not raise
         assert vs.search(QUERY, k=3) == []
+
+    def test_search_deduplicates_by_chunk_id(
+        self, embedder: _FakeEmbedder, chunks: list[Chunk]
+    ) -> None:
+        vs = VectorStore(embedder)
+        vs.add(chunks)
+        vs.add(chunks)  # index every chunk twice, simulating a re-upload
+        results = vs.search(QUERY, k=len(chunks))
+        ids = [c.chunk_id for c in results]
+        assert len(ids) == len(set(ids)), "duplicate chunk_ids returned"
