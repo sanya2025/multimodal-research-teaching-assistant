@@ -99,6 +99,7 @@ if st.button("Ask", type="primary", disabled=not question):
         pages_by_source.setdefault(s["source"], [])
         if s["page"] not in pages_by_source[s["source"]]:
             pages_by_source[s["source"]].append(s["page"])
+    cited_pages = sorted({s["page"] for s in resp["sources"]})
     if pages_by_source:
         parts = [
             f"{src} · pages: {', '.join(str(p) for p in sorted(pages))}"
@@ -120,13 +121,14 @@ if st.button("Ask", type="primary", disabled=not question):
             st.divider()
 
     # --- explain figure: call /figures for cited pages --------------------
-    if mode == "Explain figure" and selected_source and cited_pages:
+    source_pages = pages_by_source.get(selected_source, []) if selected_source else []
+    if mode == "Explain figure" and selected_source and source_pages:
         st.subheader("Figure Captions")
         with st.spinner("Extracting and captioning figures..."):
             try:
                 fig_r = httpx.post(
                     f"{API}/figures",
-                    json={"source": selected_source, "pages": cited_pages},
+                    json={"source": selected_source, "pages": source_pages},
                     timeout=300,
                 )
                 fig_r.raise_for_status()
