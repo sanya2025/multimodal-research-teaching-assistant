@@ -14,7 +14,9 @@ router = APIRouter()
 @router.post("/ask", response_model=AskResponse)
 def ask(req: AskRequest, store=Depends(get_store), llm=Depends(get_llm)) -> AskResponse:
     """Ask a question; return a grounded answer with page citations."""
-    result = rag_query(req.question, vector_store=store, llm=llm, top_k=req.top_k, source_filter=req.source)
+    result = rag_query(
+        req.question, vector_store=store, llm=llm, top_k=req.top_k, source_filter=req.source
+    )
     scores = result.get("scores", [])
     sources = [
         SourceChunk(
