@@ -40,12 +40,26 @@ async def upload(file: UploadFile = File(...), store=Depends(get_store)) -> Uplo
 
     # 5. Safe filename — strip any directory components
     safe_name = Path(filename).name
+
+    # 6. Duplicate guard — if this source is already in the index, skip re-indexing
+    indexed = {c.source for c in store._chunks}
+    if safe_name in indexed:
+        existing = [c for c in store._chunks if c.source == safe_name]
+        n_pages = max(c.page for c in existing)
+        return UploadResponse(
+            doc_id=existing[0].doc_id,
+            source=safe_name,
+            n_pages=n_pages,
+            n_chunks=len(existing),
+            already_indexed=True,
+        )
+
     raw_dir = Path("data/raw")
     raw_dir.mkdir(parents=True, exist_ok=True)
     path = raw_dir / safe_name
     path.write_bytes(data)
 
-    # 6. Parse — IngestionError mapped to 422 by the global exception handler in main.py
+    # 7. Parse — IngestionError mapped to 422 by the global exception handler in main.py
     pdf = load_pdf(path)
     chunks = chunk_pdf(pdf, strategy="recursive")
     store.add(chunks)

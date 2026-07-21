@@ -10,6 +10,7 @@ class UploadResponse(BaseModel):
     source: str
     n_pages: int
     n_chunks: int
+    already_indexed: bool = False
 
 
 class UploadError(BaseModel):

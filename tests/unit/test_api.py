@@ -184,3 +184,17 @@ class TestUpload:
             )
         assert r.status_code == 422
         assert r.json()["code"] == "malformed_pdf"
+
+    def test_duplicate_upload_returns_already_indexed(self, client: TestClient) -> None:
+        # FAKE_CHUNKS use source="attention.pdf" — uploading that name hits the guard
+        pdf_path = Path("tests/fixtures/sample.pdf")
+        with pdf_path.open("rb") as f:
+            r = client.post(
+                "/upload",
+                files={"file": ("attention.pdf", f, "application/pdf")},
+            )
+        assert r.status_code == 200
+        data = r.json()
+        assert data["already_indexed"] is True
+        assert data["source"] == "attention.pdf"
+        assert data["n_chunks"] == len(FAKE_CHUNKS)

@@ -25,7 +25,11 @@ with st.sidebar:
                 timeout=600,
             )
         if r.status_code == 200:
-            st.success(f"Indexed {r.json()['n_pages']} pages, {r.json()['n_chunks']} chunks")
+            resp = r.json()
+            if resp.get("already_indexed"):
+                st.info(f"{resp['source']} is already indexed ({resp['n_chunks']} chunks).")
+            else:
+                st.success(f"Indexed {resp['n_pages']} pages, {resp['n_chunks']} chunks")
         else:
             st.error(f"Upload failed: {r.text}")
 
