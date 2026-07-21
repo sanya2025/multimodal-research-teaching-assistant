@@ -47,11 +47,13 @@ class VectorStore:
         """Return top-k Chunks by cosine similarity to query."""
         return [chunk for chunk, _ in self.search_with_scores(query, k)]
 
-    def search_with_scores(self, query: str, k: int = 5) -> list[tuple[Chunk, float]]:
+    def search_with_scores(
+        self, query: str, k: int = 5, source_filter: str | None = None
+    ) -> list[tuple[Chunk, float]]:
         """Return top-k unique (Chunk, cosine_score) pairs, deduplicated by chunk_id.
 
-        Over-fetches k*3 candidates from FAISS so that duplicates (e.g. from a
-        document indexed more than once) are absorbed before the k-cap is applied.
+        Over-fetches from FAISS so duplicates and source-filtered candidates are
+        absorbed before the k-cap is applied.
         """
         if not self._chunks:
             return []
@@ -64,6 +66,8 @@ class VectorStore:
             if not (0 <= i < len(self._chunks)):
                 continue
             chunk = self._chunks[i]
+            if source_filter and chunk.source != source_filter:
+                continue
             if chunk.chunk_id in seen:
                 continue
             seen.add(chunk.chunk_id)

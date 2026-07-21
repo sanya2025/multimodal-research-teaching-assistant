@@ -8,6 +8,7 @@ from pydantic import BaseModel, Field
 class AskRequest(BaseModel):
     question: str = Field(..., min_length=3, max_length=2000)
     top_k: int = Field(5, ge=1, le=20)
+    source: str | None = Field(None, description="Restrict retrieval to this PDF filename")
 
 
 class SourceChunk(BaseModel):

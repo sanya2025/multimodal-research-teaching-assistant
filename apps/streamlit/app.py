@@ -80,7 +80,9 @@ question = st.text_input("Ask a question about the indexed documents", "")
 k = st.slider("Top-k retrieved chunks", 1, 10, 5)
 
 if st.button("Ask", type="primary", disabled=not question):
-    payload = {"question": mode_prefix + question, "top_k": k}
+    payload: dict = {"question": mode_prefix + question, "top_k": k}
+    if mode == "Explain figure" and selected_source:
+        payload["source"] = selected_source
     with st.spinner("Thinking..."):
         try:
             r = httpx.post(f"{API}/ask", json=payload, timeout=120)

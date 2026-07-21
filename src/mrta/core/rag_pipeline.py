@@ -22,6 +22,7 @@ def rag_query(
     top_k: int = 5,
     reranker: Reranker | None = None,
     rerank_top_n: int = 3,
+    source_filter: str | None = None,
 ) -> dict:
     """Retrieve relevant chunks and generate a grounded answer.
 
@@ -41,7 +42,7 @@ def rag_query(
         span.set_attribute("reranker.enabled", reranker is not None)
         span.set_attribute("reranker.top_n", rerank_top_n)
         span.set_attribute("model.llm", llm.model)
-        retrieved = vector_store.search_with_scores(question, k=top_k)
+        retrieved = vector_store.search_with_scores(question, k=top_k, source_filter=source_filter)
         sources: list[Chunk] = [c for c, _ in retrieved]
         retrieval_scores: list[float] = [s for _, s in retrieved]
         span.set_attribute("retrieval.chunk_count", len(sources))
