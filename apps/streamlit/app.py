@@ -94,11 +94,17 @@ if st.button("Ask", type="primary", disabled=not question):
     st.subheader("Answer")
     st.markdown(resp["answer"])
 
-    cited_pages = sorted({s["page"] for s in resp["sources"]})
-    cited_sources = sorted({s["source"] for s in resp["sources"]})
-    if cited_pages:
-        sources_label = ", ".join(cited_sources)
-        st.caption(f"Sources: {sources_label} · pages: " + ", ".join(str(p) for p in cited_pages))
+    pages_by_source: dict[str, list[int]] = {}
+    for s in resp["sources"]:
+        pages_by_source.setdefault(s["source"], [])
+        if s["page"] not in pages_by_source[s["source"]]:
+            pages_by_source[s["source"]].append(s["page"])
+    if pages_by_source:
+        parts = [
+            f"{src} · pages: {', '.join(str(p) for p in sorted(pages))}"
+            for src, pages in sorted(pages_by_source.items())
+        ]
+        st.caption("Sources: " + " | ".join(parts))
     st.caption(f"Latency: {resp['latency_s']:.1f}s")
 
     with st.expander("Retrieved chunks"):
@@ -148,3 +154,4 @@ if st.button("Ask", type="primary", disabled=not question):
                         f"Page {fig['page']}, Figure {fig['figure_index']}", expanded=True
                     ):
                         st.markdown(fig["caption"])
+                st.caption(f"Figure captioning latency: {fig_data['latency_s']:.2f}s")

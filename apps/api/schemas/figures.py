@@ -23,3 +23,4 @@ class FiguresResponse(BaseModel):
     figures: list[FigureCaptionItem]
     vlm_available: bool
     model: str  # ollama_vlm_model name, so callers can show the pull command
+    latency_s: float = 0.0

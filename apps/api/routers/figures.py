@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import time
 from pathlib import Path
 
 from fastapi import APIRouter, HTTPException
@@ -57,6 +58,7 @@ def explain_figures(req: FiguresRequest) -> FiguresResponse:
     vlm = VLMClient()
     prompt = load_prompt("explain")
     captions: list[FigureCaptionItem] = []
+    t0 = time.perf_counter()
     for fig in figs:
         caption = vlm.caption(fig.to_pil(), prompt=prompt)
         captions.append(
@@ -66,10 +68,12 @@ def explain_figures(req: FiguresRequest) -> FiguresResponse:
                 caption=caption,
             )
         )
+    latency_s = time.perf_counter() - t0
 
     return FiguresResponse(
         source=req.source,
         figures=captions,
         vlm_available=True,
         model=model_name,
+        latency_s=round(latency_s, 2),
     )
