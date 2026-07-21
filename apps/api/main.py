@@ -15,21 +15,33 @@ from apps.api.routers import upload as upload_router
 from mrta.core.config import settings
 from mrta.core.exceptions import IngestionError
 from mrta.core.llm import LLMClient
+from mrta.observability.tracing import configure_tracer
 from mrta.retrieval.embedder import Embedder
 from mrta.retrieval.vector_store import VectorStore
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    if settings.enable_tracing:
+        configure_tracer(
+            service_name=settings.otel_service_name,
+            console=settings.otel_console_exporter,
+            otlp_endpoint=settings.otel_exporter_otlp_endpoint,
+        )
+
     embedder = Embedder()
+
     store_dir = Path(settings.vector_store_path) / "default"
+
     if (store_dir / "index.faiss").exists():
         store = VectorStore.load(store_dir, embedder)
     else:
         store = VectorStore(embedder)
+
     app.state.store = store
     app.state.llm = LLMClient()
     app.state.embedder = embedder
+
     yield
 
 
