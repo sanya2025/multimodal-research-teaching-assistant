@@ -4,8 +4,8 @@
 llm_provider: ollama
 
 ollama_host: http://localhost:11434
-ollama_llm_model: llama3.2:3b
-ollama_vlm_model: llava:7b
+ollama_llm_model: llama3.2:latest
+ollama_vlm_model: qwen2.5vl:latest
 
 embedding_model: sentence-transformers/all-MiniLM-L6-v2
 clip_model: ViT-B-32

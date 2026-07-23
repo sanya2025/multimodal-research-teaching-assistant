@@ -14,7 +14,7 @@ COPY README.md ./
 COPY src/ ./src/
 
 # Install library + API dependencies (multimodal needed for VLMClient in /figures)
-RUN pip install --no-cache-dir -e ".[api,pdf,retrieval,multimodal]"
+RUN pip install --no-cache-dir -e ".[api,pdf,retrieval,multimodal,otel]"
 
 # Copy application entry point
 COPY apps/api/ ./apps/api/
