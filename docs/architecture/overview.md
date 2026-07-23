@@ -38,7 +38,7 @@ PDFs / Slides / Images
 | Backend          | FastAPI + Pydantic v2                                                  | Typed, async-ready, auto-docs at `/docs`.                                            |
 | Frontend         | Streamlit                                                              | Single-file UI, fast iteration.                                                      |
 | Evaluation       | DeepEval                                                               | Groundedness, faithfulness, context precision; CI-friendly assertions.               |
-| Observability    | Structured JSONL logs + OpenTelemetry hooks                            | Per-run traceability, low overhead.                                                  |
+| Observability    | Structured JSONL logs + OpenTelemetry (console + OTLP)                 | Per-request spans with retrieval scores, token counts, and latency; vendor-neutral export. |
 | Infra            | Docker + Compose (`compose.yaml`)                                      | Reproducible local and production environment.                                       |
 | CI               | GitHub Actions (ruff, black, pytest)                                   | Standard senior-engineer hygiene.                                                    |
 
