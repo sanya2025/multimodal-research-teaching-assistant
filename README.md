@@ -12,8 +12,11 @@ component end-to-end, from PDF ingestion to evaluation.
 - Ask questions and receive answers with page citations
 - Five teaching modes: beginner, graduate, interview prep, quiz generation, and figure explanation
 - Optional figure captioning with a vision-language model
+- Source-scoped retrieval — Explain figure mode constrains search to the selected document
+- Duplicate upload detection — re-uploading the same PDF returns a cached response instantly
+- OpenTelemetry tracing — per-request spans with retrieval scores, token counts, and latency
 - Fully local: Ollama + Hugging Face, no API keys required
-- Production-grade structure: typed library, FastAPI backend, Streamlit UI, Docker, CI
+- Production-style architecture with typed modules, API/UI separation, Docker, testing, CI, evaluation, and observability
 
 ## Prerequisites
 
@@ -131,6 +134,20 @@ pytest
 pytest tests/unit/        # unit tests only
 pytest tests/evaluation/  # retrieval gate tests
 ```
+
+### Observability
+
+Tracing is controlled by three `.env` variables:
+
+```bash
+ENABLE_TRACING=true           # activate the OTEL SDK
+OTEL_CONSOLE_EXPORTER=true    # print spans to stdout (local dev)
+OTEL_SERVICE_NAME=mrta
+OTEL_EXPORTER_OTLP_ENDPOINT=  # set to export to Jaeger / Tempo
+```
+
+With console export enabled, each `/ask` call prints a span to the API logs showing
+retrieval scores, cited sources, token counts, and end-to-end latency.
 
 ### Linting and type checking
 
