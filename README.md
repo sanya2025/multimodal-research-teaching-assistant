@@ -46,14 +46,14 @@ retrieval and shows an in-app prompt with the install command.
 
 ```bash
 cp .env.example .env
-ollama pull llama3.2:3b
+ollama pull llama3.2:latest
 docker compose up --build
 ```
 
 Optional — enable figure captioning:
 
 ```bash
-ollama pull qwen2.5vl:7b
+ollama pull qwen2.5vl:latest
 ```
 
 Open:
