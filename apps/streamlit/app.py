@@ -118,7 +118,8 @@ if st.button("Ask", type="primary", disabled=not question):
                 s_rounded = round(score, 3)
                 colour = "green" if s_rounded >= 0.7 else "orange" if s_rounded >= 0.4 else "red"
                 score_label = f" :{colour}[score {s_rounded:.3f}]"
-            st.markdown(f"**{s['source']} · page {s['page']}**{score_label}  \n_{s['chunk_id']}_")
+            chunk_num = s["chunk_id"].rsplit("_c", 1)[-1] if "_c" in s["chunk_id"] else "0"
+            st.markdown(f"**{s['source']} · page {s['page']} · chunk {chunk_num}**{score_label}")
             st.markdown(f"> {s['preview']}")
             st.divider()
 

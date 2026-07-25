@@ -29,13 +29,13 @@ component end-to-end, from PDF ingestion to evaluation.
 Text model:
 
 ```bash
-ollama pull llama3.2:3b
+ollama pull llama3.2:latest
 ```
 
-**Optional** — enables figure and image captioning (~4 GB):
+**Optional** — enables figure and image captioning (~6 GB):
 
 ```bash
-ollama pull qwen2.5vl:7b
+ollama pull qwen2.5vl:latest
 ```
 
 The vision model is not required for text-only PDF question answering. When it

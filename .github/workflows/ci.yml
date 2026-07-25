@@ -75,8 +75,9 @@ jobs:
         # continue-on-error: transient PyPI 503s can crash pip-audit; audit is best-effort in CI
         # --skip-editable: mrta is a local editable install, not on PyPI
         # --ignore-vuln CVE-2025-3000: torch vulnerability with no fix available yet
+        # --ignore-vuln PYSEC-2026-3447: setuptools vuln in GitHub runner env, not in our deps
         continue-on-error: true
-        run: pip-audit --skip-editable --ignore-vuln CVE-2025-3000
+        run: pip-audit --skip-editable --ignore-vuln CVE-2025-3000 --ignore-vuln PYSEC-2026-3447
 
   docker:
     needs: test
