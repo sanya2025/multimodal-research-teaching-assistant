@@ -6,6 +6,10 @@ entirely on your machine using Ollama for language models and FAISS for vector
 search. This repository is also a 10-notebook tutorial series covering every
 component end-to-end, from PDF ingestion to evaluation.
 
+## Demo
+
+[![Watch the demo](https://img.youtube.com/vi/mxCg96UUFhI/maxresdefault.jpg)](https://youtu.be/mxCg96UUFhI)
+
 ## Features
 
 - Upload a PDF and build a searchable FAISS index
