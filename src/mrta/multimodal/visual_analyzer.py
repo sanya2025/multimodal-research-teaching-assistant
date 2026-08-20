@@ -8,7 +8,7 @@ retrieval. This is the bridge between raw images and the text retrieval pipeline
 from __future__ import annotations
 
 import json
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from pydantic import BaseModel
 
@@ -105,16 +105,16 @@ class VisualAnalyzer:
     unavailable — returns an empty VisualDescription rather than raising.
     """
 
-    def __init__(self, vlm: object | None = None) -> None:
+    def __init__(self, vlm: Any | None = None) -> None:
         """
         Args:
             vlm: A VLMClient instance. If None, one is created from settings.
                  Accepts any object with a generate(prompt, images) -> str method,
                  so tests can inject a mock without importing VLMClient.
         """
-        self._vlm = vlm
+        self._vlm: Any = vlm
 
-    def _get_vlm(self) -> object:
+    def _get_vlm(self) -> Any:
         if self._vlm is None:
             from mrta.multimodal.vlm_client import VLMClient
 
@@ -135,7 +135,7 @@ class VisualAnalyzer:
         """
         vlm = self._get_vlm()
         try:
-            raw = vlm.generate(prompt=_ANALYSIS_PROMPT, images=[image])  # type: ignore[union-attr]
+            raw = vlm.generate(prompt=_ANALYSIS_PROMPT, images=[image])
             data = json.loads(raw)
             return VisualDescription.model_validate(data)
         except Exception:

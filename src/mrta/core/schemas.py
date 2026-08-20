@@ -102,6 +102,16 @@ class EvidenceRecord(BaseModel):
         """Best available text for embedding — caption > detailed_description > nearby_text."""
         return self.caption or self.detailed_description or self.nearby_text or ""
 
+    def to_pil(self) -> Image.Image:
+        """Convert image_bytes to a PIL Image. Raises ValueError if no bytes are stored."""
+        import io
+
+        from PIL import Image
+
+        if self.image_bytes is None:
+            raise ValueError(f"EvidenceRecord {self.evidence_id!r} has no image_bytes")
+        return Image.open(io.BytesIO(self.image_bytes))
+
     @classmethod
     def from_chunk(cls, chunk: Chunk) -> EvidenceRecord:
         """Wrap a text Chunk as an EvidenceRecord."""
