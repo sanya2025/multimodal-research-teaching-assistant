@@ -183,3 +183,5 @@ feat-branch-prompt.md
 notebook-to-production-steps.md
 phase-update-prompt.md
 production-ready.md
+notes/*
+!notes/.gitkeep
