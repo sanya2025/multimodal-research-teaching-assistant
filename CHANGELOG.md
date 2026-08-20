@@ -5,6 +5,114 @@ Each entry maps tutorial notebook cells → `src/mrta/` modules → production n
 
 ---
 
+## [feature/mmrag-visual-evidence] — Stage 1: Visual Evidence Foundation — 2026-08-19
+
+**Commit:** pending
+
+Lays the groundwork for grounded multimodal RAG without touching any existing text-RAG
+behaviour. Five focused additions: a modality-aware `EvidenceRecord` schema, richer
+`FigureRecord` metadata, a page renderer for vector-graphic capture, a generalised
+`VLMClient.generate()` API, and a `VisualAnalyzer` that produces structured, retrievable
+figure descriptions. All multimodal functionality remains optional; text-only RAG works
+without CLIP, a VLM, or PyMuPDF. No existing public API was changed or removed.
+
+### Changed files
+
+| File | Change |
+|---|---|
+| `src/mrta/core/schemas.py` | Extended `FigureRecord` with `width`, `height`, `bbox`, `nearby_text`; added `FigureRecord.to_evidence_record()`; added `EvidenceRecord` schema |
+| `src/mrta/core/config.py` | Added `page_render_dpi: int = 150` |
+| `src/mrta/ingestion/figure_extractor.py` | Populates pixel dimensions, bounding box, and nearby page text on each `FigureRecord` |
+| `src/mrta/multimodal/vlm_client.py` | Added `generate(prompt, images)` as the low-level API; `caption()` now delegates to it; added `model` property |
+| `src/mrta/__init__.py` | Exposed `EvidenceRecord`, `render_page`, `render_pages`, `VisualAnalyzer`, `VisualDescription` |
+
+### New files
+
+| File | Purpose |
+|---|---|
+| `src/mrta/ingestion/page_renderer.py` | `render_page()` / `render_pages()` — renders PDF pages as PNG `EvidenceRecord(modality="page")` at configurable DPI |
+| `src/mrta/multimodal/visual_analyzer.py` | `VisualDescription` Pydantic schema; `to_retrieval_text()` deterministic serialiser; `VisualAnalyzer.analyze()` with graceful VLM fallback |
+| `notes/multimodal_rag_implementation_plan.md` | Stage 1 implementation plan — architecture summary, file inventory, compatibility notes, test strategy, implementation order |
+
+### Tests created — 55 new tests, all mocked (no Ollama required)
+
+#### `tests/unit/test_evidence_record.py` (14 tests)
+
+| Test class | Test | Assertion |
+|---|---|---|
+| `TestEvidenceRecordConstruction` | `test_text_modality` | `modality="text"` accepted |
+| `TestEvidenceRecordConstruction` | `test_image_modality` | `modality="image"` with `figure_index` |
+| `TestEvidenceRecordConstruction` | `test_page_modality` | `modality="page"` accepted |
+| `TestEvidenceRecordConstruction` | `test_invalid_modality_raises` | `modality="audio"` raises validation error |
+| `TestEvidenceRecordConstruction` | `test_optional_fields_default_to_none` | all optional fields are `None` by default |
+| `TestEvidenceRecordSerialisation` | `test_round_trip_json` | `model_dump_json` / `model_validate_json` round-trips cleanly |
+| `TestEvidenceRecordSerialisation` | `test_retrieval_score_excluded_from_json` | `retrieval_score` is excluded from serialisation |
+| `TestRetrievalText` | `test_prefers_caption` | `retrieval_text()` returns `caption` when set |
+| `TestRetrievalText` | `test_falls_back_to_detailed_description` | returns `detailed_description` when `caption` is absent |
+| `TestRetrievalText` | `test_falls_back_to_nearby_text` | returns `nearby_text` when both are absent |
+| `TestRetrievalText` | `test_empty_string_when_no_text` | returns `""` when no text field is set |
+| `TestFromChunk` | `test_wraps_chunk_correctly` | `from_chunk()` maps all fields; `modality="text"` |
+| `TestFigureRecordToEvidenceRecord` | `test_conversion_preserves_metadata` | all fields including `bbox` and `nearby_text` carried over |
+| `TestFigureRecordToEvidenceRecord` | `test_evidence_id_format` | ID follows `"{doc_id}_p{page}_f{figure_index}"` pattern |
+
+#### `tests/unit/test_page_renderer.py` (15 tests)
+
+| Test class | Test | Assertion |
+|---|---|---|
+| `TestRenderPage` | `test_returns_evidence_record` | returns `EvidenceRecord` |
+| `TestRenderPage` | `test_modality_is_page` | `modality == "page"` |
+| `TestRenderPage` | `test_image_bytes_non_empty` | `image_bytes` is non-empty |
+| `TestRenderPage` | `test_image_bytes_is_valid_png` | bytes start with PNG magic header |
+| `TestRenderPage` | `test_page_number_set_correctly` | `.page` matches requested page number |
+| `TestRenderPage` | `test_source_set_to_filename` | `.source` is the PDF filename |
+| `TestRenderPage` | `test_evidence_id_contains_page_number` | ID contains `_p1_` and ends with `_page` |
+| `TestRenderPage` | `test_dpi_affects_image_size` | higher DPI produces larger PNG |
+| `TestRenderPage` | `test_invalid_page_raises_value_error` | out-of-range page number raises `ValueError` |
+| `TestRenderPage` | `test_page_zero_raises_value_error` | page 0 raises `ValueError` |
+| `TestRenderPage` | `test_pil_roundtrip` | bytes round-trip to a valid `PIL.Image` |
+| `TestRenderPages` | `test_returns_list` | `render_pages()` returns a `list` |
+| `TestRenderPages` | `test_all_items_are_evidence_records` | every item is an `EvidenceRecord` |
+| `TestRenderPages` | `test_page_subset` | `pages=[1]` returns exactly one record |
+| `TestRenderPages` | `test_ordering_by_page` | records are ordered by ascending page number |
+
+#### `tests/unit/test_vlm_client.py` (11 tests)
+
+| Test class | Test | Assertion |
+|---|---|---|
+| `TestGenerate` | `test_returns_string` | `generate()` returns the mocked response string |
+| `TestGenerate` | `test_passes_prompt_and_images` | `ollama.chat` receives the correct prompt and one image |
+| `TestGenerate` | `test_multiple_images` | two images produce two base64 entries |
+| `TestGenerate` | `test_raises_llm_error_on_404` | 404 `ResponseError` → `LLMError` with "not installed" message |
+| `TestGenerate` | `test_raises_llm_error_on_generic_exception` | any exception → `LLMError` |
+| `TestGenerate` | `test_model_property` | `.model` returns the configured model name |
+| `TestCaption` | `test_caption_delegates_to_generate` | `caption()` returns the same mocked text |
+| `TestCaption` | `test_caption_uses_default_prompt` | default prompt mentions "graduate student" |
+| `TestCaption` | `test_caption_accepts_custom_prompt` | custom prompt text appears in the `ollama.chat` call |
+| `TestIsAvailable` | `test_returns_true_when_model_found` | `ollama.show` succeeds → `True` |
+| `TestIsAvailable` | `test_returns_false_when_model_not_found` | `ollama.show` raises → `False` |
+
+#### `tests/unit/test_visual_analyzer.py` (15 tests)
+
+| Test class | Test | Assertion |
+|---|---|---|
+| `TestVisualDescription` | `test_default_fields_empty` | all fields `None` or `[]` by default |
+| `TestVisualDescription` | `test_construction_with_fields` | `visual_type` and `objects` set correctly |
+| `TestVisualDescription` | `test_to_retrieval_text_contains_header` | output starts with `[VISUAL EVIDENCE]` |
+| `TestVisualDescription` | `test_to_retrieval_text_includes_source_page_figure` | source, page, figure appear in text |
+| `TestVisualDescription` | `test_to_retrieval_text_includes_caption` | short caption appears in text |
+| `TestVisualDescription` | `test_to_retrieval_text_includes_objects` | each object listed in text |
+| `TestVisualDescription` | `test_to_retrieval_text_includes_nearby_text` | nearby text appended |
+| `TestVisualDescription` | `test_to_retrieval_text_omits_empty_fields` | empty sections not rendered |
+| `TestVisualDescription` | `test_to_retrieval_text_is_deterministic` | identical inputs → identical output |
+| `TestVisualDescription` | `test_round_trip_json` | JSON serialisation round-trips cleanly |
+| `TestVisualAnalyzer` | `test_analyze_returns_visual_description` | returns `VisualDescription` with correct fields |
+| `TestVisualAnalyzer` | `test_analyze_passes_image_to_vlm` | VLM mock receives exactly one image |
+| `TestVisualAnalyzer` | `test_analyze_returns_empty_on_invalid_json` | unparseable VLM output → empty `VisualDescription` |
+| `TestVisualAnalyzer` | `test_analyze_returns_empty_on_vlm_exception` | VLM exception → empty `VisualDescription` |
+| `TestVisualAnalyzer` | `test_analyze_partial_json_populates_available_fields` | partial JSON populates present fields |
+
+---
+
 ## [feat/retrieval-scores] — Retrieval scores in Streamlit UI — 2026-06-22
 
 **Commit:** pending
