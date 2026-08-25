@@ -5,6 +5,26 @@ Each entry maps tutorial notebook cells → `src/mrta/` modules → production n
 
 ---
 
+## [feature/mmrag-visual-evidence] — fix(types): mypy clean-up for Stage 1 — 2026-08-25
+
+**Commit:** pending
+
+Two type errors surfaced in the `type-check` CI job after Stage 1 was pushed:
+
+1. `VisualAnalyzer._vlm` was typed as `object`, which hid the `.generate()` method from mypy. Fixed by importing `Any` from `typing` and annotating both the `__init__` parameter and the instance attribute as `Any`.
+2. `EvidenceRecord` lacked a `to_pil()` method, so `VisualAnalyzer.analyze_evidence()` could not call `record.to_pil()` on an `EvidenceRecord`. Fixed by adding `to_pil()` to `EvidenceRecord` (raises `ValueError` when `image_bytes` is `None`).
+
+No behaviour changed; no tests were added (the fix is covered by the 29 existing Stage 1 tests).
+
+### Changed files
+
+| File | Change |
+|---|---|
+| `src/mrta/core/schemas.py` | Added `EvidenceRecord.to_pil()` — mirrors `FigureRecord.to_pil()`; guards against absent `image_bytes` |
+| `src/mrta/multimodal/visual_analyzer.py` | Changed `vlm: object` → `vlm: Any`; added `from typing import Any`; removed `# type: ignore` comment |
+
+---
+
 ## [feature/mmrag-visual-evidence] — Stage 1: Visual Evidence Foundation — 2026-08-19
 
 **Commit:** pending
