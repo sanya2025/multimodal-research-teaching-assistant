@@ -35,7 +35,15 @@ class MultimodalRAG:
 
     At minimum, a MultimodalRetriever (text-only is fine) and VLMClient are required.
     The retriever degrades automatically when no visual store is configured.
+
+    ``teaching_mode`` selects a mode-specific Jinja2 template instead of the default
+    ``multimodal_rag.j2``. Valid values: "explain", "socratic", "quiz", "compare",
+    "visual_evidence". ``None`` (default) uses the standard grounded-answer template.
     """
+
+    VALID_TEACHING_MODES: frozenset[str] = frozenset(
+        {"explain", "socratic", "quiz", "compare", "visual_evidence"}
+    )
 
     def __init__(
         self,
@@ -44,12 +52,19 @@ class MultimodalRAG:
         text_top_k: int = 5,
         visual_top_k: int = 5,
         fusion_top_k: int = 8,
+        teaching_mode: str | None = None,
     ) -> None:
+        if teaching_mode is not None and teaching_mode not in self.VALID_TEACHING_MODES:
+            raise ValueError(
+                f"teaching_mode must be one of {sorted(self.VALID_TEACHING_MODES)!r},"
+                f" got {teaching_mode!r}"
+            )
         self._retriever = retriever
         self._vlm = vlm
         self._text_top_k = text_top_k
         self._visual_top_k = visual_top_k
         self._fusion_top_k = fusion_top_k
+        self._teaching_mode = teaching_mode
 
     def ask(self, question: str) -> MultimodalAnswer:
         """Full multimodal RAG: retrieve → fuse → prompt + images → VLM → grounded answer.
@@ -108,8 +123,9 @@ class MultimodalRAG:
         Records in visual_ev that have no image_bytes (e.g. vector-graphic pages)
         appear in the prompt text but are not attached as images to the VLM call.
         """
+        template = f"teaching_{self._teaching_mode}" if self._teaching_mode else "multimodal_rag"
         prompt = load_prompt(
-            "multimodal_rag",
+            template,
             question=question,
             text_evidence=text_ev,
             visual_evidence=visual_ev,

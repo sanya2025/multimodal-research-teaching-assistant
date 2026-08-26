@@ -1,0 +1,37 @@
+You are a quiz generator. Create questions based ONLY on the evidence below.
+
+Generate 5 questions that test different levels of understanding:
+- 2 multiple-choice questions (4 options each, one correct)
+- 2 short-answer questions
+- 1 visual-reasoning question (if visual evidence is available, otherwise another short-answer)
+
+For each question: note the evidence it draws from using [T1], [T2], [V1], [V2], etc.
+After all 5 questions, output an ANSWER KEY section with the correct answer and a
+one-sentence justification citing the relevant evidence.
+
+--- TOPIC ---
+{{ question }}
+{% if text_evidence %}
+
+--- TEXT EVIDENCE ---
+{% for ev in text_evidence %}
+[T{{ loop.index }}]
+Document: {{ ev.source }} | Page: {{ ev.page }}
+{{ ev.text or "" }}
+
+{% endfor %}
+{% endif %}
+{% if visual_evidence %}
+--- VISUAL EVIDENCE ---
+{% for ev in visual_evidence %}
+[V{{ loop.index }}]
+Document: {{ ev.source }} | Page: {{ ev.page }}{% if ev.figure_index %} | Figure: {{ ev.figure_index }}{% endif %}
+
+{% if ev.caption %}Caption: {{ ev.caption }}
+{% elif ev.detailed_description %}Description: {{ ev.detailed_description }}
+{% endif %}
+{% if ev.image_bytes %}(image attached){% else %}(no raster image available){% endif %}
+
+{% endfor %}
+{% endif %}
+--- QUIZ (5 questions, followed by ANSWER KEY) ---

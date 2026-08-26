@@ -19,6 +19,17 @@ from mrta.observability.tracing import configure_tracer
 from mrta.retrieval.embedder import Embedder
 from mrta.retrieval.vector_store import VectorStore
 
+# optional multimodal stack — requires mrta-rag[multimodal]
+try:
+    from mrta.multimodal.clip_embedder import CLIPEmbedder as _CLIPEmbedder
+    from mrta.multimodal.vlm_client import VLMClient as _VLMClient
+    from mrta.retrieval.multimodal_retriever import MultimodalRetriever as _MultimodalRetriever
+    from mrta.retrieval.visual_vector_store import VisualVectorStore as _VisualVectorStore
+
+    _MULTIMODAL_AVAILABLE = True
+except ImportError:
+    _MULTIMODAL_AVAILABLE = False
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -41,6 +52,22 @@ async def lifespan(app: FastAPI):
     app.state.store = store
     app.state.llm = LLMClient()
     app.state.embedder = embedder
+
+    # multimodal stack (optional)
+    if _MULTIMODAL_AVAILABLE:
+        try:
+            clip = _CLIPEmbedder()
+            visual_store = _VisualVectorStore(clip)
+            app.state.retriever = _MultimodalRetriever(
+                vector_store=store, visual_store=visual_store
+            )
+            app.state.vlm = _VLMClient()
+        except Exception:
+            app.state.retriever = None
+            app.state.vlm = None
+    else:
+        app.state.retriever = None
+        app.state.vlm = None
 
     yield
 
