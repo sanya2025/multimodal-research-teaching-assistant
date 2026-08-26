@@ -72,8 +72,9 @@ try:
     from mrta.multimodal.clip_embedder import CLIPEmbedder
     from mrta.multimodal.visual_analyzer import VisualAnalyzer, VisualDescription
     from mrta.multimodal.vlm_client import VLMClient
+    from mrta.retrieval.visual_vector_store import VisualVectorStore
 except ImportError:
-    pass  # requires mrta-rag[multimodal] (open-clip-torch)
+    pass  # requires mrta-rag[multimodal] (open-clip-torch) + mrta-rag[retrieval] (faiss)
 
 # ---------------------------------------------------------------------------
 # Eval extra  —  pip install "mrta-rag[eval]"
@@ -134,6 +135,7 @@ __all__ = [
     "VLMClient",
     "VisualAnalyzer",
     "VisualDescription",
+    "VisualVectorStore",
     # Eval extra
     "run_eval",
     "answer_relevance",
