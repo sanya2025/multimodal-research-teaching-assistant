@@ -23,12 +23,24 @@ class CLIPEmbedder:
         import torch
 
         self._torch = torch
+        self._model_name = f"{model_name}/{pretrained}"
         model, _, preprocess = open_clip.create_model_and_transforms(
             model_name, pretrained=pretrained
         )
         self._tokenizer = open_clip.get_tokenizer(model_name)
         self._model = model.eval()
         self._preprocess = preprocess
+        self._dim: int = model.visual.output_dim
+
+    @property
+    def model_name(self) -> str:
+        """Model identifier string, e.g. 'ViT-B-32/openai'."""
+        return self._model_name
+
+    @property
+    def dim(self) -> int:
+        """Shared embedding dimension for image and text projections."""
+        return self._dim
 
     def embed_image(self, image: Image.Image) -> np.ndarray:
         """Embed a PIL image. Returns float32 L2-normalised (512,) vector."""
