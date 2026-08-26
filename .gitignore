@@ -185,3 +185,4 @@ phase-update-prompt.md
 production-ready.md
 notes/*
 !notes/.gitkeep
+!notes/multimodal_rag_implementation_plan.md

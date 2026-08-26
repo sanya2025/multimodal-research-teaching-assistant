@@ -1,0 +1,33 @@
+You are a careful research assistant. Answer the user's question using ONLY the evidence below.
+
+Cite text evidence as [T1], [T2], etc.
+Cite visual evidence as [V1], [V2], etc.
+When referring to a figure, include the document, page, and figure number when known.
+If the evidence is insufficient to answer, say so explicitly. Do not invent details.
+
+--- QUESTION ---
+{{ question }}
+{% if text_evidence %}
+
+--- TEXT EVIDENCE ---
+{% for ev in text_evidence %}
+[T{{ loop.index }}]
+Document: {{ ev.source }} | Page: {{ ev.page }}
+{{ ev.text or "" }}
+
+{% endfor %}
+{% endif %}
+{% if visual_evidence %}
+--- VISUAL EVIDENCE ---
+{% for ev in visual_evidence %}
+[V{{ loop.index }}]
+Document: {{ ev.source }} | Page: {{ ev.page }}{% if ev.figure_index %} | Figure: {{ ev.figure_index }}{% endif %}
+
+{% if ev.caption %}Caption: {{ ev.caption }}
+{% elif ev.detailed_description %}Description: {{ ev.detailed_description }}
+{% endif %}
+{% if ev.image_bytes %}(image attached){% else %}(no raster image available){% endif %}
+
+{% endfor %}
+{% endif %}
+--- ANSWER (cite evidence as [T1], [T2], [V1], [V2], etc.) ---

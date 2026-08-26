@@ -7,6 +7,7 @@ from jinja2 import Environment, PackageLoader
 _env = Environment(loader=PackageLoader("mrta", "prompts"))
 
 MODES: dict[str, str] = {
+    # text-only modes (use _base.j2 inheritance, accept `chunks` + `question`)
     "default": "_base",
     "beginner": "beginner",
     "expert": "expert",
@@ -14,6 +15,12 @@ MODES: dict[str, str] = {
     "quiz": "quiz",
     "lecture_notes": "lecture_notes",
     "explain": "explain",
+    # multimodal teaching modes (accept `text_evidence`, `visual_evidence`, `question`)
+    "teaching_explain": "teaching_explain",
+    "teaching_socratic": "teaching_socratic",
+    "teaching_quiz": "teaching_quiz",
+    "teaching_compare": "teaching_compare",
+    "teaching_visual_evidence": "teaching_visual_evidence",
 }
 
 

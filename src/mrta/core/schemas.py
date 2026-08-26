@@ -125,6 +125,27 @@ class EvidenceRecord(BaseModel):
         )
 
 
+class MultimodalCitation(BaseModel):
+    """Structured provenance for one piece of evidence in a multimodal answer."""
+
+    label: str  # "[T1]" for text, "[V1]" for visual
+    evidence_id: str
+    modality: Literal["text", "image", "page"]
+    source: str
+    page: int
+    figure_index: int | None = None
+
+
+class MultimodalAnswer(BaseModel):
+    """Return type for MultimodalRAG.ask()."""
+
+    answer: str
+    text_citations: list[MultimodalCitation]
+    visual_citations: list[MultimodalCitation]
+    retrieval_mode: Literal["multimodal", "text_only"] = "multimodal"
+    latency_s: float
+
+
 class EvalReport(BaseModel):
     """Aggregated evaluation results over a benchmark question set."""
 

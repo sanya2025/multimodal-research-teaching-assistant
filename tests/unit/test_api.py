@@ -12,11 +12,11 @@ from pathlib import Path
 from unittest.mock import MagicMock, patch
 
 import pytest
-from apps.api.deps import get_llm, get_store
+from apps.api.deps import get_llm, get_retriever, get_store, get_vlm
 from apps.api.main import app
 from fastapi.testclient import TestClient
 
-from mrta.core.schemas import Chunk
+from mrta.core.schemas import Chunk, MultimodalAnswer, MultimodalCitation
 
 FAKE_CHUNKS = [
     Chunk(
@@ -53,16 +53,75 @@ def mock_llm() -> MagicMock:
     return llm
 
 
+_LIFESPAN_PATCHES = (
+    "apps.api.main.Embedder",
+    "apps.api.main.VectorStore",
+    "apps.api.main.LLMClient",
+)
+
+
 @pytest.fixture
 def client(mock_store: MagicMock, mock_llm: MagicMock):
     app.dependency_overrides[get_store] = lambda: mock_store
     app.dependency_overrides[get_llm] = lambda: mock_llm
+    app.dependency_overrides[get_retriever] = lambda: None  # multimodal unavailable
+    app.dependency_overrides[get_vlm] = lambda: None
     with (
-        patch("apps.api.main.Embedder"),  # prevents HuggingFace download in lifespan
-        patch("apps.api.main.VectorStore"),  # prevents FAISS IndexFlatIP construction
-        patch("apps.api.main.LLMClient"),  # prevents Ollama connection in lifespan
+        patch("apps.api.main.Embedder"),
+        patch("apps.api.main.VectorStore"),
+        patch("apps.api.main.LLMClient"),
+        patch("apps.api.main._CLIPEmbedder", create=True),
+        patch("apps.api.main._VisualVectorStore", create=True),
+        patch("apps.api.main._MultimodalRetriever", create=True),
+        patch("apps.api.main._VLMClient", create=True),
         TestClient(app) as c,
     ):
+        yield c
+    app.dependency_overrides.clear()
+
+
+_MM_ANSWER = MultimodalAnswer(
+    answer="Multimodal answer.",
+    text_citations=[
+        MultimodalCitation(
+            label="[T1]", evidence_id="t1", modality="text", source="attention.pdf", page=1
+        )
+    ],
+    visual_citations=[
+        MultimodalCitation(
+            label="[V1]",
+            evidence_id="v1",
+            modality="image",
+            source="attention.pdf",
+            page=2,
+            figure_index=1,
+        )
+    ],
+    retrieval_mode="multimodal",
+    latency_s=0.5,
+)
+
+
+@pytest.fixture
+def mm_client(mock_store: MagicMock, mock_llm: MagicMock):
+    """TestClient with multimodal retriever wired and MultimodalRAG mocked."""
+    mock_retriever = MagicMock()
+    app.dependency_overrides[get_store] = lambda: mock_store
+    app.dependency_overrides[get_llm] = lambda: mock_llm
+    app.dependency_overrides[get_retriever] = lambda: mock_retriever
+    app.dependency_overrides[get_vlm] = lambda: MagicMock()
+    with (
+        patch("apps.api.main.Embedder"),
+        patch("apps.api.main.VectorStore"),
+        patch("apps.api.main.LLMClient"),
+        patch("apps.api.main._CLIPEmbedder", create=True),
+        patch("apps.api.main._VisualVectorStore", create=True),
+        patch("apps.api.main._MultimodalRetriever", create=True),
+        patch("apps.api.main._VLMClient", create=True),
+        patch("apps.api.routers.ask.MultimodalRAG") as MockRAG,
+        TestClient(app) as c,
+    ):
+        MockRAG.return_value.ask.return_value = _MM_ANSWER
         yield c
     app.dependency_overrides.clear()
 
@@ -198,3 +257,83 @@ class TestUpload:
         assert data["already_indexed"] is True
         assert data["source"] == "attention.pdf"
         assert data["n_chunks"] == len(FAKE_CHUNKS)
+
+
+class TestAskMultimodal:
+    """POST /ask with retrieval_mode='multimodal'."""
+
+    def test_multimodal_returns_200(self, mm_client: TestClient) -> None:
+        r = mm_client.post(
+            "/ask", json={"question": "What is attention?", "retrieval_mode": "multimodal"}
+        )
+        assert r.status_code == 200
+
+    def test_multimodal_response_has_answer(self, mm_client: TestClient) -> None:
+        r = mm_client.post(
+            "/ask", json={"question": "What is attention?", "retrieval_mode": "multimodal"}
+        )
+        assert r.json()["answer"] == "Multimodal answer."
+
+    def test_multimodal_response_retrieval_mode_field(self, mm_client: TestClient) -> None:
+        r = mm_client.post(
+            "/ask", json={"question": "What is attention?", "retrieval_mode": "multimodal"}
+        )
+        assert r.json()["retrieval_mode"] == "multimodal"
+
+    def test_multimodal_response_has_visual_sources(self, mm_client: TestClient) -> None:
+        r = mm_client.post(
+            "/ask", json={"question": "What is attention?", "retrieval_mode": "multimodal"}
+        )
+        visual = r.json()["visual_sources"]
+        assert len(visual) == 1
+        assert visual[0]["label"] == "[V1]"
+        assert visual[0]["page"] == 2
+        assert visual[0]["figure_index"] == 1
+
+    def test_multimodal_response_has_text_sources(self, mm_client: TestClient) -> None:
+        r = mm_client.post(
+            "/ask", json={"question": "What is attention?", "retrieval_mode": "multimodal"}
+        )
+        sources = r.json()["sources"]
+        assert len(sources) == 1
+        assert sources[0]["page"] == 1
+
+    def test_teaching_mode_accepted_in_request(self, mm_client: TestClient) -> None:
+        r = mm_client.post(
+            "/ask",
+            json={
+                "question": "What is attention?",
+                "retrieval_mode": "multimodal",
+                "teaching_mode": "explain",
+            },
+        )
+        assert r.status_code == 200
+
+    def test_all_teaching_modes_accepted(self, mm_client: TestClient) -> None:
+        modes = ["explain", "socratic", "quiz", "compare", "visual_evidence"]
+        for mode in modes:
+            r = mm_client.post(
+                "/ask",
+                json={
+                    "question": "What is attention?",
+                    "retrieval_mode": "multimodal",
+                    "teaching_mode": mode,
+                },
+            )
+            assert r.status_code == 200, f"mode={mode} returned {r.status_code}"
+
+    def test_multimodal_unavailable_returns_503(self, client: TestClient) -> None:
+        # client fixture has get_retriever returning None (default app.state)
+        r = client.post(
+            "/ask", json={"question": "What is attention?", "retrieval_mode": "multimodal"}
+        )
+        assert r.status_code == 503
+
+    def test_text_mode_default_backward_compat(self, client: TestClient) -> None:
+        # No retrieval_mode field → defaults to text → should not 503
+        r = client.post("/ask", json={"question": "What is attention?"})
+        assert r.status_code == 200
+
+    def test_response_visual_sources_empty_for_text_mode(self, client: TestClient) -> None:
+        r = client.post("/ask", json={"question": "What is attention?"})
+        assert r.json().get("visual_sources", []) == []
