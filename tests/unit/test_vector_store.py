@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import hashlib
-import os
 from pathlib import Path
 
 import numpy as np
@@ -49,8 +48,7 @@ def embedder() -> _FakeEmbedder:
 
 @pytest.fixture(scope="module")
 def real_embedder() -> Embedder:
-    # test.yaml sets embedding_model = sentence-transformers/all-MiniLM-L6-v2
-    return Embedder()
+    return Embedder("sentence-transformers/all-MiniLM-L6-v2")
 
 
 @pytest.fixture(scope="module")
@@ -65,7 +63,6 @@ def store(embedder: _FakeEmbedder, chunks: list[Chunk]) -> VectorStore:
     return vs
 
 
-@pytest.mark.skipif(os.getenv("CI") == "true", reason="requires HuggingFace model download")
 class TestEmbedder:
     def test_embed_returns_correct_shape(self, real_embedder: Embedder) -> None:
         result = real_embedder.embed(["hello world"])
