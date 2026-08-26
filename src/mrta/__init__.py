@@ -59,6 +59,7 @@ except ImportError:
 # Retrieval extra  —  pip install "mrta-rag[retrieval]"
 # ---------------------------------------------------------------------------
 try:
+    from mrta.retrieval.caption_store import CaptionVectorStore
     from mrta.retrieval.embedder import Embedder
     from mrta.retrieval.vector_store import VectorStore
 except ImportError:
@@ -127,6 +128,7 @@ __all__ = [
     # Retrieval extra
     "Embedder",
     "VectorStore",
+    "CaptionVectorStore",
     # Multimodal extra
     "CLIPEmbedder",
     "VLMClient",
