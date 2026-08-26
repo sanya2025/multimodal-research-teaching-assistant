@@ -24,7 +24,7 @@ from mrta.core.schemas import EvidenceRecord, MultimodalAnswer, MultimodalCitati
 from mrta.prompts import load_prompt
 
 if TYPE_CHECKING:
-    from PIL import Image as PILImage
+    from PIL.Image import Image as PILImage
 
     from mrta.multimodal.vlm_client import VLMClient
     from mrta.retrieval.multimodal_retriever import MultimodalRetriever
