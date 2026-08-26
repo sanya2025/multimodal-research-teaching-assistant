@@ -31,7 +31,14 @@ from mrta.core.exceptions import (
 )
 from mrta.core.llm import LLMClient
 from mrta.core.rag_pipeline import rag_query
-from mrta.core.schemas import Chunk, EvalReport, FigureRecord, PageRecord, PdfDocument
+from mrta.core.schemas import (
+    Chunk,
+    EvalReport,
+    EvidenceRecord,
+    FigureRecord,
+    PageRecord,
+    PdfDocument,
+)
 from mrta.observability.logging import StructuredLogger
 from mrta.prompts import MODES, load_prompt
 
@@ -43,6 +50,7 @@ __version__ = "0.1.0"
 try:
     from mrta.ingestion.chunker import chunk_pdf
     from mrta.ingestion.figure_extractor import extract_figures
+    from mrta.ingestion.page_renderer import render_page, render_pages
     from mrta.ingestion.pdf_loader import load_pdf
 except ImportError:
     pass  # requires mrta-rag[pdf] (PyMuPDF, pdfplumber)
@@ -61,6 +69,7 @@ except ImportError:
 # ---------------------------------------------------------------------------
 try:
     from mrta.multimodal.clip_embedder import CLIPEmbedder
+    from mrta.multimodal.visual_analyzer import VisualAnalyzer, VisualDescription
     from mrta.multimodal.vlm_client import VLMClient
 except ImportError:
     pass  # requires mrta-rag[multimodal] (open-clip-torch)
@@ -99,6 +108,7 @@ __all__ = [
     "PdfDocument",
     "Chunk",
     "FigureRecord",
+    "EvidenceRecord",
     "EvalReport",
     # Core pipeline
     "LLMClient",
@@ -112,12 +122,16 @@ __all__ = [
     "load_pdf",
     "chunk_pdf",
     "extract_figures",
+    "render_page",
+    "render_pages",
     # Retrieval extra
     "Embedder",
     "VectorStore",
     # Multimodal extra
     "CLIPEmbedder",
     "VLMClient",
+    "VisualAnalyzer",
+    "VisualDescription",
     # Eval extra
     "run_eval",
     "answer_relevance",

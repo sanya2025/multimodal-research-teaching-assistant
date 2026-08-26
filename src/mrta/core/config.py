@@ -69,6 +69,9 @@ class Settings(BaseSettings):
     chunk_size: int = 700
     chunk_overlap: int = 100
 
+    # --- Multimodal ---
+    page_render_dpi: int = 150  # DPI for page_renderer; 150 balances quality and memory
+
     # --- Observability ---
     log_level: str = "INFO"
     log_file: Path = Field(default=Path("data/logs/runs.jsonl"))

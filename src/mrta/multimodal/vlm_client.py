@@ -1,9 +1,10 @@
-"""mrta.multimodal.vlm_client — VLM captioning via Ollama."""
+"""mrta.multimodal.vlm_client — VLM multimodal generation via Ollama."""
 
 from __future__ import annotations
 
 import base64
 import io
+from collections.abc import Sequence
 from typing import TYPE_CHECKING
 
 import ollama
@@ -14,19 +15,31 @@ if TYPE_CHECKING:
     from PIL import Image
 
 
+def _pil_to_b64(image: Image.Image) -> str:
+    buf = io.BytesIO()
+    image.save(buf, format="PNG")
+    return base64.b64encode(buf.getvalue()).decode("utf-8")
+
+
 class VLMClient:
     """Ollama-based vision-language model client.
 
-    Reads settings.ollama_vlm_model by default (currently qwen2.5vl:7b).
-    Converts a PIL image to PNG bytes and calls ollama.chat with images=[base64].
+    Low-level API: ``generate(prompt, images)`` — arbitrary multimodal generation.
+    Convenience API: ``caption(image, prompt)`` — single-image description (unchanged).
+
+    Both methods raise ``LLMError`` on network or model-not-found failures.
     """
 
-    _DEFAULT_PROMPT = "Explain this figure for a graduate student. Be concrete."
+    _DEFAULT_CAPTION_PROMPT = "Explain this figure for a graduate student. Be concrete."
 
     def __init__(self, model: str | None = None) -> None:
         from mrta.core.config import settings
 
         self._model = model or settings.ollama_vlm_model
+
+    @property
+    def model(self) -> str:
+        return self._model
 
     @classmethod
     def is_available(cls, model: str | None = None) -> bool:
@@ -40,23 +53,37 @@ class VLMClient:
         except Exception:
             return False
 
-    def caption(self, image: Image.Image, prompt: str | None = None) -> str:
-        """Caption a PIL image using the configured VLM. Returns the explanation."""
-        buf = io.BytesIO()
-        image.save(buf, format="PNG")
-        img_b64 = base64.b64encode(buf.getvalue()).decode("utf-8")
+    def generate(
+        self,
+        prompt: str,
+        images: Sequence[Image.Image],
+        temperature: float = 0.2,
+    ) -> str:
+        """General-purpose multimodal generation: prompt + one or more images.
 
+        Supports figure description, visual QA, chart interpretation, diagram
+        reasoning, multi-image comparison, and multimodal RAG generation.
+
+        Args:
+            prompt: Instruction or question for the VLM.
+            images: One or more PIL images to attach.
+            temperature: Sampling temperature (lower = more deterministic).
+
+        Returns:
+            The VLM response as a plain string.
+        """
+        img_b64s = [_pil_to_b64(img) for img in images]
         try:
             resp = ollama.chat(
                 model=self._model,
                 messages=[
                     {
                         "role": "user",
-                        "content": prompt or self._DEFAULT_PROMPT,
-                        "images": [img_b64],
+                        "content": prompt,
+                        "images": img_b64s,
                     }
                 ],
-                options={"temperature": 0.2},
+                options={"temperature": temperature},
             )
         except ollama.ResponseError as e:
             if e.status_code == 404 or "not found" in str(e).lower():
@@ -68,3 +95,10 @@ class VLMClient:
         except Exception as e:
             raise LLMError(f"Ollama VLM call failed (model={self._model}): {e}") from e
         return resp["message"]["content"]
+
+    def caption(self, image: Image.Image, prompt: str | None = None) -> str:
+        """Caption a single PIL image. Convenience wrapper around generate()."""
+        return self.generate(
+            prompt=prompt or self._DEFAULT_CAPTION_PROMPT,
+            images=[image],
+        )

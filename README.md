@@ -16,6 +16,8 @@ component end-to-end, from PDF ingestion to evaluation.
 - Ask questions and receive answers with page citations
 - Five teaching modes: beginner, graduate, interview prep, quiz generation, and figure explanation
 - Optional figure captioning with a vision-language model
+- Multimodal visual evidence pipeline — structured VLM descriptions, page rendering, and a
+  modality-aware `EvidenceRecord` schema (Stage 1; branch `feature/mmrag-visual-evidence`)
 - Source-scoped retrieval — Explain figure mode constrains search to the selected document
 - Duplicate upload detection — re-uploading the same PDF returns a cached response instantly
 - OpenTelemetry tracing — per-request spans with retrieval scores, token counts, and latency
@@ -102,6 +104,15 @@ from mrta import load_pdf, chunk_pdf
 
 # Requires mrta-rag[retrieval]:
 from mrta import Embedder, VectorStore
+
+# Requires mrta-rag[multimodal]:
+from mrta import (
+    EvidenceRecord,    # modality-aware schema: text | image | page
+    render_page,       # render a single PDF page → EvidenceRecord(modality="page")
+    render_pages,      # render all or selected pages
+    VisualAnalyzer,    # VLM-based structured figure description
+    VisualDescription, # Pydantic schema + to_retrieval_text() for embedding
+)
 ```
 
 ## Development
