@@ -61,6 +61,8 @@ except ImportError:
 try:
     from mrta.retrieval.caption_store import CaptionVectorStore
     from mrta.retrieval.embedder import Embedder
+    from mrta.retrieval.fusion import FusedResult, reciprocal_rank_fusion
+    from mrta.retrieval.multimodal_retriever import MultimodalRetriever
     from mrta.retrieval.vector_store import VectorStore
 except ImportError:
     pass  # requires mrta-rag[retrieval] (sentence-transformers, faiss-cpu)
@@ -130,6 +132,9 @@ __all__ = [
     "Embedder",
     "VectorStore",
     "CaptionVectorStore",
+    "FusedResult",
+    "reciprocal_rank_fusion",
+    "MultimodalRetriever",
     # Multimodal extra
     "CLIPEmbedder",
     "VLMClient",
