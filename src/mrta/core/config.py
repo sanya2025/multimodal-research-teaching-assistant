@@ -72,6 +72,13 @@ class Settings(BaseSettings):
     # --- Multimodal ---
     page_render_dpi: int = 150  # DPI for page_renderer; 150 balances quality and memory
 
+    # --- Multimodal RAG ---
+    enable_multimodal_rag: bool = True
+    visual_top_k: int = 5
+    text_top_k: int = 5
+    fusion_top_k: int = 8
+    rrf_k: int = 60
+
     # --- Observability ---
     log_level: str = "INFO"
     log_file: Path = Field(default=Path("data/logs/runs.jsonl"))

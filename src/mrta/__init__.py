@@ -36,6 +36,8 @@ from mrta.core.schemas import (
     EvalReport,
     EvidenceRecord,
     FigureRecord,
+    MultimodalAnswer,
+    MultimodalCitation,
     PageRecord,
     PdfDocument,
 )
@@ -71,6 +73,7 @@ except ImportError:
 # Multimodal extra  —  pip install "mrta-rag[multimodal]"
 # ---------------------------------------------------------------------------
 try:
+    from mrta.generation.multimodal_rag import MultimodalRAG
     from mrta.multimodal.clip_embedder import CLIPEmbedder
     from mrta.multimodal.visual_analyzer import VisualAnalyzer, VisualDescription
     from mrta.multimodal.vlm_client import VLMClient
@@ -113,6 +116,8 @@ __all__ = [
     "Chunk",
     "FigureRecord",
     "EvidenceRecord",
+    "MultimodalCitation",
+    "MultimodalAnswer",
     "EvalReport",
     # Core pipeline
     "LLMClient",
@@ -141,6 +146,7 @@ __all__ = [
     "VisualAnalyzer",
     "VisualDescription",
     "VisualVectorStore",
+    "MultimodalRAG",
     # Eval extra
     "run_eval",
     "answer_relevance",
