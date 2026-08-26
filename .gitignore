@@ -76,7 +76,6 @@ docs/screenshots/
 # notebooks
 # ==========================================================
 notebooks/scratch/
-notebooks/tutorials/
 
 # ==========================================================
 # Temporary Files
@@ -185,3 +184,4 @@ phase-update-prompt.md
 production-ready.md
 notes/*
 !notes/.gitkeep
+!notes/multimodal_rag_implementation_plan.md
