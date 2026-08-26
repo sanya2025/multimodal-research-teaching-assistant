@@ -70,10 +70,10 @@ def ask(
         )
 
     # text-only path (unchanged)
-    result = rag_query(
+    text_result: dict = rag_query(
         req.question, vector_store=store, llm=llm, top_k=req.top_k, source_filter=req.source
     )
-    scores = result.get("scores", [])
+    scores = text_result.get("scores", [])
     sources = [
         SourceChunk(
             page=c.page,
@@ -82,6 +82,8 @@ def ask(
             preview=c.text[:200],
             score=scores[i] if i < len(scores) else None,
         )
-        for i, c in enumerate(result["sources"])
+        for i, c in enumerate(text_result["sources"])
     ]
-    return AskResponse(answer=result["answer"], sources=sources, latency_s=result["latency_s"])
+    return AskResponse(
+        answer=text_result["answer"], sources=sources, latency_s=text_result["latency_s"]
+    )
