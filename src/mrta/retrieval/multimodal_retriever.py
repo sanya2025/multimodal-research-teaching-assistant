@@ -20,6 +20,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from mrta.core.schemas import EvidenceRecord
+from mrta.observability.tracing import trace_span
 from mrta.retrieval.fusion import FusedResult, reciprocal_rank_fusion
 from mrta.retrieval.vector_store import VectorStore
 
@@ -78,21 +79,43 @@ class MultimodalRetriever:
 
         Useful for notebooks, debugging, and evaluation.
         """
-        named_lists: dict[str, list[EvidenceRecord]] = {}
+        import time
 
-        text_results = self._vector_store.search_with_scores(query, k=k_text)
-        named_lists["text"] = [EvidenceRecord.from_chunk(chunk) for chunk, _ in text_results]
+        with trace_span(
+            "mrta.multimodal_retriever.retrieve",
+            {"retrieval.fusion_method": "rrf", "retrieval.rrf_k": self._rrf_k},
+        ) as span:
+            named_lists: dict[str, list[EvidenceRecord]] = {}
 
-        if self._caption_store is not None:
-            named_lists["caption"] = self._caption_store.search(query, k=k_visual)
+            t_text = time.time()
+            text_results = self._vector_store.search_with_scores(query, k=k_text)
+            latency_text = time.time() - t_text
+            named_lists["text"] = [EvidenceRecord.from_chunk(chunk) for chunk, _ in text_results]
+            text_top_score = text_results[0][1] if text_results else 0.0
 
-        if self._visual_store is not None:
-            named_lists["visual"] = self._visual_store.search(query, k=k_visual)
+            t_visual = time.time()
+            visual_top_score = 0.0
+            if self._caption_store is not None:
+                named_lists["caption"] = self._caption_store.search(query, k=k_visual)
 
-        fused = reciprocal_rank_fusion(named_lists, k=self._rrf_k, top_n=k_final)
+            if self._visual_store is not None:
+                vis_results = self._visual_store.search_with_scores(query, k=k_visual)
+                named_lists["visual"] = [r for r, _ in vis_results]
+                visual_top_score = vis_results[0][1] if vis_results else 0.0
+            latency_visual = time.time() - t_visual
 
-        if self._reranker is not None:
-            fused = self._apply_reranker(query, fused)
+            fused = reciprocal_rank_fusion(named_lists, k=self._rrf_k, top_n=k_final)
+
+            if self._reranker is not None:
+                fused = self._apply_reranker(query, fused)
+
+            span.set_attribute("retrieval.text_candidates", len(named_lists.get("text", [])))
+            span.set_attribute("retrieval.visual_candidates", len(named_lists.get("visual", [])))
+            span.set_attribute("retrieval.final_candidates", len(fused))
+            span.set_attribute("retrieval.text_top_score", round(text_top_score, 4))
+            span.set_attribute("retrieval.visual_top_score", round(visual_top_score, 4))
+            span.set_attribute("latency.text_retrieval", round(latency_text, 4))
+            span.set_attribute("latency.visual_retrieval", round(latency_visual, 4))
 
         return fused
 

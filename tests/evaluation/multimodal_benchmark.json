@@ -1,0 +1,72 @@
+[
+  {
+    "question": "What is the role of attention mechanisms in sequence modelling?",
+    "question_type": "text_only",
+    "expected_answer": "Attention mechanisms have become an integral part of sequence modelling.",
+    "relevant_text_pages": [2],
+    "relevant_figures": [],
+    "relevant_modalities": ["text"]
+  },
+  {
+    "question": "What does the abstract of the sample paper describe?",
+    "question_type": "text_only",
+    "expected_answer": "A fixture document used for unit testing the mrta ingestion pipeline with two pages and known content.",
+    "relevant_text_pages": [1],
+    "relevant_figures": [],
+    "relevant_modalities": ["text"]
+  },
+  {
+    "question": "What are the key components of the research described on page 2?",
+    "question_type": "text_only",
+    "expected_answer": "Attention mechanisms in sequence modelling, page-level metadata verification.",
+    "relevant_text_pages": [2],
+    "relevant_figures": [],
+    "relevant_modalities": ["text"]
+  },
+  {
+    "question": "Summarise the introduction section.",
+    "question_type": "text_only",
+    "expected_answer": "Attention mechanisms are described as integral to sequence modelling.",
+    "relevant_text_pages": [2],
+    "relevant_figures": [],
+    "relevant_modalities": ["text"]
+  },
+  {
+    "question": "What figure shows the architecture of the model?",
+    "question_type": "figure_lookup",
+    "expected_answer": "See Figure 1 on page 2 for the model architecture diagram.",
+    "relevant_text_pages": [2],
+    "relevant_figures": [
+      {"source": "sample.pdf", "page": 2, "figure_index": 1}
+    ],
+    "relevant_modalities": ["text", "image"]
+  },
+  {
+    "question": "Describe the components shown in Figure 1.",
+    "question_type": "visual_reasoning",
+    "expected_answer": "Figure 1 depicts the key architectural components and their connections.",
+    "relevant_text_pages": [2],
+    "relevant_figures": [
+      {"source": "sample.pdf", "page": 2, "figure_index": 1}
+    ],
+    "relevant_modalities": ["image"]
+  },
+  {
+    "question": "How does the diagram relate to the text description of attention?",
+    "question_type": "mixed_text_visual",
+    "expected_answer": "The diagram illustrates the attention mechanism described in the introduction.",
+    "relevant_text_pages": [1, 2],
+    "relevant_figures": [
+      {"source": "sample.pdf", "page": 2, "figure_index": 1}
+    ],
+    "relevant_modalities": ["text", "image"]
+  },
+  {
+    "question": "What does the abstract say about the purpose of this document?",
+    "question_type": "text_only",
+    "expected_answer": "It is a fixture document for unit testing the mrta ingestion pipeline.",
+    "relevant_text_pages": [1],
+    "relevant_figures": [],
+    "relevant_modalities": ["text"]
+  }
+]

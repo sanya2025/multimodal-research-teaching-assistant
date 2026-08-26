@@ -5,6 +5,43 @@ Each entry maps tutorial notebook cells → `src/mrta/` modules → production n
 
 ---
 
+## [feature/mmrag-evaluation] — Stage 7 + 8: Evaluation, Tracing & Production Polish — 2026-08-26
+
+**Tests:** 381 passing (381 → baseline for this stage)
+
+### Stage 7 — Multimodal Evaluation
+
+Extends the evaluation framework to cover figure retrieval, multimodal recall,
+and citation correctness for `[T#]`/`[V#]` labelled answers.
+
+| File | Purpose |
+|---|---|
+| `src/mrta/evaluation/multimodal_metrics.py` | `figure_recall_at_k`, `multimodal_recall_at_k`, `multimodal_citation_correctness` |
+| `src/mrta/evaluation/multimodal_eval_pipeline.py` | `run_multimodal_eval` — drives `MultimodalRAG` over a benchmark; returns `MultimodalEvalReport` |
+| `tests/evaluation/multimodal_benchmark.json` | 8-item benchmark covering all four question types |
+| `tests/evaluation/test_multimodal_metrics.py` | 18 unit tests for the three new metrics |
+| `tests/evaluation/test_multimodal_eval_pipeline.py` | 10 unit tests for the eval pipeline (all mocked) |
+| `notebooks/production/2026-08-26-phase09-evaluation-logging-docker.ipynb` | Updated Phase 09: sections 9.1–9.9 covering all new metrics, span attributes, and Docker notes |
+
+**Key metric design choices:**
+- `multimodal_recall_at_k` reports text and visual recall separately (geometric mean for overall) — a single aggregate hides modality-specific failures
+- `multimodal_citation_correctness` checks format, provenance, and support independently
+- Faithfulness limitation documented: text judge cannot verify raw visual semantics
+
+**Tracing additions:**
+- `MultimodalRetriever.retrieve_with_fusion_details` emits `mrta.multimodal_retriever.retrieve` span with per-modality candidate counts, top scores, fusion method, RRF k, and per-modality latencies
+- `MultimodalRAG.ask` emits `mrta.multimodal_rag.ask` span with evidence counts, vision model, teaching mode, retrieval mode, and VLM latency
+
+### Stage 8 — Production Polish
+
+| File | Change |
+|---|---|
+| `docs/adr/ADR-008-multimodal-rag-architecture.md` | New ADR documenting embedding space separation, RRF fusion, EvidenceRecord schema, API design, evaluation metric rationale |
+| `CHANGELOG.md` | This entry |
+| `notes/multimodal_rag_implementation_plan.md` | Stages 7 + 8 → ✅ |
+
+---
+
 ## [feature/mmrag-visual-evidence] — fix(types): mypy clean-up for Stage 1 — 2026-08-25
 
 **Commit:** pending

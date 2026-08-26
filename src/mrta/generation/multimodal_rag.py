@@ -21,6 +21,7 @@ from typing import TYPE_CHECKING
 
 from mrta.core.exceptions import LLMError
 from mrta.core.schemas import EvidenceRecord, MultimodalAnswer, MultimodalCitation
+from mrta.observability.tracing import trace_span
 from mrta.prompts import load_prompt
 
 if TYPE_CHECKING:
@@ -85,22 +86,43 @@ class MultimodalRAG:
         text_ev, visual_ev = self._split_evidence(evidence)
         text_cits, visual_cits = self._make_citations(text_ev, visual_ev)
 
+        vlm_model = getattr(self._vlm, "_model", "unknown")
+
         try:
             prompt, images = self._build_prompt_and_images(question, text_ev, visual_ev)
+            t_vlm = time.time()
             answer = self._vlm.generate(prompt, images)
+            latency_vlm = time.time() - t_vlm
             mode: str = "multimodal"
         except LLMError:
             # Retry without images — useful when the model does not support vision
             fallback_prompt, _ = self._build_prompt_and_images(question, text_ev, [])
+            t_vlm = time.time()
             answer = self._vlm.generate(fallback_prompt, [])
+            latency_vlm = time.time() - t_vlm
             mode = "text_only"
+
+        latency_s = time.time() - t0
+
+        with trace_span(
+            "mrta.multimodal_rag.ask",
+            {
+                "generation.text_evidence_count": len(text_ev),
+                "generation.visual_evidence_count": len(visual_ev),
+                "generation.vision_model": str(vlm_model),
+                "generation.teaching_mode": self._teaching_mode or "none",
+                "generation.retrieval_mode": mode,
+                "latency.vlm": round(latency_vlm, 4),
+            },
+        ):
+            pass
 
         return MultimodalAnswer(
             answer=answer,
             text_citations=text_cits,
             visual_citations=visual_cits,
             retrieval_mode=mode,  # type: ignore[arg-type]
-            latency_s=time.time() - t0,
+            latency_s=latency_s,
         )
 
     def _split_evidence(

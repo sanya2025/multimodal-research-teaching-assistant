@@ -55,7 +55,7 @@ def make_caption_store(records: list[EvidenceRecord]) -> MagicMock:
 
 def make_visual_store(records: list[EvidenceRecord]) -> MagicMock:
     store = MagicMock()
-    store.search.return_value = records
+    store.search_with_scores.return_value = [(r, 0.9) for r in records]
     return store
 
 
@@ -150,7 +150,7 @@ class TestMultimodalRetrieverWithVisualStore:
         vstore = make_visual_store([])
         retriever = MultimodalRetriever(vector_store=vs, visual_store=vstore)
         retriever.retrieve("architecture diagram", k_visual=3)
-        vstore.search.assert_called_once_with("architecture diagram", k=3)
+        vstore.search_with_scores.assert_called_once_with("architecture diagram", k=3)
 
     def test_empty_visual_store_still_returns_text(self) -> None:
         vs = make_vector_store([make_chunk("c1")])
@@ -179,7 +179,7 @@ class TestMultimodalRetrieverAllStores:
         retriever.retrieve("query")
         vs.search_with_scores.assert_called_once()
         cs.search.assert_called_once()
-        vstore.search.assert_called_once()
+        vstore.search_with_scores.assert_called_once()
 
     def test_deduplication_on_shared_id(self) -> None:
         vs = make_vector_store([make_chunk("c1")])

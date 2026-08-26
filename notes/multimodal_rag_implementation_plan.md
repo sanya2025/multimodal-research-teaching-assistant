@@ -724,12 +724,48 @@ retrieval, image-passing, and citation logic are identical across modes.
 
 ---
 
-# Stage 7 — Evaluation ⬜
+# Stage 7 — Evaluation ✅
 
-Covers: multimodal eval dataset, Figure Recall@k, Multimodal Recall@k, citation correctness, Phase 09 notebook.
+Branch: `feature/mmrag-evaluation` → merged to `main`
+
+Covers: multimodal eval dataset, Figure Recall@k, Multimodal Recall@k, citation correctness, tracing, Phase 09 notebook.
+
+## Outcome (381 tests passing)
+
+### New files
+
+| File | Purpose |
+|---|---|
+| `tests/evaluation/multimodal_benchmark.json` | 8-item benchmark (text_only, figure_lookup, visual_reasoning, mixed_text_visual) |
+| `src/mrta/evaluation/multimodal_metrics.py` | `figure_recall_at_k`, `multimodal_recall_at_k`, `multimodal_citation_correctness` |
+| `src/mrta/evaluation/multimodal_eval_pipeline.py` | `run_multimodal_eval` → `MultimodalEvalReport` |
+| `tests/evaluation/test_multimodal_metrics.py` | 18 unit tests |
+| `tests/evaluation/test_multimodal_eval_pipeline.py` | 10 unit tests (all mocked) |
+| `notebooks/production/2026-08-26-phase09-evaluation-logging-docker.ipynb` | Phase 09: sections 9.1–9.9 |
+
+### Modified files
+
+| File | Change |
+|---|---|
+| `src/mrta/retrieval/multimodal_retriever.py` | `trace_span` with 9 multimodal span attributes; switched visual store to `search_with_scores` |
+| `src/mrta/generation/multimodal_rag.py` | `trace_span` with 6 generation span attributes |
+| `tests/unit/test_multimodal_retriever.py` | Updated `make_visual_store` fixture to mock `search_with_scores` |
+
+### Key metric design decisions
+
+- `multimodal_recall_at_k` returns text, visual, and overall recall separately (geometric mean) — prevents aggregate from hiding modality failures
+- `multimodal_citation_correctness` checks format, provenance, and support independently
+- Faithfulness limitation documented: text judge cannot verify raw visual semantics
 
 ---
 
-# Stage 8 — Production Polish ⬜
+# Stage 8 — Production Polish ✅
 
-Covers: README, architecture docs, `.env.example`, Docker docs, CHANGELOG, ADR updates.
+Branch: `feature/mmrag-evaluation` → merged to `main`
+
+### New files
+
+| File | Purpose |
+|---|---|
+| `docs/adr/ADR-008-multimodal-rag-architecture.md` | ADR documenting embedding space separation, RRF, EvidenceRecord, API design, eval metrics |
+| `CHANGELOG.md` (updated) | Stage 7 + 8 entries |
