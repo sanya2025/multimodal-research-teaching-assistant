@@ -5,6 +5,98 @@ Each entry maps tutorial notebook cells → `src/mrta/` modules → production n
 
 ---
 
+## [feat/retrieval-clip-vision-index] — PR3: Direct CLIP Visual Retrieval — 2026-09-08
+
+**Tests:** 519 passing, 12 skipped (462 → +57 passing, +12 opt-in)
+
+Adds a dedicated FAISS index over direct CLIP image embeddings of extracted figures,
+isolating text→image retrieval from caption-based retrieval. This is an ablation, not
+a fusion step: CLIP and text scores are never pooled.
+
+### New files
+
+| File | Purpose |
+|---|---|
+| `src/mrta/retrieval/clip_embedder.py` | `CLIPEmbedder` — HuggingFace Transformers, pinned `openai/clip-vit-base-patch32`, 512-D float32 L2-normalized |
+| `src/mrta/retrieval/image_store.py` | `ImageStore` — FAISS `IndexFlatIP` over CLIP image embeddings; embeds from `image_path`, persists no pixels |
+| `scripts/build_clip_image_index.py` | `extract_figures()` → manifest lookup → CLIP → `data/eval/indices/clip_image_index/` + provenance |
+| `scripts/run_eval_pr3.py` | Experiment A (isolated CLIP) + Experiment B (caption vs CLIP complementarity) |
+| `tests/unit/test_image_store.py` | 34 tests — indexing, search ordering, persistence, adapter mapping |
+| `tests/unit/test_retrieval_clip_embedder.py` | 34 tests — 22 always-on (pure logic), 12 opt-in real-weight contract tests |
+| `data/eval/indices/clip_image_index/` | Index, metadata, config, provenance, 3 figure PNGs |
+| `results/pr3_clip_metrics.json` | Measured aggregate PR3 results |
+| `results/pr3_per_query.json` | Per-query diagnostics: CLIP + caption ranks, scores, figure-ID overlap |
+
+### Modified files
+
+| File | Change |
+|---|---|
+| `src/mrta/core/schemas.py` | Added `VisualRecord` — canonical identity with `figure_id` as a first-class persisted field |
+| `src/mrta/eval/adapter.py` | Added `from_visual_record()`, reusing frozen PR1 canonical semantics |
+| `pyproject.toml` | `transformers`/`torch` added to the `multimodal` extra so it is self-sufficient |
+
+### Model provenance
+
+```text
+model                openai/clip-vit-base-patch32
+embedding_dimension  512
+normalization        L2   (verified: all index vectors 1.0000000, tol 1e-5)
+similarity           inner_product/cosine  (IndexFlatIP)
+embedding_source     direct_clip_image_embedding
+captions_used        false
+```
+
+### Measured results
+
+|                  | PR1 text | PR2 caption | PR3 CLIP |
+|---|---|---|---|
+| Visual Recall@5  | 0.0000   | 1.0000      | 1.0000   |
+| Hybrid Recall@5  | 0.3889   | 0.3889      | 0.3889   |
+| Figure Recall@5  | N/A      | 1.0000      | 1.0000   |
+| Visual MRR       | N/A      | 1.0000      | 0.6944   |
+| Visual nDCG@5    | N/A      | 1.0000      | 0.7718   |
+| Visual Hit@1     | N/A      | 1.0000      | 0.5000   |
+
+**Key findings:**
+
+- **The Recall figures are structurally saturated.** k=5 exceeds the index size (3 records),
+  so every search returns every figure and Recall@5 / Figure Recall@5 are 1.0 by construction.
+  This applies retroactively to PR2's headline "Visual Recall@5 = 1.0000" — it was guaranteed,
+  not earned. Only MRR, nDCG@5 and Hit@1 discriminate on this benchmark.
+- **No complementarity was observed.** Across 12 figure-bearing queries, caption ranked the
+  target higher on 6 and CLIP on 0; the remaining 6 tied. Caption Hit@1 1.0000 vs CLIP 0.5000.
+- **CLIP's ranking is near query-independent.** `fig_attention_mechanisms` (p4/f2) ranks first
+  on 12 of 12 queries, including every query explicitly asking for the architecture diagram.
+  A control probe confirms the architecture figure is never rank 1 for any query — relevant or
+  absurd ("a bowl of spaghetti", empty string). Absolute scores do track relevance (0.33 vs
+  0.16 for "cat"), so CLIP separates "transformer diagram" from "photo", but cannot separate
+  Figure 1 from Figure 2. Total score spread across all 60 query-image pairs is 0.0932.
+- **Raw CLIP and text scores were deliberately not pooled.** They occupy different embedding
+  spaces and are uncalibrated against each other; cross-stream combination is deferred to PR4.
+
+**Known issues surfaced, not fixed:**
+
+- `mrta.multimodal.clip_embedder` loads OpenAI CLIP weights through open_clip as `ViT-B-32` +
+  `pretrained="openai"`, silently mismatching the activation (GELU vs the QuickGELU the weights
+  were trained with). Measured divergence from the true model: cosine 0.9599 image / 0.9759 text,
+  enough to reorder results. Left unchanged because it feeds `MultimodalRetriever` →
+  `MultimodalRAG`; the fix is `ViT-B-32-quickgelu` and needs its own evaluation.
+- PR2's caption index is weaker than its name implies: 2 of 3 figures have `caption: null` in
+  `caption_index/provenance.json` — the VLM returned unparseable output and they fell back to
+  `nearby_text`. That fallback text contains the literal string "Figure 1: The Transformer -
+  model architecture.", which is why caption retrieval wins the architecture queries so cleanly.
+- **faiss/torch OpenMP conflict on macOS:** importing torch after faiss aborts the process.
+  Handled in production by `CLIPEmbedder.warmup()`, which `ImageStore` calls before touching
+  FAISS. Real-weight tests are gated behind `MRTA_CLIP_MODEL_TESTS=1` and skip when faiss is
+  already loaded, so the full suite stays green and CI never downloads ~600 MB.
+
+**Limitations:** one paper, 3 figures, 2 distinct figure IDs, 12 figure-bearing queries. The
+benchmark validates architecture, canonical mapping, and ranking behaviour — it is not evidence
+of production visual-retrieval quality. A separate visual-stress benchmark with more figures,
+visually similar diagrams, and k < N is needed before either stream can be judged.
+
+---
+
 ## [feat/retrieval-caption-index] — PR2: Dedicated Figure Caption Index — 2026-09-07
 
 **Tests:** 462 passing (446 → +16 new)

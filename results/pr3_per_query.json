@@ -1,0 +1,1832 @@
+[
+  {
+    "query_id": "q_001",
+    "query": "What problem does the Transformer architecture aim to solve compared with recurrent and convolutional sequence models?",
+    "intent": "text",
+    "has_figure_targets": false,
+    "expected_canonical_evidence": [
+      {
+        "document_id": "doc_attention_2017",
+        "page_number": 2,
+        "figure_id": null
+      }
+    ],
+    "clip_recall_at_5": 0.0,
+    "clip_figure_recall_at_5": null,
+    "clip_mrr": 0.0,
+    "clip_ndcg_at_5": 0.0,
+    "clip_hit_at_5": 0.0,
+    "clip_hit_at_1": 0.0,
+    "clip_figure_rank": null,
+    "clip_top_figure_ids": [
+      "fig_attention_mechanisms",
+      "fig_transformer_arch"
+    ],
+    "clip_retrieved": [
+      {
+        "candidate_id": "doc_attention_2017_p4_f2",
+        "page_number": 4,
+        "figure_id": "fig_attention_mechanisms",
+        "score": 0.2982,
+        "rank": 1
+      },
+      {
+        "candidate_id": "doc_attention_2017_p4_f1",
+        "page_number": 4,
+        "figure_id": "fig_attention_mechanisms",
+        "score": 0.2927,
+        "rank": 2
+      },
+      {
+        "candidate_id": "doc_attention_2017_p3_f1",
+        "page_number": 3,
+        "figure_id": "fig_transformer_arch",
+        "score": 0.2858,
+        "rank": 3
+      }
+    ],
+    "caption_recall_at_5": 0.0,
+    "caption_figure_recall_at_5": null,
+    "caption_mrr": 0.0,
+    "caption_ndcg_at_5": 0.0,
+    "caption_hit_at_5": 0.0,
+    "caption_hit_at_1": 0.0,
+    "caption_figure_rank": null,
+    "caption_top_figure_ids": [
+      "fig_transformer_arch",
+      "fig_attention_mechanisms"
+    ],
+    "figure_id_overlap": [
+      "fig_attention_mechanisms",
+      "fig_transformer_arch"
+    ],
+    "figure_id_union": [
+      "fig_attention_mechanisms",
+      "fig_transformer_arch"
+    ],
+    "caption_retrieved": [
+      {
+        "candidate_id": "attention_is_all_you_need_a639448e61_p3_f1",
+        "page_number": 3,
+        "figure_id": "fig_transformer_arch",
+        "score": 0.7163,
+        "rank": 1
+      },
+      {
+        "candidate_id": "attention_is_all_you_need_a639448e61_p4_f2",
+        "page_number": 4,
+        "figure_id": "fig_attention_mechanisms",
+        "score": 0.584,
+        "rank": 2
+      },
+      {
+        "candidate_id": "attention_is_all_you_need_a639448e61_p4_f1",
+        "page_number": 4,
+        "figure_id": "fig_attention_mechanisms",
+        "score": 0.5816,
+        "rank": 3
+      }
+    ]
+  },
+  {
+    "query_id": "q_002",
+    "query": "Why can Transformer models be trained with more parallelization than recurrent neural networks?",
+    "intent": "text",
+    "has_figure_targets": false,
+    "expected_canonical_evidence": [
+      {
+        "document_id": "doc_attention_2017",
+        "page_number": 2,
+        "figure_id": null
+      }
+    ],
+    "clip_recall_at_5": 0.0,
+    "clip_figure_recall_at_5": null,
+    "clip_mrr": 0.0,
+    "clip_ndcg_at_5": 0.0,
+    "clip_hit_at_5": 0.0,
+    "clip_hit_at_1": 0.0,
+    "clip_figure_rank": null,
+    "clip_top_figure_ids": [
+      "fig_attention_mechanisms",
+      "fig_transformer_arch"
+    ],
+    "clip_retrieved": [
+      {
+        "candidate_id": "doc_attention_2017_p4_f2",
+        "page_number": 4,
+        "figure_id": "fig_attention_mechanisms",
+        "score": 0.2838,
+        "rank": 1
+      },
+      {
+        "candidate_id": "doc_attention_2017_p3_f1",
+        "page_number": 3,
+        "figure_id": "fig_transformer_arch",
+        "score": 0.2799,
+        "rank": 2
+      },
+      {
+        "candidate_id": "doc_attention_2017_p4_f1",
+        "page_number": 4,
+        "figure_id": "fig_attention_mechanisms",
+        "score": 0.2753,
+        "rank": 3
+      }
+    ],
+    "caption_recall_at_5": 0.0,
+    "caption_figure_recall_at_5": null,
+    "caption_mrr": 0.0,
+    "caption_ndcg_at_5": 0.0,
+    "caption_hit_at_5": 0.0,
+    "caption_hit_at_1": 0.0,
+    "caption_figure_rank": null,
+    "caption_top_figure_ids": [
+      "fig_transformer_arch",
+      "fig_attention_mechanisms"
+    ],
+    "figure_id_overlap": [
+      "fig_attention_mechanisms",
+      "fig_transformer_arch"
+    ],
+    "figure_id_union": [
+      "fig_attention_mechanisms",
+      "fig_transformer_arch"
+    ],
+    "caption_retrieved": [
+      {
+        "candidate_id": "attention_is_all_you_need_a639448e61_p3_f1",
+        "page_number": 3,
+        "figure_id": "fig_transformer_arch",
+        "score": 0.6649,
+        "rank": 1
+      },
+      {
+        "candidate_id": "attention_is_all_you_need_a639448e61_p4_f2",
+        "page_number": 4,
+        "figure_id": "fig_attention_mechanisms",
+        "score": 0.539,
+        "rank": 2
+      },
+      {
+        "candidate_id": "attention_is_all_you_need_a639448e61_p4_f1",
+        "page_number": 4,
+        "figure_id": "fig_attention_mechanisms",
+        "score": 0.5322,
+        "rank": 3
+      }
+    ]
+  },
+  {
+    "query_id": "q_003",
+    "query": "What are the main components of the Transformer encoder?",
+    "intent": "text",
+    "has_figure_targets": false,
+    "expected_canonical_evidence": [
+      {
+        "document_id": "doc_attention_2017",
+        "page_number": 3,
+        "figure_id": null
+      }
+    ],
+    "clip_recall_at_5": 0.0,
+    "clip_figure_recall_at_5": null,
+    "clip_mrr": 0.0,
+    "clip_ndcg_at_5": 0.0,
+    "clip_hit_at_5": 0.0,
+    "clip_hit_at_1": 0.0,
+    "clip_figure_rank": null,
+    "clip_top_figure_ids": [
+      "fig_attention_mechanisms",
+      "fig_transformer_arch"
+    ],
+    "clip_retrieved": [
+      {
+        "candidate_id": "doc_attention_2017_p4_f2",
+        "page_number": 4,
+        "figure_id": "fig_attention_mechanisms",
+        "score": 0.2867,
+        "rank": 1
+      },
+      {
+        "candidate_id": "doc_attention_2017_p4_f1",
+        "page_number": 4,
+        "figure_id": "fig_attention_mechanisms",
+        "score": 0.2488,
+        "rank": 2
+      },
+      {
+        "candidate_id": "doc_attention_2017_p3_f1",
+        "page_number": 3,
+        "figure_id": "fig_transformer_arch",
+        "score": 0.2462,
+        "rank": 3
+      }
+    ],
+    "caption_recall_at_5": 0.0,
+    "caption_figure_recall_at_5": null,
+    "caption_mrr": 0.0,
+    "caption_ndcg_at_5": 0.0,
+    "caption_hit_at_5": 0.0,
+    "caption_hit_at_1": 0.0,
+    "caption_figure_rank": null,
+    "caption_top_figure_ids": [
+      "fig_transformer_arch",
+      "fig_attention_mechanisms"
+    ],
+    "figure_id_overlap": [
+      "fig_attention_mechanisms",
+      "fig_transformer_arch"
+    ],
+    "figure_id_union": [
+      "fig_attention_mechanisms",
+      "fig_transformer_arch"
+    ],
+    "caption_retrieved": [
+      {
+        "candidate_id": "attention_is_all_you_need_a639448e61_p3_f1",
+        "page_number": 3,
+        "figure_id": "fig_transformer_arch",
+        "score": 0.7292,
+        "rank": 1
+      },
+      {
+        "candidate_id": "attention_is_all_you_need_a639448e61_p4_f1",
+        "page_number": 4,
+        "figure_id": "fig_attention_mechanisms",
+        "score": 0.5752,
+        "rank": 2
+      },
+      {
+        "candidate_id": "attention_is_all_you_need_a639448e61_p4_f2",
+        "page_number": 4,
+        "figure_id": "fig_attention_mechanisms",
+        "score": 0.5151,
+        "rank": 3
+      }
+    ]
+  },
+  {
+    "query_id": "q_004",
+    "query": "What are the main components of the Transformer decoder?",
+    "intent": "text",
+    "has_figure_targets": false,
+    "expected_canonical_evidence": [
+      {
+        "document_id": "doc_attention_2017",
+        "page_number": 3,
+        "figure_id": null
+      }
+    ],
+    "clip_recall_at_5": 0.0,
+    "clip_figure_recall_at_5": null,
+    "clip_mrr": 0.0,
+    "clip_ndcg_at_5": 0.0,
+    "clip_hit_at_5": 0.0,
+    "clip_hit_at_1": 0.0,
+    "clip_figure_rank": null,
+    "clip_top_figure_ids": [
+      "fig_attention_mechanisms",
+      "fig_transformer_arch"
+    ],
+    "clip_retrieved": [
+      {
+        "candidate_id": "doc_attention_2017_p4_f2",
+        "page_number": 4,
+        "figure_id": "fig_attention_mechanisms",
+        "score": 0.2817,
+        "rank": 1
+      },
+      {
+        "candidate_id": "doc_attention_2017_p4_f1",
+        "page_number": 4,
+        "figure_id": "fig_attention_mechanisms",
+        "score": 0.2476,
+        "rank": 2
+      },
+      {
+        "candidate_id": "doc_attention_2017_p3_f1",
+        "page_number": 3,
+        "figure_id": "fig_transformer_arch",
+        "score": 0.2388,
+        "rank": 3
+      }
+    ],
+    "caption_recall_at_5": 0.0,
+    "caption_figure_recall_at_5": null,
+    "caption_mrr": 0.0,
+    "caption_ndcg_at_5": 0.0,
+    "caption_hit_at_5": 0.0,
+    "caption_hit_at_1": 0.0,
+    "caption_figure_rank": null,
+    "caption_top_figure_ids": [
+      "fig_transformer_arch",
+      "fig_attention_mechanisms"
+    ],
+    "figure_id_overlap": [
+      "fig_attention_mechanisms",
+      "fig_transformer_arch"
+    ],
+    "figure_id_union": [
+      "fig_attention_mechanisms",
+      "fig_transformer_arch"
+    ],
+    "caption_retrieved": [
+      {
+        "candidate_id": "attention_is_all_you_need_a639448e61_p3_f1",
+        "page_number": 3,
+        "figure_id": "fig_transformer_arch",
+        "score": 0.6546,
+        "rank": 1
+      },
+      {
+        "candidate_id": "attention_is_all_you_need_a639448e61_p4_f1",
+        "page_number": 4,
+        "figure_id": "fig_attention_mechanisms",
+        "score": 0.5981,
+        "rank": 2
+      },
+      {
+        "candidate_id": "attention_is_all_you_need_a639448e61_p4_f2",
+        "page_number": 4,
+        "figure_id": "fig_attention_mechanisms",
+        "score": 0.5448,
+        "rank": 3
+      }
+    ]
+  },
+  {
+    "query_id": "q_005",
+    "query": "How is Scaled Dot-Product Attention mathematically defined?",
+    "intent": "text",
+    "has_figure_targets": false,
+    "expected_canonical_evidence": [
+      {
+        "document_id": "doc_attention_2017",
+        "page_number": 4,
+        "figure_id": null
+      }
+    ],
+    "clip_recall_at_5": 0.0,
+    "clip_figure_recall_at_5": null,
+    "clip_mrr": 0.0,
+    "clip_ndcg_at_5": 0.0,
+    "clip_hit_at_5": 0.0,
+    "clip_hit_at_1": 0.0,
+    "clip_figure_rank": null,
+    "clip_top_figure_ids": [
+      "fig_attention_mechanisms",
+      "fig_transformer_arch"
+    ],
+    "clip_retrieved": [
+      {
+        "candidate_id": "doc_attention_2017_p4_f2",
+        "page_number": 4,
+        "figure_id": "fig_attention_mechanisms",
+        "score": 0.3013,
+        "rank": 1
+      },
+      {
+        "candidate_id": "doc_attention_2017_p4_f1",
+        "page_number": 4,
+        "figure_id": "fig_attention_mechanisms",
+        "score": 0.2874,
+        "rank": 2
+      },
+      {
+        "candidate_id": "doc_attention_2017_p3_f1",
+        "page_number": 3,
+        "figure_id": "fig_transformer_arch",
+        "score": 0.2525,
+        "rank": 3
+      }
+    ],
+    "caption_recall_at_5": 0.0,
+    "caption_figure_recall_at_5": null,
+    "caption_mrr": 0.0,
+    "caption_ndcg_at_5": 0.0,
+    "caption_hit_at_5": 0.0,
+    "caption_hit_at_1": 0.0,
+    "caption_figure_rank": null,
+    "caption_top_figure_ids": [
+      "fig_attention_mechanisms",
+      "fig_transformer_arch"
+    ],
+    "figure_id_overlap": [
+      "fig_attention_mechanisms",
+      "fig_transformer_arch"
+    ],
+    "figure_id_union": [
+      "fig_attention_mechanisms",
+      "fig_transformer_arch"
+    ],
+    "caption_retrieved": [
+      {
+        "candidate_id": "attention_is_all_you_need_a639448e61_p4_f1",
+        "page_number": 4,
+        "figure_id": "fig_attention_mechanisms",
+        "score": 0.6115,
+        "rank": 1
+      },
+      {
+        "candidate_id": "attention_is_all_you_need_a639448e61_p4_f2",
+        "page_number": 4,
+        "figure_id": "fig_attention_mechanisms",
+        "score": 0.5205,
+        "rank": 2
+      },
+      {
+        "candidate_id": "attention_is_all_you_need_a639448e61_p3_f1",
+        "page_number": 3,
+        "figure_id": "fig_transformer_arch",
+        "score": 0.4943,
+        "rank": 3
+      }
+    ]
+  },
+  {
+    "query_id": "q_006",
+    "query": "Why is the dot product scaled by the square root of the key dimension?",
+    "intent": "text",
+    "has_figure_targets": false,
+    "expected_canonical_evidence": [
+      {
+        "document_id": "doc_attention_2017",
+        "page_number": 4,
+        "figure_id": null
+      }
+    ],
+    "clip_recall_at_5": 0.0,
+    "clip_figure_recall_at_5": null,
+    "clip_mrr": 0.0,
+    "clip_ndcg_at_5": 0.0,
+    "clip_hit_at_5": 0.0,
+    "clip_hit_at_1": 0.0,
+    "clip_figure_rank": null,
+    "clip_top_figure_ids": [
+      "fig_attention_mechanisms",
+      "fig_transformer_arch"
+    ],
+    "clip_retrieved": [
+      {
+        "candidate_id": "doc_attention_2017_p4_f2",
+        "page_number": 4,
+        "figure_id": "fig_attention_mechanisms",
+        "score": 0.2815,
+        "rank": 1
+      },
+      {
+        "candidate_id": "doc_attention_2017_p4_f1",
+        "page_number": 4,
+        "figure_id": "fig_attention_mechanisms",
+        "score": 0.2631,
+        "rank": 2
+      },
+      {
+        "candidate_id": "doc_attention_2017_p3_f1",
+        "page_number": 3,
+        "figure_id": "fig_transformer_arch",
+        "score": 0.2236,
+        "rank": 3
+      }
+    ],
+    "caption_recall_at_5": 0.0,
+    "caption_figure_recall_at_5": null,
+    "caption_mrr": 0.0,
+    "caption_ndcg_at_5": 0.0,
+    "caption_hit_at_5": 0.0,
+    "caption_hit_at_1": 0.0,
+    "caption_figure_rank": null,
+    "caption_top_figure_ids": [
+      "fig_attention_mechanisms",
+      "fig_transformer_arch"
+    ],
+    "figure_id_overlap": [
+      "fig_attention_mechanisms",
+      "fig_transformer_arch"
+    ],
+    "figure_id_union": [
+      "fig_attention_mechanisms",
+      "fig_transformer_arch"
+    ],
+    "caption_retrieved": [
+      {
+        "candidate_id": "attention_is_all_you_need_a639448e61_p4_f2",
+        "page_number": 4,
+        "figure_id": "fig_attention_mechanisms",
+        "score": 0.7009,
+        "rank": 1
+      },
+      {
+        "candidate_id": "attention_is_all_you_need_a639448e61_p4_f1",
+        "page_number": 4,
+        "figure_id": "fig_attention_mechanisms",
+        "score": 0.538,
+        "rank": 2
+      },
+      {
+        "candidate_id": "attention_is_all_you_need_a639448e61_p3_f1",
+        "page_number": 3,
+        "figure_id": "fig_transformer_arch",
+        "score": 0.4694,
+        "rank": 3
+      }
+    ]
+  },
+  {
+    "query_id": "q_007",
+    "query": "What is the purpose of positional encoding in the Transformer?",
+    "intent": "text",
+    "has_figure_targets": false,
+    "expected_canonical_evidence": [
+      {
+        "document_id": "doc_attention_2017",
+        "page_number": 6,
+        "figure_id": null
+      }
+    ],
+    "clip_recall_at_5": 0.0,
+    "clip_figure_recall_at_5": null,
+    "clip_mrr": 0.0,
+    "clip_ndcg_at_5": 0.0,
+    "clip_hit_at_5": 0.0,
+    "clip_hit_at_1": 0.0,
+    "clip_figure_rank": null,
+    "clip_top_figure_ids": [
+      "fig_attention_mechanisms",
+      "fig_transformer_arch"
+    ],
+    "clip_retrieved": [
+      {
+        "candidate_id": "doc_attention_2017_p4_f2",
+        "page_number": 4,
+        "figure_id": "fig_attention_mechanisms",
+        "score": 0.269,
+        "rank": 1
+      },
+      {
+        "candidate_id": "doc_attention_2017_p4_f1",
+        "page_number": 4,
+        "figure_id": "fig_attention_mechanisms",
+        "score": 0.2413,
+        "rank": 2
+      },
+      {
+        "candidate_id": "doc_attention_2017_p3_f1",
+        "page_number": 3,
+        "figure_id": "fig_transformer_arch",
+        "score": 0.2343,
+        "rank": 3
+      }
+    ],
+    "caption_recall_at_5": 0.0,
+    "caption_figure_recall_at_5": null,
+    "caption_mrr": 0.0,
+    "caption_ndcg_at_5": 0.0,
+    "caption_hit_at_5": 0.0,
+    "caption_hit_at_1": 0.0,
+    "caption_figure_rank": null,
+    "caption_top_figure_ids": [
+      "fig_attention_mechanisms",
+      "fig_transformer_arch"
+    ],
+    "figure_id_overlap": [
+      "fig_attention_mechanisms",
+      "fig_transformer_arch"
+    ],
+    "figure_id_union": [
+      "fig_attention_mechanisms",
+      "fig_transformer_arch"
+    ],
+    "caption_retrieved": [
+      {
+        "candidate_id": "attention_is_all_you_need_a639448e61_p4_f1",
+        "page_number": 4,
+        "figure_id": "fig_attention_mechanisms",
+        "score": 0.61,
+        "rank": 1
+      },
+      {
+        "candidate_id": "attention_is_all_you_need_a639448e61_p3_f1",
+        "page_number": 3,
+        "figure_id": "fig_transformer_arch",
+        "score": 0.5634,
+        "rank": 2
+      },
+      {
+        "candidate_id": "attention_is_all_you_need_a639448e61_p4_f2",
+        "page_number": 4,
+        "figure_id": "fig_attention_mechanisms",
+        "score": 0.5375,
+        "rank": 3
+      }
+    ]
+  },
+  {
+    "query_id": "q_008",
+    "query": "What optimization strategy and learning-rate schedule are used to train the Transformer?",
+    "intent": "text",
+    "has_figure_targets": false,
+    "expected_canonical_evidence": [
+      {
+        "document_id": "doc_attention_2017",
+        "page_number": 7,
+        "figure_id": null
+      }
+    ],
+    "clip_recall_at_5": 0.0,
+    "clip_figure_recall_at_5": null,
+    "clip_mrr": 0.0,
+    "clip_ndcg_at_5": 0.0,
+    "clip_hit_at_5": 0.0,
+    "clip_hit_at_1": 0.0,
+    "clip_figure_rank": null,
+    "clip_top_figure_ids": [
+      "fig_attention_mechanisms",
+      "fig_transformer_arch"
+    ],
+    "clip_retrieved": [
+      {
+        "candidate_id": "doc_attention_2017_p4_f2",
+        "page_number": 4,
+        "figure_id": "fig_attention_mechanisms",
+        "score": 0.2662,
+        "rank": 1
+      },
+      {
+        "candidate_id": "doc_attention_2017_p3_f1",
+        "page_number": 3,
+        "figure_id": "fig_transformer_arch",
+        "score": 0.2617,
+        "rank": 2
+      },
+      {
+        "candidate_id": "doc_attention_2017_p4_f1",
+        "page_number": 4,
+        "figure_id": "fig_attention_mechanisms",
+        "score": 0.2553,
+        "rank": 3
+      }
+    ],
+    "caption_recall_at_5": 0.0,
+    "caption_figure_recall_at_5": null,
+    "caption_mrr": 0.0,
+    "caption_ndcg_at_5": 0.0,
+    "caption_hit_at_5": 0.0,
+    "caption_hit_at_1": 0.0,
+    "caption_figure_rank": null,
+    "caption_top_figure_ids": [
+      "fig_attention_mechanisms",
+      "fig_transformer_arch"
+    ],
+    "figure_id_overlap": [
+      "fig_attention_mechanisms",
+      "fig_transformer_arch"
+    ],
+    "figure_id_union": [
+      "fig_attention_mechanisms",
+      "fig_transformer_arch"
+    ],
+    "caption_retrieved": [
+      {
+        "candidate_id": "attention_is_all_you_need_a639448e61_p4_f1",
+        "page_number": 4,
+        "figure_id": "fig_attention_mechanisms",
+        "score": 0.5725,
+        "rank": 1
+      },
+      {
+        "candidate_id": "attention_is_all_you_need_a639448e61_p4_f2",
+        "page_number": 4,
+        "figure_id": "fig_attention_mechanisms",
+        "score": 0.5368,
+        "rank": 2
+      },
+      {
+        "candidate_id": "attention_is_all_you_need_a639448e61_p3_f1",
+        "page_number": 3,
+        "figure_id": "fig_transformer_arch",
+        "score": 0.5304,
+        "rank": 3
+      }
+    ]
+  },
+  {
+    "query_id": "q_009",
+    "query": "Show the overall Transformer architectural diagram with encoder and decoder blocks.",
+    "intent": "visual",
+    "has_figure_targets": true,
+    "expected_canonical_evidence": [
+      {
+        "document_id": "doc_attention_2017",
+        "page_number": 3,
+        "figure_id": "fig_transformer_arch"
+      }
+    ],
+    "clip_recall_at_5": 1.0,
+    "clip_figure_recall_at_5": 1.0,
+    "clip_mrr": 0.3333,
+    "clip_ndcg_at_5": 0.5,
+    "clip_hit_at_5": 1.0,
+    "clip_hit_at_1": 0.0,
+    "clip_figure_rank": 3,
+    "clip_top_figure_ids": [
+      "fig_attention_mechanisms",
+      "fig_transformer_arch"
+    ],
+    "clip_retrieved": [
+      {
+        "candidate_id": "doc_attention_2017_p4_f2",
+        "page_number": 4,
+        "figure_id": "fig_attention_mechanisms",
+        "score": 0.2896,
+        "rank": 1
+      },
+      {
+        "candidate_id": "doc_attention_2017_p4_f1",
+        "page_number": 4,
+        "figure_id": "fig_attention_mechanisms",
+        "score": 0.2598,
+        "rank": 2
+      },
+      {
+        "candidate_id": "doc_attention_2017_p3_f1",
+        "page_number": 3,
+        "figure_id": "fig_transformer_arch",
+        "score": 0.2518,
+        "rank": 3
+      }
+    ],
+    "caption_recall_at_5": 1.0,
+    "caption_figure_recall_at_5": 1.0,
+    "caption_mrr": 1.0,
+    "caption_ndcg_at_5": 1.0,
+    "caption_hit_at_5": 1.0,
+    "caption_hit_at_1": 1.0,
+    "caption_figure_rank": 1,
+    "caption_top_figure_ids": [
+      "fig_transformer_arch",
+      "fig_attention_mechanisms"
+    ],
+    "figure_id_overlap": [
+      "fig_attention_mechanisms",
+      "fig_transformer_arch"
+    ],
+    "figure_id_union": [
+      "fig_attention_mechanisms",
+      "fig_transformer_arch"
+    ],
+    "caption_retrieved": [
+      {
+        "candidate_id": "attention_is_all_you_need_a639448e61_p3_f1",
+        "page_number": 3,
+        "figure_id": "fig_transformer_arch",
+        "score": 0.7786,
+        "rank": 1
+      },
+      {
+        "candidate_id": "attention_is_all_you_need_a639448e61_p4_f2",
+        "page_number": 4,
+        "figure_id": "fig_attention_mechanisms",
+        "score": 0.5663,
+        "rank": 2
+      },
+      {
+        "candidate_id": "attention_is_all_you_need_a639448e61_p4_f1",
+        "page_number": 4,
+        "figure_id": "fig_attention_mechanisms",
+        "score": 0.511,
+        "rank": 3
+      }
+    ]
+  },
+  {
+    "query_id": "q_010",
+    "query": "Which figure shows the complete encoder-decoder Transformer architecture?",
+    "intent": "visual",
+    "has_figure_targets": true,
+    "expected_canonical_evidence": [
+      {
+        "document_id": "doc_attention_2017",
+        "page_number": 3,
+        "figure_id": "fig_transformer_arch"
+      }
+    ],
+    "clip_recall_at_5": 1.0,
+    "clip_figure_recall_at_5": 1.0,
+    "clip_mrr": 0.5,
+    "clip_ndcg_at_5": 0.6309,
+    "clip_hit_at_5": 1.0,
+    "clip_hit_at_1": 0.0,
+    "clip_figure_rank": 2,
+    "clip_top_figure_ids": [
+      "fig_attention_mechanisms",
+      "fig_transformer_arch"
+    ],
+    "clip_retrieved": [
+      {
+        "candidate_id": "doc_attention_2017_p4_f2",
+        "page_number": 4,
+        "figure_id": "fig_attention_mechanisms",
+        "score": 0.3106,
+        "rank": 1
+      },
+      {
+        "candidate_id": "doc_attention_2017_p3_f1",
+        "page_number": 3,
+        "figure_id": "fig_transformer_arch",
+        "score": 0.2736,
+        "rank": 2
+      },
+      {
+        "candidate_id": "doc_attention_2017_p4_f1",
+        "page_number": 4,
+        "figure_id": "fig_attention_mechanisms",
+        "score": 0.2701,
+        "rank": 3
+      }
+    ],
+    "caption_recall_at_5": 1.0,
+    "caption_figure_recall_at_5": 1.0,
+    "caption_mrr": 1.0,
+    "caption_ndcg_at_5": 1.0,
+    "caption_hit_at_5": 1.0,
+    "caption_hit_at_1": 1.0,
+    "caption_figure_rank": 1,
+    "caption_top_figure_ids": [
+      "fig_transformer_arch",
+      "fig_attention_mechanisms"
+    ],
+    "figure_id_overlap": [
+      "fig_attention_mechanisms",
+      "fig_transformer_arch"
+    ],
+    "figure_id_union": [
+      "fig_attention_mechanisms",
+      "fig_transformer_arch"
+    ],
+    "caption_retrieved": [
+      {
+        "candidate_id": "attention_is_all_you_need_a639448e61_p3_f1",
+        "page_number": 3,
+        "figure_id": "fig_transformer_arch",
+        "score": 0.811,
+        "rank": 1
+      },
+      {
+        "candidate_id": "attention_is_all_you_need_a639448e61_p4_f1",
+        "page_number": 4,
+        "figure_id": "fig_attention_mechanisms",
+        "score": 0.5513,
+        "rank": 2
+      },
+      {
+        "candidate_id": "attention_is_all_you_need_a639448e61_p4_f2",
+        "page_number": 4,
+        "figure_id": "fig_attention_mechanisms",
+        "score": 0.5458,
+        "rank": 3
+      }
+    ]
+  },
+  {
+    "query_id": "q_011",
+    "query": "Find the diagram that shows repeated encoder and decoder layers connected through attention.",
+    "intent": "visual",
+    "has_figure_targets": true,
+    "expected_canonical_evidence": [
+      {
+        "document_id": "doc_attention_2017",
+        "page_number": 3,
+        "figure_id": "fig_transformer_arch"
+      }
+    ],
+    "clip_recall_at_5": 1.0,
+    "clip_figure_recall_at_5": 1.0,
+    "clip_mrr": 0.3333,
+    "clip_ndcg_at_5": 0.5,
+    "clip_hit_at_5": 1.0,
+    "clip_hit_at_1": 0.0,
+    "clip_figure_rank": 3,
+    "clip_top_figure_ids": [
+      "fig_attention_mechanisms",
+      "fig_transformer_arch"
+    ],
+    "clip_retrieved": [
+      {
+        "candidate_id": "doc_attention_2017_p4_f2",
+        "page_number": 4,
+        "figure_id": "fig_attention_mechanisms",
+        "score": 0.3104,
+        "rank": 1
+      },
+      {
+        "candidate_id": "doc_attention_2017_p4_f1",
+        "page_number": 4,
+        "figure_id": "fig_attention_mechanisms",
+        "score": 0.2828,
+        "rank": 2
+      },
+      {
+        "candidate_id": "doc_attention_2017_p3_f1",
+        "page_number": 3,
+        "figure_id": "fig_transformer_arch",
+        "score": 0.277,
+        "rank": 3
+      }
+    ],
+    "caption_recall_at_5": 1.0,
+    "caption_figure_recall_at_5": 1.0,
+    "caption_mrr": 1.0,
+    "caption_ndcg_at_5": 1.0,
+    "caption_hit_at_5": 1.0,
+    "caption_hit_at_1": 1.0,
+    "caption_figure_rank": 1,
+    "caption_top_figure_ids": [
+      "fig_transformer_arch",
+      "fig_attention_mechanisms"
+    ],
+    "figure_id_overlap": [
+      "fig_attention_mechanisms",
+      "fig_transformer_arch"
+    ],
+    "figure_id_union": [
+      "fig_attention_mechanisms",
+      "fig_transformer_arch"
+    ],
+    "caption_retrieved": [
+      {
+        "candidate_id": "attention_is_all_you_need_a639448e61_p3_f1",
+        "page_number": 3,
+        "figure_id": "fig_transformer_arch",
+        "score": 0.801,
+        "rank": 1
+      },
+      {
+        "candidate_id": "attention_is_all_you_need_a639448e61_p4_f2",
+        "page_number": 4,
+        "figure_id": "fig_attention_mechanisms",
+        "score": 0.7345,
+        "rank": 2
+      },
+      {
+        "candidate_id": "attention_is_all_you_need_a639448e61_p4_f1",
+        "page_number": 4,
+        "figure_id": "fig_attention_mechanisms",
+        "score": 0.6606,
+        "rank": 3
+      }
+    ]
+  },
+  {
+    "query_id": "q_012",
+    "query": "Show the diagram of Scaled Dot-Product Attention.",
+    "intent": "visual",
+    "has_figure_targets": true,
+    "expected_canonical_evidence": [
+      {
+        "document_id": "doc_attention_2017",
+        "page_number": 4,
+        "figure_id": "fig_attention_mechanisms"
+      }
+    ],
+    "clip_recall_at_5": 1.0,
+    "clip_figure_recall_at_5": 1.0,
+    "clip_mrr": 1.0,
+    "clip_ndcg_at_5": 1.0,
+    "clip_hit_at_5": 1.0,
+    "clip_hit_at_1": 1.0,
+    "clip_figure_rank": 1,
+    "clip_top_figure_ids": [
+      "fig_attention_mechanisms",
+      "fig_transformer_arch"
+    ],
+    "clip_retrieved": [
+      {
+        "candidate_id": "doc_attention_2017_p4_f2",
+        "page_number": 4,
+        "figure_id": "fig_attention_mechanisms",
+        "score": 0.3168,
+        "rank": 1
+      },
+      {
+        "candidate_id": "doc_attention_2017_p4_f1",
+        "page_number": 4,
+        "figure_id": "fig_attention_mechanisms",
+        "score": 0.2802,
+        "rank": 2
+      },
+      {
+        "candidate_id": "doc_attention_2017_p3_f1",
+        "page_number": 3,
+        "figure_id": "fig_transformer_arch",
+        "score": 0.2713,
+        "rank": 3
+      }
+    ],
+    "caption_recall_at_5": 1.0,
+    "caption_figure_recall_at_5": 1.0,
+    "caption_mrr": 1.0,
+    "caption_ndcg_at_5": 1.0,
+    "caption_hit_at_5": 1.0,
+    "caption_hit_at_1": 1.0,
+    "caption_figure_rank": 1,
+    "caption_top_figure_ids": [
+      "fig_attention_mechanisms",
+      "fig_transformer_arch"
+    ],
+    "figure_id_overlap": [
+      "fig_attention_mechanisms",
+      "fig_transformer_arch"
+    ],
+    "figure_id_union": [
+      "fig_attention_mechanisms",
+      "fig_transformer_arch"
+    ],
+    "caption_retrieved": [
+      {
+        "candidate_id": "attention_is_all_you_need_a639448e61_p4_f2",
+        "page_number": 4,
+        "figure_id": "fig_attention_mechanisms",
+        "score": 0.7019,
+        "rank": 1
+      },
+      {
+        "candidate_id": "attention_is_all_you_need_a639448e61_p3_f1",
+        "page_number": 3,
+        "figure_id": "fig_transformer_arch",
+        "score": 0.6151,
+        "rank": 2
+      },
+      {
+        "candidate_id": "attention_is_all_you_need_a639448e61_p4_f1",
+        "page_number": 4,
+        "figure_id": "fig_attention_mechanisms",
+        "score": 0.6133,
+        "rank": 3
+      }
+    ]
+  },
+  {
+    "query_id": "q_013",
+    "query": "Which figure illustrates both Scaled Dot-Product Attention and Multi-Head Attention?",
+    "intent": "visual",
+    "has_figure_targets": true,
+    "expected_canonical_evidence": [
+      {
+        "document_id": "doc_attention_2017",
+        "page_number": 4,
+        "figure_id": "fig_attention_mechanisms"
+      }
+    ],
+    "clip_recall_at_5": 1.0,
+    "clip_figure_recall_at_5": 1.0,
+    "clip_mrr": 1.0,
+    "clip_ndcg_at_5": 1.0,
+    "clip_hit_at_5": 1.0,
+    "clip_hit_at_1": 1.0,
+    "clip_figure_rank": 1,
+    "clip_top_figure_ids": [
+      "fig_attention_mechanisms",
+      "fig_transformer_arch"
+    ],
+    "clip_retrieved": [
+      {
+        "candidate_id": "doc_attention_2017_p4_f2",
+        "page_number": 4,
+        "figure_id": "fig_attention_mechanisms",
+        "score": 0.2783,
+        "rank": 1
+      },
+      {
+        "candidate_id": "doc_attention_2017_p3_f1",
+        "page_number": 3,
+        "figure_id": "fig_transformer_arch",
+        "score": 0.2546,
+        "rank": 2
+      },
+      {
+        "candidate_id": "doc_attention_2017_p4_f1",
+        "page_number": 4,
+        "figure_id": "fig_attention_mechanisms",
+        "score": 0.2428,
+        "rank": 3
+      }
+    ],
+    "caption_recall_at_5": 1.0,
+    "caption_figure_recall_at_5": 1.0,
+    "caption_mrr": 1.0,
+    "caption_ndcg_at_5": 1.0,
+    "caption_hit_at_5": 1.0,
+    "caption_hit_at_1": 1.0,
+    "caption_figure_rank": 1,
+    "caption_top_figure_ids": [
+      "fig_attention_mechanisms",
+      "fig_transformer_arch"
+    ],
+    "figure_id_overlap": [
+      "fig_attention_mechanisms",
+      "fig_transformer_arch"
+    ],
+    "figure_id_union": [
+      "fig_attention_mechanisms",
+      "fig_transformer_arch"
+    ],
+    "caption_retrieved": [
+      {
+        "candidate_id": "attention_is_all_you_need_a639448e61_p4_f1",
+        "page_number": 4,
+        "figure_id": "fig_attention_mechanisms",
+        "score": 0.6415,
+        "rank": 1
+      },
+      {
+        "candidate_id": "attention_is_all_you_need_a639448e61_p4_f2",
+        "page_number": 4,
+        "figure_id": "fig_attention_mechanisms",
+        "score": 0.6209,
+        "rank": 2
+      },
+      {
+        "candidate_id": "attention_is_all_you_need_a639448e61_p3_f1",
+        "page_number": 3,
+        "figure_id": "fig_transformer_arch",
+        "score": 0.5748,
+        "rank": 3
+      }
+    ]
+  },
+  {
+    "query_id": "q_014",
+    "query": "Find the visual showing how multiple attention heads are concatenated.",
+    "intent": "visual",
+    "has_figure_targets": true,
+    "expected_canonical_evidence": [
+      {
+        "document_id": "doc_attention_2017",
+        "page_number": 4,
+        "figure_id": "fig_attention_mechanisms"
+      }
+    ],
+    "clip_recall_at_5": 1.0,
+    "clip_figure_recall_at_5": 1.0,
+    "clip_mrr": 1.0,
+    "clip_ndcg_at_5": 1.0,
+    "clip_hit_at_5": 1.0,
+    "clip_hit_at_1": 1.0,
+    "clip_figure_rank": 1,
+    "clip_top_figure_ids": [
+      "fig_attention_mechanisms",
+      "fig_transformer_arch"
+    ],
+    "clip_retrieved": [
+      {
+        "candidate_id": "doc_attention_2017_p4_f2",
+        "page_number": 4,
+        "figure_id": "fig_attention_mechanisms",
+        "score": 0.2663,
+        "rank": 1
+      },
+      {
+        "candidate_id": "doc_attention_2017_p3_f1",
+        "page_number": 3,
+        "figure_id": "fig_transformer_arch",
+        "score": 0.2555,
+        "rank": 2
+      },
+      {
+        "candidate_id": "doc_attention_2017_p4_f1",
+        "page_number": 4,
+        "figure_id": "fig_attention_mechanisms",
+        "score": 0.2344,
+        "rank": 3
+      }
+    ],
+    "caption_recall_at_5": 1.0,
+    "caption_figure_recall_at_5": 1.0,
+    "caption_mrr": 1.0,
+    "caption_ndcg_at_5": 1.0,
+    "caption_hit_at_5": 1.0,
+    "caption_hit_at_1": 1.0,
+    "caption_figure_rank": 1,
+    "caption_top_figure_ids": [
+      "fig_attention_mechanisms",
+      "fig_transformer_arch"
+    ],
+    "figure_id_overlap": [
+      "fig_attention_mechanisms",
+      "fig_transformer_arch"
+    ],
+    "figure_id_union": [
+      "fig_attention_mechanisms",
+      "fig_transformer_arch"
+    ],
+    "caption_retrieved": [
+      {
+        "candidate_id": "attention_is_all_you_need_a639448e61_p4_f2",
+        "page_number": 4,
+        "figure_id": "fig_attention_mechanisms",
+        "score": 0.725,
+        "rank": 1
+      },
+      {
+        "candidate_id": "attention_is_all_you_need_a639448e61_p4_f1",
+        "page_number": 4,
+        "figure_id": "fig_attention_mechanisms",
+        "score": 0.6615,
+        "rank": 2
+      },
+      {
+        "candidate_id": "attention_is_all_you_need_a639448e61_p3_f1",
+        "page_number": 3,
+        "figure_id": "fig_transformer_arch",
+        "score": 0.6358,
+        "rank": 3
+      }
+    ]
+  },
+  {
+    "query_id": "q_015",
+    "query": "How does the Transformer architecture shown in the paper separate encoder and decoder processing?",
+    "intent": "hybrid",
+    "has_figure_targets": true,
+    "expected_canonical_evidence": [
+      {
+        "document_id": "doc_attention_2017",
+        "page_number": 3,
+        "figure_id": "fig_transformer_arch"
+      },
+      {
+        "document_id": "doc_attention_2017",
+        "page_number": 3,
+        "figure_id": null
+      }
+    ],
+    "clip_recall_at_5": 0.5,
+    "clip_figure_recall_at_5": 1.0,
+    "clip_mrr": 0.3333,
+    "clip_ndcg_at_5": 0.3066,
+    "clip_hit_at_5": 1.0,
+    "clip_hit_at_1": 0.0,
+    "clip_figure_rank": 3,
+    "clip_top_figure_ids": [
+      "fig_attention_mechanisms",
+      "fig_transformer_arch"
+    ],
+    "clip_retrieved": [
+      {
+        "candidate_id": "doc_attention_2017_p4_f2",
+        "page_number": 4,
+        "figure_id": "fig_attention_mechanisms",
+        "score": 0.3093,
+        "rank": 1
+      },
+      {
+        "candidate_id": "doc_attention_2017_p4_f1",
+        "page_number": 4,
+        "figure_id": "fig_attention_mechanisms",
+        "score": 0.2858,
+        "rank": 2
+      },
+      {
+        "candidate_id": "doc_attention_2017_p3_f1",
+        "page_number": 3,
+        "figure_id": "fig_transformer_arch",
+        "score": 0.2721,
+        "rank": 3
+      }
+    ],
+    "caption_recall_at_5": 0.5,
+    "caption_figure_recall_at_5": 1.0,
+    "caption_mrr": 1.0,
+    "caption_ndcg_at_5": 0.6131,
+    "caption_hit_at_5": 1.0,
+    "caption_hit_at_1": 1.0,
+    "caption_figure_rank": 1,
+    "caption_top_figure_ids": [
+      "fig_transformer_arch",
+      "fig_attention_mechanisms"
+    ],
+    "figure_id_overlap": [
+      "fig_attention_mechanisms",
+      "fig_transformer_arch"
+    ],
+    "figure_id_union": [
+      "fig_attention_mechanisms",
+      "fig_transformer_arch"
+    ],
+    "caption_retrieved": [
+      {
+        "candidate_id": "attention_is_all_you_need_a639448e61_p3_f1",
+        "page_number": 3,
+        "figure_id": "fig_transformer_arch",
+        "score": 0.7932,
+        "rank": 1
+      },
+      {
+        "candidate_id": "attention_is_all_you_need_a639448e61_p4_f1",
+        "page_number": 4,
+        "figure_id": "fig_attention_mechanisms",
+        "score": 0.5606,
+        "rank": 2
+      },
+      {
+        "candidate_id": "attention_is_all_you_need_a639448e61_p4_f2",
+        "page_number": 4,
+        "figure_id": "fig_attention_mechanisms",
+        "score": 0.5084,
+        "rank": 3
+      }
+    ]
+  },
+  {
+    "query_id": "q_016",
+    "query": "How does Scaled Dot-Product Attention compute attention weights from Q, K, and V matrices?",
+    "intent": "hybrid",
+    "has_figure_targets": true,
+    "expected_canonical_evidence": [
+      {
+        "document_id": "doc_attention_2017",
+        "page_number": 4,
+        "figure_id": "fig_attention_mechanisms"
+      },
+      {
+        "document_id": "doc_attention_2017",
+        "page_number": 4,
+        "figure_id": null
+      }
+    ],
+    "clip_recall_at_5": 0.5,
+    "clip_figure_recall_at_5": 1.0,
+    "clip_mrr": 1.0,
+    "clip_ndcg_at_5": 0.6131,
+    "clip_hit_at_5": 1.0,
+    "clip_hit_at_1": 1.0,
+    "clip_figure_rank": 1,
+    "clip_top_figure_ids": [
+      "fig_attention_mechanisms",
+      "fig_transformer_arch"
+    ],
+    "clip_retrieved": [
+      {
+        "candidate_id": "doc_attention_2017_p4_f2",
+        "page_number": 4,
+        "figure_id": "fig_attention_mechanisms",
+        "score": 0.2826,
+        "rank": 1
+      },
+      {
+        "candidate_id": "doc_attention_2017_p4_f1",
+        "page_number": 4,
+        "figure_id": "fig_attention_mechanisms",
+        "score": 0.2713,
+        "rank": 2
+      },
+      {
+        "candidate_id": "doc_attention_2017_p3_f1",
+        "page_number": 3,
+        "figure_id": "fig_transformer_arch",
+        "score": 0.2266,
+        "rank": 3
+      }
+    ],
+    "caption_recall_at_5": 0.5,
+    "caption_figure_recall_at_5": 1.0,
+    "caption_mrr": 1.0,
+    "caption_ndcg_at_5": 0.6131,
+    "caption_hit_at_5": 1.0,
+    "caption_hit_at_1": 1.0,
+    "caption_figure_rank": 1,
+    "caption_top_figure_ids": [
+      "fig_attention_mechanisms",
+      "fig_transformer_arch"
+    ],
+    "figure_id_overlap": [
+      "fig_attention_mechanisms",
+      "fig_transformer_arch"
+    ],
+    "figure_id_union": [
+      "fig_attention_mechanisms",
+      "fig_transformer_arch"
+    ],
+    "caption_retrieved": [
+      {
+        "candidate_id": "attention_is_all_you_need_a639448e61_p4_f1",
+        "page_number": 4,
+        "figure_id": "fig_attention_mechanisms",
+        "score": 0.7418,
+        "rank": 1
+      },
+      {
+        "candidate_id": "attention_is_all_you_need_a639448e61_p4_f2",
+        "page_number": 4,
+        "figure_id": "fig_attention_mechanisms",
+        "score": 0.7238,
+        "rank": 2
+      },
+      {
+        "candidate_id": "attention_is_all_you_need_a639448e61_p3_f1",
+        "page_number": 3,
+        "figure_id": "fig_transformer_arch",
+        "score": 0.5648,
+        "rank": 3
+      }
+    ]
+  },
+  {
+    "query_id": "q_017",
+    "query": "How does Multi-Head Attention extend Scaled Dot-Product Attention?",
+    "intent": "hybrid",
+    "has_figure_targets": true,
+    "expected_canonical_evidence": [
+      {
+        "document_id": "doc_attention_2017",
+        "page_number": 4,
+        "figure_id": "fig_attention_mechanisms"
+      },
+      {
+        "document_id": "doc_attention_2017",
+        "page_number": 4,
+        "figure_id": null
+      },
+      {
+        "document_id": "doc_attention_2017",
+        "page_number": 5,
+        "figure_id": null
+      }
+    ],
+    "clip_recall_at_5": 0.3333,
+    "clip_figure_recall_at_5": 1.0,
+    "clip_mrr": 1.0,
+    "clip_ndcg_at_5": 0.4693,
+    "clip_hit_at_5": 1.0,
+    "clip_hit_at_1": 1.0,
+    "clip_figure_rank": 1,
+    "clip_top_figure_ids": [
+      "fig_attention_mechanisms",
+      "fig_transformer_arch"
+    ],
+    "clip_retrieved": [
+      {
+        "candidate_id": "doc_attention_2017_p4_f2",
+        "page_number": 4,
+        "figure_id": "fig_attention_mechanisms",
+        "score": 0.3079,
+        "rank": 1
+      },
+      {
+        "candidate_id": "doc_attention_2017_p4_f1",
+        "page_number": 4,
+        "figure_id": "fig_attention_mechanisms",
+        "score": 0.2749,
+        "rank": 2
+      },
+      {
+        "candidate_id": "doc_attention_2017_p3_f1",
+        "page_number": 3,
+        "figure_id": "fig_transformer_arch",
+        "score": 0.2708,
+        "rank": 3
+      }
+    ],
+    "caption_recall_at_5": 0.3333,
+    "caption_figure_recall_at_5": 1.0,
+    "caption_mrr": 1.0,
+    "caption_ndcg_at_5": 0.4693,
+    "caption_hit_at_5": 1.0,
+    "caption_hit_at_1": 1.0,
+    "caption_figure_rank": 1,
+    "caption_top_figure_ids": [
+      "fig_attention_mechanisms",
+      "fig_transformer_arch"
+    ],
+    "figure_id_overlap": [
+      "fig_attention_mechanisms",
+      "fig_transformer_arch"
+    ],
+    "figure_id_union": [
+      "fig_attention_mechanisms",
+      "fig_transformer_arch"
+    ],
+    "caption_retrieved": [
+      {
+        "candidate_id": "attention_is_all_you_need_a639448e61_p4_f1",
+        "page_number": 4,
+        "figure_id": "fig_attention_mechanisms",
+        "score": 0.6093,
+        "rank": 1
+      },
+      {
+        "candidate_id": "attention_is_all_you_need_a639448e61_p3_f1",
+        "page_number": 3,
+        "figure_id": "fig_transformer_arch",
+        "score": 0.5001,
+        "rank": 2
+      },
+      {
+        "candidate_id": "attention_is_all_you_need_a639448e61_p4_f2",
+        "page_number": 4,
+        "figure_id": "fig_attention_mechanisms",
+        "score": 0.4956,
+        "rank": 3
+      }
+    ]
+  },
+  {
+    "query_id": "q_018",
+    "query": "Using the architecture diagram and surrounding text, explain where self-attention appears in the encoder and decoder.",
+    "intent": "hybrid",
+    "has_figure_targets": true,
+    "expected_canonical_evidence": [
+      {
+        "document_id": "doc_attention_2017",
+        "page_number": 3,
+        "figure_id": "fig_transformer_arch"
+      },
+      {
+        "document_id": "doc_attention_2017",
+        "page_number": 3,
+        "figure_id": null
+      },
+      {
+        "document_id": "doc_attention_2017",
+        "page_number": 5,
+        "figure_id": null
+      }
+    ],
+    "clip_recall_at_5": 0.3333,
+    "clip_figure_recall_at_5": 1.0,
+    "clip_mrr": 0.3333,
+    "clip_ndcg_at_5": 0.2346,
+    "clip_hit_at_5": 1.0,
+    "clip_hit_at_1": 0.0,
+    "clip_figure_rank": 3,
+    "clip_top_figure_ids": [
+      "fig_attention_mechanisms",
+      "fig_transformer_arch"
+    ],
+    "clip_retrieved": [
+      {
+        "candidate_id": "doc_attention_2017_p4_f2",
+        "page_number": 4,
+        "figure_id": "fig_attention_mechanisms",
+        "score": 0.3073,
+        "rank": 1
+      },
+      {
+        "candidate_id": "doc_attention_2017_p4_f1",
+        "page_number": 4,
+        "figure_id": "fig_attention_mechanisms",
+        "score": 0.2918,
+        "rank": 2
+      },
+      {
+        "candidate_id": "doc_attention_2017_p3_f1",
+        "page_number": 3,
+        "figure_id": "fig_transformer_arch",
+        "score": 0.285,
+        "rank": 3
+      }
+    ],
+    "caption_recall_at_5": 0.3333,
+    "caption_figure_recall_at_5": 1.0,
+    "caption_mrr": 1.0,
+    "caption_ndcg_at_5": 0.4693,
+    "caption_hit_at_5": 1.0,
+    "caption_hit_at_1": 1.0,
+    "caption_figure_rank": 1,
+    "caption_top_figure_ids": [
+      "fig_transformer_arch",
+      "fig_attention_mechanisms"
+    ],
+    "figure_id_overlap": [
+      "fig_attention_mechanisms",
+      "fig_transformer_arch"
+    ],
+    "figure_id_union": [
+      "fig_attention_mechanisms",
+      "fig_transformer_arch"
+    ],
+    "caption_retrieved": [
+      {
+        "candidate_id": "attention_is_all_you_need_a639448e61_p3_f1",
+        "page_number": 3,
+        "figure_id": "fig_transformer_arch",
+        "score": 0.7918,
+        "rank": 1
+      },
+      {
+        "candidate_id": "attention_is_all_you_need_a639448e61_p4_f2",
+        "page_number": 4,
+        "figure_id": "fig_attention_mechanisms",
+        "score": 0.6766,
+        "rank": 2
+      },
+      {
+        "candidate_id": "attention_is_all_you_need_a639448e61_p4_f1",
+        "page_number": 4,
+        "figure_id": "fig_attention_mechanisms",
+        "score": 0.5919,
+        "rank": 3
+      }
+    ]
+  },
+  {
+    "query_id": "q_019",
+    "query": "What visual and textual evidence explains how encoder-decoder attention connects the two sides of the Transformer?",
+    "intent": "hybrid",
+    "has_figure_targets": true,
+    "expected_canonical_evidence": [
+      {
+        "document_id": "doc_attention_2017",
+        "page_number": 3,
+        "figure_id": "fig_transformer_arch"
+      },
+      {
+        "document_id": "doc_attention_2017",
+        "page_number": 3,
+        "figure_id": null
+      },
+      {
+        "document_id": "doc_attention_2017",
+        "page_number": 5,
+        "figure_id": null
+      }
+    ],
+    "clip_recall_at_5": 0.3333,
+    "clip_figure_recall_at_5": 1.0,
+    "clip_mrr": 0.5,
+    "clip_ndcg_at_5": 0.2961,
+    "clip_hit_at_5": 1.0,
+    "clip_hit_at_1": 0.0,
+    "clip_figure_rank": 2,
+    "clip_top_figure_ids": [
+      "fig_attention_mechanisms",
+      "fig_transformer_arch"
+    ],
+    "clip_retrieved": [
+      {
+        "candidate_id": "doc_attention_2017_p4_f2",
+        "page_number": 4,
+        "figure_id": "fig_attention_mechanisms",
+        "score": 0.297,
+        "rank": 1
+      },
+      {
+        "candidate_id": "doc_attention_2017_p3_f1",
+        "page_number": 3,
+        "figure_id": "fig_transformer_arch",
+        "score": 0.2676,
+        "rank": 2
+      },
+      {
+        "candidate_id": "doc_attention_2017_p4_f1",
+        "page_number": 4,
+        "figure_id": "fig_attention_mechanisms",
+        "score": 0.2607,
+        "rank": 3
+      }
+    ],
+    "caption_recall_at_5": 0.3333,
+    "caption_figure_recall_at_5": 1.0,
+    "caption_mrr": 1.0,
+    "caption_ndcg_at_5": 0.4693,
+    "caption_hit_at_5": 1.0,
+    "caption_hit_at_1": 1.0,
+    "caption_figure_rank": 1,
+    "caption_top_figure_ids": [
+      "fig_transformer_arch",
+      "fig_attention_mechanisms"
+    ],
+    "figure_id_overlap": [
+      "fig_attention_mechanisms",
+      "fig_transformer_arch"
+    ],
+    "figure_id_union": [
+      "fig_attention_mechanisms",
+      "fig_transformer_arch"
+    ],
+    "caption_retrieved": [
+      {
+        "candidate_id": "attention_is_all_you_need_a639448e61_p3_f1",
+        "page_number": 3,
+        "figure_id": "fig_transformer_arch",
+        "score": 0.7254,
+        "rank": 1
+      },
+      {
+        "candidate_id": "attention_is_all_you_need_a639448e61_p4_f1",
+        "page_number": 4,
+        "figure_id": "fig_attention_mechanisms",
+        "score": 0.7045,
+        "rank": 2
+      },
+      {
+        "candidate_id": "attention_is_all_you_need_a639448e61_p4_f2",
+        "page_number": 4,
+        "figure_id": "fig_attention_mechanisms",
+        "score": 0.6857,
+        "rank": 3
+      }
+    ]
+  },
+  {
+    "query_id": "q_020",
+    "query": "Explain the difference between single Scaled Dot-Product Attention and Multi-Head Attention using both the diagram and the paper's description.",
+    "intent": "hybrid",
+    "has_figure_targets": true,
+    "expected_canonical_evidence": [
+      {
+        "document_id": "doc_attention_2017",
+        "page_number": 4,
+        "figure_id": "fig_attention_mechanisms"
+      },
+      {
+        "document_id": "doc_attention_2017",
+        "page_number": 4,
+        "figure_id": null
+      },
+      {
+        "document_id": "doc_attention_2017",
+        "page_number": 5,
+        "figure_id": null
+      }
+    ],
+    "clip_recall_at_5": 0.3333,
+    "clip_figure_recall_at_5": 1.0,
+    "clip_mrr": 1.0,
+    "clip_ndcg_at_5": 0.4693,
+    "clip_hit_at_5": 1.0,
+    "clip_hit_at_1": 1.0,
+    "clip_figure_rank": 1,
+    "clip_top_figure_ids": [
+      "fig_attention_mechanisms",
+      "fig_transformer_arch"
+    ],
+    "clip_retrieved": [
+      {
+        "candidate_id": "doc_attention_2017_p4_f2",
+        "page_number": 4,
+        "figure_id": "fig_attention_mechanisms",
+        "score": 0.2875,
+        "rank": 1
+      },
+      {
+        "candidate_id": "doc_attention_2017_p3_f1",
+        "page_number": 3,
+        "figure_id": "fig_transformer_arch",
+        "score": 0.2613,
+        "rank": 2
+      },
+      {
+        "candidate_id": "doc_attention_2017_p4_f1",
+        "page_number": 4,
+        "figure_id": "fig_attention_mechanisms",
+        "score": 0.2608,
+        "rank": 3
+      }
+    ],
+    "caption_recall_at_5": 0.3333,
+    "caption_figure_recall_at_5": 1.0,
+    "caption_mrr": 1.0,
+    "caption_ndcg_at_5": 0.4693,
+    "caption_hit_at_5": 1.0,
+    "caption_hit_at_1": 1.0,
+    "caption_figure_rank": 1,
+    "caption_top_figure_ids": [
+      "fig_attention_mechanisms",
+      "fig_transformer_arch"
+    ],
+    "figure_id_overlap": [
+      "fig_attention_mechanisms",
+      "fig_transformer_arch"
+    ],
+    "figure_id_union": [
+      "fig_attention_mechanisms",
+      "fig_transformer_arch"
+    ],
+    "caption_retrieved": [
+      {
+        "candidate_id": "attention_is_all_you_need_a639448e61_p4_f2",
+        "page_number": 4,
+        "figure_id": "fig_attention_mechanisms",
+        "score": 0.5924,
+        "rank": 1
+      },
+      {
+        "candidate_id": "attention_is_all_you_need_a639448e61_p3_f1",
+        "page_number": 3,
+        "figure_id": "fig_transformer_arch",
+        "score": 0.5886,
+        "rank": 2
+      },
+      {
+        "candidate_id": "attention_is_all_you_need_a639448e61_p4_f1",
+        "page_number": 4,
+        "figure_id": "fig_attention_mechanisms",
+        "score": 0.5808,
+        "rank": 3
+      }
+    ]
+  }
+]

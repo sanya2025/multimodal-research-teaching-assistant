@@ -1,0 +1,39 @@
+{
+  "built_at": "2026-09-08T06:53:16.314882+00:00",
+  "corpus_pdf": "data/eval/corpus/v1/papers/attention_is_all_you_need.pdf",
+  "model": "openai/clip-vit-base-patch32",
+  "embedding_dimension": 512,
+  "normalization": "L2",
+  "similarity": "inner_product/cosine",
+  "index_type": "IndexFlatIP",
+  "embedding_source": "direct_clip_image_embedding",
+  "captions_used": false,
+  "image_bytes_persisted": false,
+  "n_records": 3,
+  "records": [
+    {
+      "record_id": "doc_attention_2017_p3_f1",
+      "document_id": "doc_attention_2017",
+      "page": 3,
+      "figure_id": "fig_transformer_arch",
+      "figure_index": 1,
+      "image_path": "data/eval/indices/clip_image_index/images/doc_attention_2017_p3_f1.png"
+    },
+    {
+      "record_id": "doc_attention_2017_p4_f1",
+      "document_id": "doc_attention_2017",
+      "page": 4,
+      "figure_id": "fig_attention_mechanisms",
+      "figure_index": 1,
+      "image_path": "data/eval/indices/clip_image_index/images/doc_attention_2017_p4_f1.png"
+    },
+    {
+      "record_id": "doc_attention_2017_p4_f2",
+      "document_id": "doc_attention_2017",
+      "page": 4,
+      "figure_id": "fig_attention_mechanisms",
+      "figure_index": 2,
+      "image_path": "data/eval/indices/clip_image_index/images/doc_attention_2017_p4_f2.png"
+    }
+  ]
+}
