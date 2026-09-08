@@ -90,7 +90,11 @@ class CLIPEmbedder:
         if self._model is None:
             from transformers import CLIPModel, CLIPProcessor
 
-            model = CLIPModel.from_pretrained(CLIP_MODEL_ID)
+            # Typed as Any deliberately: transformers resolves PreTrainedModel.to
+            # as an unbound _Wrapped descriptor, so mypy reads self._device as its
+            # `self` argument and reports a false positive. self._model is Any for
+            # the same reason; keeping the local consistent avoids a blanket ignore.
+            model: Any = CLIPModel.from_pretrained(CLIP_MODEL_ID)
             model = model.to(self._device)
             model.eval()  # disable dropout — inference must be deterministic
             self._model = model
