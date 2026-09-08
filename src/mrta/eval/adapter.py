@@ -17,7 +17,7 @@ uses the raw source string as document_id so metrics can still be computed
 
 from __future__ import annotations
 
-from mrta.core.schemas import Chunk, EvidenceRecord
+from mrta.core.schemas import Chunk, EvidenceRecord, VisualRecord
 from mrta.eval.types import CanonicalEvidence, RetrievedCandidate
 
 
@@ -67,6 +67,29 @@ class EvalAdapter:
         call sites self-documenting. Uses identical canonical evidence semantics.
         """
         return self.evidence_record_to_candidate(record, score, rank)
+
+    def from_visual_record(
+        self,
+        record: VisualRecord,
+        score: float,
+        rank: int,
+    ) -> RetrievedCandidate:
+        """Map an ImageStore (CLIP) result to a RetrievedCandidate.
+
+        VisualRecord already carries its canonical figure_id, resolved when the
+        index was built, so no manifest lookup is needed here. Canonical evidence
+        semantics are identical to the text and caption paths.
+        """
+        return RetrievedCandidate(
+            candidate_id=record.record_id,
+            evidence=CanonicalEvidence(
+                document_id=record.document_id,
+                page_number=record.page,
+                figure_id=record.figure_id,
+            ),
+            score=score,
+            rank=rank,
+        )
 
     def evidence_record_to_candidate(
         self,

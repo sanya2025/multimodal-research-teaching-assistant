@@ -80,9 +80,15 @@ llm = [
 ]
 
 # Multimodal — CLIP image embeddings + VLM support
+# transformers/torch are also listed under [llm]; repeated here so that
+# `pip install "mrta-rag[multimodal]"` alone is sufficient for the CLIP
+# retrieval path (mrta.retrieval.clip_embedder loads openai/clip-vit-base-patch32
+# through HuggingFace Transformers).
 multimodal = [
     "open-clip-torch>=2.24.0",
     "einops>=0.8.0",
+    "transformers>=4.41.0",
+    "torch>=2.2.0",
 ]
 
 # OCR fallback for scanned PDFs

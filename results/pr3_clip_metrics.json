@@ -1,0 +1,256 @@
+{
+  "status": "measured",
+  "model": "openai/clip-vit-base-patch32",
+  "embedding_dimension": 512,
+  "normalization": "L2",
+  "similarity": "inner_product/cosine",
+  "k": 5,
+  "dataset_version": "v1.0.0",
+  "corpus_version": "v1.0.0",
+  "index_size": 3,
+  "benchmark_caveat": "k=5 >= CLIP index size (3), so every search returns every figure. Recall@5 and Figure Recall@5 are 1.0 by construction and carry no signal on this benchmark. MRR, nDCG@5 and Hit@1 are the rank-sensitive metrics.",
+  "score_pooling": "NOT PERFORMED. CLIP (512-D CLIP space) and nomic-embed-text scores are uncalibrated with respect to each other; pooling raw cosines would be meaningless. Cross-stream combination is deferred to PR4 (RRF).",
+  "clip_only": {
+    "overall": {
+      "sample_count": 20,
+      "recall_at_5": 0.4167,
+      "figure_recall_at_5": 1.0,
+      "mrr": 0.4167,
+      "ndcg_at_5": 0.351,
+      "hit_at_5": 0.6,
+      "hit_at_1": 0.3
+    },
+    "text": {
+      "sample_count": 8,
+      "recall_at_5": 0.0,
+      "figure_recall_at_5": null,
+      "mrr": 0.0,
+      "ndcg_at_5": 0.0,
+      "hit_at_5": 0.0,
+      "hit_at_1": 0.0
+    },
+    "visual": {
+      "sample_count": 6,
+      "recall_at_5": 1.0,
+      "figure_recall_at_5": 1.0,
+      "mrr": 0.6944,
+      "ndcg_at_5": 0.7718,
+      "hit_at_5": 1.0,
+      "hit_at_1": 0.5
+    },
+    "hybrid": {
+      "sample_count": 6,
+      "recall_at_5": 0.3889,
+      "figure_recall_at_5": 1.0,
+      "mrr": 0.6944,
+      "ndcg_at_5": 0.3982,
+      "hit_at_5": 1.0,
+      "hit_at_1": 0.5
+    }
+  },
+  "caption_only": {
+    "overall": {
+      "sample_count": 20,
+      "recall_at_5": 0.4167,
+      "figure_recall_at_5": 1.0,
+      "mrr": 0.6,
+      "ndcg_at_5": 0.4552,
+      "hit_at_5": 0.6,
+      "hit_at_1": 0.6
+    },
+    "text": {
+      "sample_count": 8,
+      "recall_at_5": 0.0,
+      "figure_recall_at_5": null,
+      "mrr": 0.0,
+      "ndcg_at_5": 0.0,
+      "hit_at_5": 0.0,
+      "hit_at_1": 0.0
+    },
+    "visual": {
+      "sample_count": 6,
+      "recall_at_5": 1.0,
+      "figure_recall_at_5": 1.0,
+      "mrr": 1.0,
+      "ndcg_at_5": 1.0,
+      "hit_at_5": 1.0,
+      "hit_at_1": 1.0
+    },
+    "hybrid": {
+      "sample_count": 6,
+      "recall_at_5": 0.3889,
+      "figure_recall_at_5": 1.0,
+      "mrr": 1.0,
+      "ndcg_at_5": 0.5172,
+      "hit_at_5": 1.0,
+      "hit_at_1": 1.0
+    }
+  },
+  "comparison": {
+    "pr1_text_baseline": {
+      "text_recall_at_5": 0.875,
+      "visual_recall_at_5": 0.0,
+      "hybrid_recall_at_5": 0.3889,
+      "text_mrr": 0.7917
+    },
+    "pr2_caption": {
+      "overall": {
+        "sample_count": 20,
+        "recall_at_5": 0.4167,
+        "figure_recall_at_5": 1.0,
+        "mrr": 0.6,
+        "ndcg_at_5": 0.4552,
+        "hit_at_5": 0.6,
+        "hit_at_1": 0.6
+      },
+      "text": {
+        "sample_count": 8,
+        "recall_at_5": 0.0,
+        "figure_recall_at_5": null,
+        "mrr": 0.0,
+        "ndcg_at_5": 0.0,
+        "hit_at_5": 0.0,
+        "hit_at_1": 0.0
+      },
+      "visual": {
+        "sample_count": 6,
+        "recall_at_5": 1.0,
+        "figure_recall_at_5": 1.0,
+        "mrr": 1.0,
+        "ndcg_at_5": 1.0,
+        "hit_at_5": 1.0,
+        "hit_at_1": 1.0
+      },
+      "hybrid": {
+        "sample_count": 6,
+        "recall_at_5": 0.3889,
+        "figure_recall_at_5": 1.0,
+        "mrr": 1.0,
+        "ndcg_at_5": 0.5172,
+        "hit_at_5": 1.0,
+        "hit_at_1": 1.0
+      }
+    },
+    "pr3_clip": {
+      "overall": {
+        "sample_count": 20,
+        "recall_at_5": 0.4167,
+        "figure_recall_at_5": 1.0,
+        "mrr": 0.4167,
+        "ndcg_at_5": 0.351,
+        "hit_at_5": 0.6,
+        "hit_at_1": 0.3
+      },
+      "text": {
+        "sample_count": 8,
+        "recall_at_5": 0.0,
+        "figure_recall_at_5": null,
+        "mrr": 0.0,
+        "ndcg_at_5": 0.0,
+        "hit_at_5": 0.0,
+        "hit_at_1": 0.0
+      },
+      "visual": {
+        "sample_count": 6,
+        "recall_at_5": 1.0,
+        "figure_recall_at_5": 1.0,
+        "mrr": 0.6944,
+        "ndcg_at_5": 0.7718,
+        "hit_at_5": 1.0,
+        "hit_at_1": 0.5
+      },
+      "hybrid": {
+        "sample_count": 6,
+        "recall_at_5": 0.3889,
+        "figure_recall_at_5": 1.0,
+        "mrr": 0.6944,
+        "ndcg_at_5": 0.3982,
+        "hit_at_5": 1.0,
+        "hit_at_1": 0.5
+      }
+    }
+  },
+  "complementarity": {
+    "status": "measured",
+    "n_figure_queries": 12,
+    "both_found": [
+      "q_009",
+      "q_010",
+      "q_011",
+      "q_012",
+      "q_013",
+      "q_014",
+      "q_015",
+      "q_016",
+      "q_017",
+      "q_018",
+      "q_019",
+      "q_020"
+    ],
+    "caption_only": [],
+    "clip_only": [],
+    "neither": [],
+    "caption_ranked_higher": [
+      {
+        "query_id": "q_009",
+        "caption_rank": 1,
+        "clip_rank": 3
+      },
+      {
+        "query_id": "q_010",
+        "caption_rank": 1,
+        "clip_rank": 2
+      },
+      {
+        "query_id": "q_011",
+        "caption_rank": 1,
+        "clip_rank": 3
+      },
+      {
+        "query_id": "q_015",
+        "caption_rank": 1,
+        "clip_rank": 3
+      },
+      {
+        "query_id": "q_018",
+        "caption_rank": 1,
+        "clip_rank": 3
+      },
+      {
+        "query_id": "q_019",
+        "caption_rank": 1,
+        "clip_rank": 2
+      }
+    ],
+    "clip_ranked_higher": [],
+    "tied": [
+      {
+        "query_id": "q_012",
+        "rank": 1
+      },
+      {
+        "query_id": "q_013",
+        "rank": 1
+      },
+      {
+        "query_id": "q_014",
+        "rank": 1
+      },
+      {
+        "query_id": "q_016",
+        "rank": 1
+      },
+      {
+        "query_id": "q_017",
+        "rank": 1
+      },
+      {
+        "query_id": "q_020",
+        "rank": 1
+      }
+    ],
+    "caption_hit_at_1": 1.0,
+    "clip_hit_at_1": 0.5,
+    "mean_figure_id_jaccard": 1.0
+  }
+}

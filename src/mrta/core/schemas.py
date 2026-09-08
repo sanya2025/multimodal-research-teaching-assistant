@@ -72,6 +72,46 @@ class FigureRecord(BaseModel):
         )
 
 
+class VisualRecord(BaseModel):
+    """Canonical identity for one figure image in a CLIP visual index.
+
+    Deliberately narrow: it carries only what a visual retrieval index needs —
+    canonical identity plus a path to the image artifact. Unlike EvidenceRecord,
+    figure_id is a first-class persisted field, because the visual index must
+    round-trip canonical identity without re-consulting the evaluation manifest.
+
+    No image bytes are stored. image_path references the extracted PNG so the
+    original image can be loaded lazily when downstream generation needs it.
+    """
+
+    document_id: str
+    page: int
+    figure_id: str
+    figure_index: int  # 1-indexed per page
+    image_path: str
+
+    # Retrieval score — set during search; not a persistent field
+    retrieval_score: float | None = Field(default=None, exclude=True)
+
+    @property
+    def record_id(self) -> str:
+        """Stable identifier: '{document_id}_p{page}_f{figure_index}'."""
+        return f"{self.document_id}_p{self.page}_f{self.figure_index}"
+
+    def to_pil(self) -> Image.Image:
+        """Load the referenced image from disk. Raises FileNotFoundError if missing."""
+        from pathlib import Path
+
+        from PIL import Image
+
+        p = Path(self.image_path)
+        if not p.exists():
+            raise FileNotFoundError(
+                f"VisualRecord {self.record_id!r} image_path does not exist: {p}"
+            )
+        return Image.open(p)
+
+
 class EvidenceRecord(BaseModel):
     """Modality-aware evidence unit for multimodal RAG retrieval and citation."""
 
