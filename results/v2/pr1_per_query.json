@@ -1,0 +1,5027 @@
+[
+  {
+    "query_id": "q_v2_001",
+    "query": "What limitation of recurrent sequence models motivates replacing recurrence with self-attention in the Transformer?",
+    "intent": "text",
+    "document_id": "attention_is_all_you_need",
+    "recall_at_5": 1.0,
+    "hit_at_5": 1.0,
+    "mrr": 1.0,
+    "ndcg_at_5": 1.0,
+    "retrieved_canonical_evidence": [
+      {
+        "document_id": "attention_is_all_you_need",
+        "page_number": 2,
+        "figure_id": null,
+        "score": 0.7417
+      },
+      {
+        "document_id": "attention_is_all_you_need",
+        "page_number": 2,
+        "figure_id": null,
+        "score": 0.7116
+      },
+      {
+        "document_id": "attention_is_all_you_need",
+        "page_number": 6,
+        "figure_id": null,
+        "score": 0.7108
+      },
+      {
+        "document_id": "attention_is_all_you_need",
+        "page_number": 2,
+        "figure_id": null,
+        "score": 0.7082
+      },
+      {
+        "document_id": "attention_is_all_you_need",
+        "page_number": 11,
+        "figure_id": null,
+        "score": 0.7052
+      }
+    ],
+    "expected_canonical_evidence": [
+      {
+        "document_id": "attention_is_all_you_need",
+        "page_number": 2,
+        "figure_id": null
+      }
+    ]
+  },
+  {
+    "query_id": "q_v2_002",
+    "query": "Why does the Transformer permit more parallelization during training than recurrent sequence models?",
+    "intent": "text",
+    "document_id": "attention_is_all_you_need",
+    "recall_at_5": 1.0,
+    "hit_at_5": 1.0,
+    "mrr": 1.0,
+    "ndcg_at_5": 1.0,
+    "retrieved_canonical_evidence": [
+      {
+        "document_id": "attention_is_all_you_need",
+        "page_number": 2,
+        "figure_id": null,
+        "score": 0.8024
+      },
+      {
+        "document_id": "attention_is_all_you_need",
+        "page_number": 2,
+        "figure_id": null,
+        "score": 0.7698
+      },
+      {
+        "document_id": "attention_is_all_you_need",
+        "page_number": 10,
+        "figure_id": null,
+        "score": 0.7521
+      },
+      {
+        "document_id": "attention_is_all_you_need",
+        "page_number": 11,
+        "figure_id": null,
+        "score": 0.7413
+      },
+      {
+        "document_id": "attention_is_all_you_need",
+        "page_number": 9,
+        "figure_id": null,
+        "score": 0.7315
+      }
+    ],
+    "expected_canonical_evidence": [
+      {
+        "document_id": "attention_is_all_you_need",
+        "page_number": 2,
+        "figure_id": null
+      }
+    ]
+  },
+  {
+    "query_id": "q_v2_003",
+    "query": "What are the two sub-layers in each Transformer encoder layer, and what extra sub-layer is added in the decoder?",
+    "intent": "text",
+    "document_id": "attention_is_all_you_need",
+    "recall_at_5": 1.0,
+    "hit_at_5": 1.0,
+    "mrr": 1.0,
+    "ndcg_at_5": 1.0,
+    "retrieved_canonical_evidence": [
+      {
+        "document_id": "attention_is_all_you_need",
+        "page_number": 3,
+        "figure_id": null,
+        "score": 0.805
+      },
+      {
+        "document_id": "attention_is_all_you_need",
+        "page_number": 3,
+        "figure_id": null,
+        "score": 0.7641
+      },
+      {
+        "document_id": "attention_is_all_you_need",
+        "page_number": 5,
+        "figure_id": null,
+        "score": 0.7284
+      },
+      {
+        "document_id": "attention_is_all_you_need",
+        "page_number": 5,
+        "figure_id": null,
+        "score": 0.7149
+      },
+      {
+        "document_id": "attention_is_all_you_need",
+        "page_number": 5,
+        "figure_id": null,
+        "score": 0.6976
+      }
+    ],
+    "expected_canonical_evidence": [
+      {
+        "document_id": "attention_is_all_you_need",
+        "page_number": 3,
+        "figure_id": null
+      }
+    ]
+  },
+  {
+    "query_id": "q_v2_004",
+    "query": "Why are dot products scaled by the square root of the key dimension in Scaled Dot-Product Attention?",
+    "intent": "text",
+    "document_id": "attention_is_all_you_need",
+    "recall_at_5": 1.0,
+    "hit_at_5": 1.0,
+    "mrr": 1.0,
+    "ndcg_at_5": 1.0,
+    "retrieved_canonical_evidence": [
+      {
+        "document_id": "attention_is_all_you_need",
+        "page_number": 4,
+        "figure_id": null,
+        "score": 0.7343
+      },
+      {
+        "document_id": "attention_is_all_you_need",
+        "page_number": 4,
+        "figure_id": null,
+        "score": 0.7265
+      },
+      {
+        "document_id": "attention_is_all_you_need",
+        "page_number": 4,
+        "figure_id": null,
+        "score": 0.6667
+      },
+      {
+        "document_id": "attention_is_all_you_need",
+        "page_number": 9,
+        "figure_id": null,
+        "score": 0.6181
+      },
+      {
+        "document_id": "attention_is_all_you_need",
+        "page_number": 4,
+        "figure_id": null,
+        "score": 0.6138
+      }
+    ],
+    "expected_canonical_evidence": [
+      {
+        "document_id": "attention_is_all_you_need",
+        "page_number": 4,
+        "figure_id": null
+      }
+    ]
+  },
+  {
+    "query_id": "q_v2_005",
+    "query": "Why does the Transformer add sinusoidal positional encodings to the input embeddings?",
+    "intent": "text",
+    "document_id": "attention_is_all_you_need",
+    "recall_at_5": 1.0,
+    "hit_at_5": 1.0,
+    "mrr": 1.0,
+    "ndcg_at_5": 1.0,
+    "retrieved_canonical_evidence": [
+      {
+        "document_id": "attention_is_all_you_need",
+        "page_number": 6,
+        "figure_id": null,
+        "score": 0.7834
+      },
+      {
+        "document_id": "attention_is_all_you_need",
+        "page_number": 6,
+        "figure_id": null,
+        "score": 0.7045
+      },
+      {
+        "document_id": "clip",
+        "page_number": 4,
+        "figure_id": null,
+        "score": 0.6673
+      },
+      {
+        "document_id": "attention_is_all_you_need",
+        "page_number": 9,
+        "figure_id": null,
+        "score": 0.6633
+      },
+      {
+        "document_id": "attention_is_all_you_need",
+        "page_number": 9,
+        "figure_id": null,
+        "score": 0.6607
+      }
+    ],
+    "expected_canonical_evidence": [
+      {
+        "document_id": "attention_is_all_you_need",
+        "page_number": 6,
+        "figure_id": null
+      }
+    ]
+  },
+  {
+    "query_id": "q_v2_006",
+    "query": "Which figure shows the full Transformer encoder-decoder architecture?",
+    "intent": "visual_caption",
+    "document_id": "attention_is_all_you_need",
+    "recall_at_5": 0.0,
+    "hit_at_5": 0.0,
+    "mrr": 0.0,
+    "ndcg_at_5": 0.0,
+    "retrieved_canonical_evidence": [
+      {
+        "document_id": "attention_is_all_you_need",
+        "page_number": 3,
+        "figure_id": null,
+        "score": 0.7698
+      },
+      {
+        "document_id": "blip2",
+        "page_number": 2,
+        "figure_id": null,
+        "score": 0.7315
+      },
+      {
+        "document_id": "blip2",
+        "page_number": 4,
+        "figure_id": null,
+        "score": 0.7245
+      },
+      {
+        "document_id": "attention_is_all_you_need",
+        "page_number": 3,
+        "figure_id": null,
+        "score": 0.716
+      },
+      {
+        "document_id": "blip2",
+        "page_number": 1,
+        "figure_id": null,
+        "score": 0.7111
+      }
+    ],
+    "expected_canonical_evidence": [
+      {
+        "document_id": "attention_is_all_you_need",
+        "page_number": 3,
+        "figure_id": "fig_transformer_arch"
+      }
+    ]
+  },
+  {
+    "query_id": "q_v2_007",
+    "query": "Find the figure that presents Scaled Dot-Product Attention next to Multi-Head Attention.",
+    "intent": "visual_caption",
+    "document_id": "attention_is_all_you_need",
+    "recall_at_5": 0.0,
+    "hit_at_5": 0.0,
+    "mrr": 0.0,
+    "ndcg_at_5": 0.0,
+    "retrieved_canonical_evidence": [
+      {
+        "document_id": "llava",
+        "page_number": 21,
+        "figure_id": null,
+        "score": 0.6804
+      },
+      {
+        "document_id": "llava",
+        "page_number": 10,
+        "figure_id": null,
+        "score": 0.6557
+      },
+      {
+        "document_id": "llava",
+        "page_number": 18,
+        "figure_id": null,
+        "score": 0.6431
+      },
+      {
+        "document_id": "llava",
+        "page_number": 18,
+        "figure_id": null,
+        "score": 0.6404
+      },
+      {
+        "document_id": "llava",
+        "page_number": 15,
+        "figure_id": null,
+        "score": 0.6394
+      }
+    ],
+    "expected_canonical_evidence": [
+      {
+        "document_id": "attention_is_all_you_need",
+        "page_number": 4,
+        "figure_id": "fig_attention_mechanisms"
+      }
+    ]
+  },
+  {
+    "query_id": "q_v2_008",
+    "query": "Which figure visualizes a long-distance dependency involving the word 'making' in encoder self-attention?",
+    "intent": "visual_caption",
+    "document_id": "attention_is_all_you_need",
+    "recall_at_5": 0.0,
+    "hit_at_5": 0.0,
+    "mrr": 0.0,
+    "ndcg_at_5": 0.0,
+    "retrieved_canonical_evidence": [
+      {
+        "document_id": "attention_is_all_you_need",
+        "page_number": 13,
+        "figure_id": null,
+        "score": 0.7256
+      },
+      {
+        "document_id": "attention_is_all_you_need",
+        "page_number": 5,
+        "figure_id": null,
+        "score": 0.7141
+      },
+      {
+        "document_id": "attention_is_all_you_need",
+        "page_number": 5,
+        "figure_id": null,
+        "score": 0.7088
+      },
+      {
+        "document_id": "attention_is_all_you_need",
+        "page_number": 3,
+        "figure_id": null,
+        "score": 0.6939
+      },
+      {
+        "document_id": "attention_is_all_you_need",
+        "page_number": 15,
+        "figure_id": null,
+        "score": 0.6872
+      }
+    ],
+    "expected_canonical_evidence": [
+      {
+        "document_id": "attention_is_all_you_need",
+        "page_number": 13,
+        "figure_id": "fig_long_distance_attention"
+      }
+    ]
+  },
+  {
+    "query_id": "q_v2_009",
+    "query": "Which figure shows attention heads associated with anaphora resolution for the word 'its'?",
+    "intent": "visual_caption",
+    "document_id": "attention_is_all_you_need",
+    "recall_at_5": 0.0,
+    "hit_at_5": 0.0,
+    "mrr": 0.0,
+    "ndcg_at_5": 0.0,
+    "retrieved_canonical_evidence": [
+      {
+        "document_id": "attention_is_all_you_need",
+        "page_number": 14,
+        "figure_id": null,
+        "score": 0.6757
+      },
+      {
+        "document_id": "llava",
+        "page_number": 14,
+        "figure_id": null,
+        "score": 0.6244
+      },
+      {
+        "document_id": "attention_is_all_you_need",
+        "page_number": 13,
+        "figure_id": null,
+        "score": 0.6206
+      },
+      {
+        "document_id": "llava",
+        "page_number": 15,
+        "figure_id": null,
+        "score": 0.6189
+      },
+      {
+        "document_id": "attention_is_all_you_need",
+        "page_number": 5,
+        "figure_id": null,
+        "score": 0.605
+      }
+    ],
+    "expected_canonical_evidence": [
+      {
+        "document_id": "attention_is_all_you_need",
+        "page_number": 14,
+        "figure_id": "fig_anaphora_attention"
+      }
+    ]
+  },
+  {
+    "query_id": "q_v2_010",
+    "query": "Find the diagram with two tall side-by-side processing stacks, one for encoding and one for decoding.",
+    "intent": "visual_layout",
+    "document_id": "attention_is_all_you_need",
+    "recall_at_5": 0.0,
+    "hit_at_5": 0.0,
+    "mrr": 0.0,
+    "ndcg_at_5": 0.0,
+    "retrieved_canonical_evidence": [
+      {
+        "document_id": "attention_is_all_you_need",
+        "page_number": 3,
+        "figure_id": null,
+        "score": 0.7164
+      },
+      {
+        "document_id": "blip2",
+        "page_number": 4,
+        "figure_id": null,
+        "score": 0.6918
+      },
+      {
+        "document_id": "attention_is_all_you_need",
+        "page_number": 3,
+        "figure_id": null,
+        "score": 0.6899
+      },
+      {
+        "document_id": "attention_is_all_you_need",
+        "page_number": 6,
+        "figure_id": null,
+        "score": 0.6838
+      },
+      {
+        "document_id": "attention_is_all_you_need",
+        "page_number": 1,
+        "figure_id": null,
+        "score": 0.6673
+      }
+    ],
+    "expected_canonical_evidence": [
+      {
+        "document_id": "attention_is_all_you_need",
+        "page_number": 3,
+        "figure_id": "fig_transformer_arch"
+      }
+    ]
+  },
+  {
+    "query_id": "q_v2_011",
+    "query": "Find the visual where several attention branches run in parallel and are concatenated before a final projection.",
+    "intent": "visual_layout",
+    "document_id": "attention_is_all_you_need",
+    "recall_at_5": 0.0,
+    "hit_at_5": 0.0,
+    "mrr": 0.0,
+    "ndcg_at_5": 0.0,
+    "retrieved_canonical_evidence": [
+      {
+        "document_id": "attention_is_all_you_need",
+        "page_number": 2,
+        "figure_id": null,
+        "score": 0.721
+      },
+      {
+        "document_id": "attention_is_all_you_need",
+        "page_number": 10,
+        "figure_id": null,
+        "score": 0.7197
+      },
+      {
+        "document_id": "attention_is_all_you_need",
+        "page_number": 5,
+        "figure_id": null,
+        "score": 0.7051
+      },
+      {
+        "document_id": "attention_is_all_you_need",
+        "page_number": 5,
+        "figure_id": null,
+        "score": 0.6995
+      },
+      {
+        "document_id": "blip2",
+        "page_number": 4,
+        "figure_id": null,
+        "score": 0.6888
+      }
+    ],
+    "expected_canonical_evidence": [
+      {
+        "document_id": "attention_is_all_you_need",
+        "page_number": 4,
+        "figure_id": "fig_attention_mechanisms"
+      }
+    ]
+  },
+  {
+    "query_id": "q_v2_012",
+    "query": "Find the attention visualization with many colored links converging on a distant word relationship.",
+    "intent": "visual_layout",
+    "document_id": "attention_is_all_you_need",
+    "recall_at_5": 0.0,
+    "hit_at_5": 0.0,
+    "mrr": 0.0,
+    "ndcg_at_5": 0.0,
+    "retrieved_canonical_evidence": [
+      {
+        "document_id": "attention_is_all_you_need",
+        "page_number": 2,
+        "figure_id": null,
+        "score": 0.7307
+      },
+      {
+        "document_id": "attention_is_all_you_need",
+        "page_number": 13,
+        "figure_id": null,
+        "score": 0.7095
+      },
+      {
+        "document_id": "clip",
+        "page_number": 27,
+        "figure_id": null,
+        "score": 0.7035
+      },
+      {
+        "document_id": "llava",
+        "page_number": 9,
+        "figure_id": null,
+        "score": 0.6949
+      },
+      {
+        "document_id": "attention_is_all_you_need",
+        "page_number": 10,
+        "figure_id": null,
+        "score": 0.693
+      }
+    ],
+    "expected_canonical_evidence": [
+      {
+        "document_id": "attention_is_all_you_need",
+        "page_number": 13,
+        "figure_id": "fig_long_distance_attention"
+      }
+    ]
+  },
+  {
+    "query_id": "q_v2_013",
+    "query": "Which visual contains two stacked attention maps and isolates sharp links from the pronoun 'its'?",
+    "intent": "visual_layout",
+    "document_id": "attention_is_all_you_need",
+    "recall_at_5": 0.0,
+    "hit_at_5": 0.0,
+    "mrr": 0.0,
+    "ndcg_at_5": 0.0,
+    "retrieved_canonical_evidence": [
+      {
+        "document_id": "blip2",
+        "page_number": 4,
+        "figure_id": null,
+        "score": 0.6441
+      },
+      {
+        "document_id": "llava",
+        "page_number": 14,
+        "figure_id": null,
+        "score": 0.6321
+      },
+      {
+        "document_id": "clip",
+        "page_number": 27,
+        "figure_id": null,
+        "score": 0.6301
+      },
+      {
+        "document_id": "clip",
+        "page_number": 26,
+        "figure_id": null,
+        "score": 0.6296
+      },
+      {
+        "document_id": "attention_is_all_you_need",
+        "page_number": 2,
+        "figure_id": null,
+        "score": 0.6271
+      }
+    ],
+    "expected_canonical_evidence": [
+      {
+        "document_id": "attention_is_all_you_need",
+        "page_number": 14,
+        "figure_id": "fig_anaphora_attention"
+      }
+    ]
+  },
+  {
+    "query_id": "q_v2_014",
+    "query": "Using the architecture diagram and surrounding text, explain how the encoder and decoder stacks differ.",
+    "intent": "hybrid",
+    "document_id": "attention_is_all_you_need",
+    "recall_at_5": 0.5,
+    "hit_at_5": 1.0,
+    "mrr": 1.0,
+    "ndcg_at_5": 0.6131,
+    "retrieved_canonical_evidence": [
+      {
+        "document_id": "attention_is_all_you_need",
+        "page_number": 3,
+        "figure_id": null,
+        "score": 0.7458
+      },
+      {
+        "document_id": "attention_is_all_you_need",
+        "page_number": 3,
+        "figure_id": null,
+        "score": 0.6878
+      },
+      {
+        "document_id": "blip2",
+        "page_number": 2,
+        "figure_id": null,
+        "score": 0.6874
+      },
+      {
+        "document_id": "blip2",
+        "page_number": 4,
+        "figure_id": null,
+        "score": 0.6805
+      },
+      {
+        "document_id": "clip",
+        "page_number": 5,
+        "figure_id": null,
+        "score": 0.6618
+      }
+    ],
+    "expected_canonical_evidence": [
+      {
+        "document_id": "attention_is_all_you_need",
+        "page_number": 3,
+        "figure_id": "fig_transformer_arch"
+      },
+      {
+        "document_id": "attention_is_all_you_need",
+        "page_number": 3,
+        "figure_id": null
+      }
+    ]
+  },
+  {
+    "query_id": "q_v2_015",
+    "query": "Using the attention schematic and text, explain how Q, K, and V are used in Scaled Dot-Product Attention.",
+    "intent": "hybrid",
+    "document_id": "attention_is_all_you_need",
+    "recall_at_5": 0.0,
+    "hit_at_5": 0.0,
+    "mrr": 0.0,
+    "ndcg_at_5": 0.0,
+    "retrieved_canonical_evidence": [
+      {
+        "document_id": "attention_is_all_you_need",
+        "page_number": 14,
+        "figure_id": null,
+        "score": 0.6821
+      },
+      {
+        "document_id": "attention_is_all_you_need",
+        "page_number": 15,
+        "figure_id": null,
+        "score": 0.675
+      },
+      {
+        "document_id": "blip2",
+        "page_number": 4,
+        "figure_id": null,
+        "score": 0.6702
+      },
+      {
+        "document_id": "llava",
+        "page_number": 14,
+        "figure_id": null,
+        "score": 0.6645
+      },
+      {
+        "document_id": "llava",
+        "page_number": 14,
+        "figure_id": null,
+        "score": 0.6636
+      }
+    ],
+    "expected_canonical_evidence": [
+      {
+        "document_id": "attention_is_all_you_need",
+        "page_number": 4,
+        "figure_id": "fig_attention_mechanisms"
+      },
+      {
+        "document_id": "attention_is_all_you_need",
+        "page_number": 4,
+        "figure_id": null
+      }
+    ]
+  },
+  {
+    "query_id": "q_v2_016",
+    "query": "How does the Multi-Head Attention diagram support the paper's claim that different representation subspaces can be attended to in parallel?",
+    "intent": "hybrid",
+    "document_id": "attention_is_all_you_need",
+    "recall_at_5": 0.0,
+    "hit_at_5": 0.0,
+    "mrr": 0.0,
+    "ndcg_at_5": 0.0,
+    "retrieved_canonical_evidence": [
+      {
+        "document_id": "attention_is_all_you_need",
+        "page_number": 6,
+        "figure_id": null,
+        "score": 0.6679
+      },
+      {
+        "document_id": "attention_is_all_you_need",
+        "page_number": 2,
+        "figure_id": null,
+        "score": 0.6575
+      },
+      {
+        "document_id": "attention_is_all_you_need",
+        "page_number": 2,
+        "figure_id": null,
+        "score": 0.6469
+      },
+      {
+        "document_id": "clip",
+        "page_number": 11,
+        "figure_id": null,
+        "score": 0.644
+      },
+      {
+        "document_id": "attention_is_all_you_need",
+        "page_number": 7,
+        "figure_id": null,
+        "score": 0.6419
+      }
+    ],
+    "expected_canonical_evidence": [
+      {
+        "document_id": "attention_is_all_you_need",
+        "page_number": 4,
+        "figure_id": "fig_attention_mechanisms"
+      },
+      {
+        "document_id": "attention_is_all_you_need",
+        "page_number": 5,
+        "figure_id": null
+      }
+    ]
+  },
+  {
+    "query_id": "q_v2_017",
+    "query": "What does the long-distance attention visualization show about the kinds of dependencies learned by encoder self-attention?",
+    "intent": "hybrid",
+    "document_id": "attention_is_all_you_need",
+    "recall_at_5": 0.0,
+    "hit_at_5": 0.0,
+    "mrr": 0.0,
+    "ndcg_at_5": 0.0,
+    "retrieved_canonical_evidence": [
+      {
+        "document_id": "attention_is_all_you_need",
+        "page_number": 6,
+        "figure_id": null,
+        "score": 0.7604
+      },
+      {
+        "document_id": "attention_is_all_you_need",
+        "page_number": 5,
+        "figure_id": null,
+        "score": 0.7554
+      },
+      {
+        "document_id": "attention_is_all_you_need",
+        "page_number": 2,
+        "figure_id": null,
+        "score": 0.7492
+      },
+      {
+        "document_id": "attention_is_all_you_need",
+        "page_number": 5,
+        "figure_id": null,
+        "score": 0.7392
+      },
+      {
+        "document_id": "attention_is_all_you_need",
+        "page_number": 10,
+        "figure_id": null,
+        "score": 0.7249
+      }
+    ],
+    "expected_canonical_evidence": [
+      {
+        "document_id": "attention_is_all_you_need",
+        "page_number": 13,
+        "figure_id": "fig_long_distance_attention"
+      },
+      {
+        "document_id": "attention_is_all_you_need",
+        "page_number": 13,
+        "figure_id": null
+      }
+    ]
+  },
+  {
+    "query_id": "q_v2_018",
+    "query": "How does the anaphora attention visualization support the claim that individual heads can learn syntactic or semantic behavior?",
+    "intent": "hybrid",
+    "document_id": "attention_is_all_you_need",
+    "recall_at_5": 0.5,
+    "hit_at_5": 1.0,
+    "mrr": 1.0,
+    "ndcg_at_5": 0.6131,
+    "retrieved_canonical_evidence": [
+      {
+        "document_id": "attention_is_all_you_need",
+        "page_number": 7,
+        "figure_id": null,
+        "score": 0.7534
+      },
+      {
+        "document_id": "clip",
+        "page_number": 27,
+        "figure_id": null,
+        "score": 0.728
+      },
+      {
+        "document_id": "clip",
+        "page_number": 46,
+        "figure_id": null,
+        "score": 0.7251
+      },
+      {
+        "document_id": "attention_is_all_you_need",
+        "page_number": 5,
+        "figure_id": null,
+        "score": 0.7125
+      },
+      {
+        "document_id": "attention_is_all_you_need",
+        "page_number": 15,
+        "figure_id": null,
+        "score": 0.7116
+      }
+    ],
+    "expected_canonical_evidence": [
+      {
+        "document_id": "attention_is_all_you_need",
+        "page_number": 14,
+        "figure_id": "fig_anaphora_attention"
+      },
+      {
+        "document_id": "attention_is_all_you_need",
+        "page_number": 7,
+        "figure_id": null
+      }
+    ]
+  },
+  {
+    "query_id": "q_v2_019",
+    "query": "Find the complete Transformer model diagram rather than one of the attention-weight visualizations in the appendix.",
+    "intent": "hard_visual",
+    "document_id": "attention_is_all_you_need",
+    "recall_at_5": 0.0,
+    "hit_at_5": 0.0,
+    "mrr": 0.0,
+    "ndcg_at_5": 0.0,
+    "retrieved_canonical_evidence": [
+      {
+        "document_id": "llava",
+        "page_number": 11,
+        "figure_id": null,
+        "score": 0.6844
+      },
+      {
+        "document_id": "llava",
+        "page_number": 1,
+        "figure_id": null,
+        "score": 0.6711
+      },
+      {
+        "document_id": "attention_is_all_you_need",
+        "page_number": 3,
+        "figure_id": null,
+        "score": 0.6632
+      },
+      {
+        "document_id": "attention_is_all_you_need",
+        "page_number": 3,
+        "figure_id": null,
+        "score": 0.6502
+      },
+      {
+        "document_id": "llava",
+        "page_number": 9,
+        "figure_id": null,
+        "score": 0.6492
+      }
+    ],
+    "expected_canonical_evidence": [
+      {
+        "document_id": "attention_is_all_you_need",
+        "page_number": 3,
+        "figure_id": "fig_transformer_arch"
+      }
+    ]
+  },
+  {
+    "query_id": "q_v2_020",
+    "query": "Which visual explains the attention computation itself rather than showing learned token-to-token attention patterns?",
+    "intent": "hard_visual",
+    "document_id": "attention_is_all_you_need",
+    "recall_at_5": 0.0,
+    "hit_at_5": 0.0,
+    "mrr": 0.0,
+    "ndcg_at_5": 0.0,
+    "retrieved_canonical_evidence": [
+      {
+        "document_id": "attention_is_all_you_need",
+        "page_number": 2,
+        "figure_id": null,
+        "score": 0.7443
+      },
+      {
+        "document_id": "blip2",
+        "page_number": 3,
+        "figure_id": null,
+        "score": 0.7344
+      },
+      {
+        "document_id": "attention_is_all_you_need",
+        "page_number": 2,
+        "figure_id": null,
+        "score": 0.7198
+      },
+      {
+        "document_id": "attention_is_all_you_need",
+        "page_number": 10,
+        "figure_id": null,
+        "score": 0.7132
+      },
+      {
+        "document_id": "attention_is_all_you_need",
+        "page_number": 5,
+        "figure_id": null,
+        "score": 0.7087
+      }
+    ],
+    "expected_canonical_evidence": [
+      {
+        "document_id": "attention_is_all_you_need",
+        "page_number": 4,
+        "figure_id": "fig_attention_mechanisms"
+      }
+    ]
+  },
+  {
+    "query_id": "q_v2_021",
+    "query": "How does CLIP use natural-language supervision to learn transferable visual representations?",
+    "intent": "text",
+    "document_id": "clip",
+    "recall_at_5": 1.0,
+    "hit_at_5": 1.0,
+    "mrr": 0.3333,
+    "ndcg_at_5": 0.5,
+    "retrieved_canonical_evidence": [
+      {
+        "document_id": "siglip",
+        "page_number": 12,
+        "figure_id": null,
+        "score": 0.8408
+      },
+      {
+        "document_id": "clip",
+        "page_number": 26,
+        "figure_id": null,
+        "score": 0.8242
+      },
+      {
+        "document_id": "clip",
+        "page_number": 2,
+        "figure_id": null,
+        "score": 0.8242
+      },
+      {
+        "document_id": "clip",
+        "page_number": 3,
+        "figure_id": null,
+        "score": 0.8131
+      },
+      {
+        "document_id": "siglip",
+        "page_number": 12,
+        "figure_id": null,
+        "score": 0.8088
+      }
+    ],
+    "expected_canonical_evidence": [
+      {
+        "document_id": "clip",
+        "page_number": 2,
+        "figure_id": null
+      }
+    ]
+  },
+  {
+    "query_id": "q_v2_022",
+    "query": "What training objective does CLIP use to distinguish matching image-text pairs from mismatched pairings in a batch?",
+    "intent": "text",
+    "document_id": "clip",
+    "recall_at_5": 1.0,
+    "hit_at_5": 1.0,
+    "mrr": 1.0,
+    "ndcg_at_5": 1.0,
+    "retrieved_canonical_evidence": [
+      {
+        "document_id": "clip",
+        "page_number": 4,
+        "figure_id": null,
+        "score": 0.7568
+      },
+      {
+        "document_id": "blip2",
+        "page_number": 3,
+        "figure_id": null,
+        "score": 0.7491
+      },
+      {
+        "document_id": "clip",
+        "page_number": 2,
+        "figure_id": null,
+        "score": 0.7414
+      },
+      {
+        "document_id": "siglip",
+        "page_number": 1,
+        "figure_id": null,
+        "score": 0.7404
+      },
+      {
+        "document_id": "blip2",
+        "page_number": 3,
+        "figure_id": null,
+        "score": 0.7365
+      }
+    ],
+    "expected_canonical_evidence": [
+      {
+        "document_id": "clip",
+        "page_number": 4,
+        "figure_id": null
+      }
+    ]
+  },
+  {
+    "query_id": "q_v2_023",
+    "query": "How does CLIP turn class names or descriptions into a zero-shot image classifier?",
+    "intent": "text",
+    "document_id": "clip",
+    "recall_at_5": 1.0,
+    "hit_at_5": 1.0,
+    "mrr": 1.0,
+    "ndcg_at_5": 1.0,
+    "retrieved_canonical_evidence": [
+      {
+        "document_id": "clip",
+        "page_number": 6,
+        "figure_id": null,
+        "score": 0.7699
+      },
+      {
+        "document_id": "clip",
+        "page_number": 6,
+        "figure_id": null,
+        "score": 0.7577
+      },
+      {
+        "document_id": "clip",
+        "page_number": 8,
+        "figure_id": null,
+        "score": 0.7355
+      },
+      {
+        "document_id": "clip",
+        "page_number": 7,
+        "figure_id": null,
+        "score": 0.7308
+      },
+      {
+        "document_id": "clip",
+        "page_number": 20,
+        "figure_id": null,
+        "score": 0.7288
+      }
+    ],
+    "expected_canonical_evidence": [
+      {
+        "document_id": "clip",
+        "page_number": 6,
+        "figure_id": null
+      }
+    ]
+  },
+  {
+    "query_id": "q_v2_024",
+    "query": "Why does adding context such as 'A photo of a {label}' improve CLIP zero-shot classification?",
+    "intent": "text",
+    "document_id": "clip",
+    "recall_at_5": 1.0,
+    "hit_at_5": 1.0,
+    "mrr": 0.3333,
+    "ndcg_at_5": 0.5,
+    "retrieved_canonical_evidence": [
+      {
+        "document_id": "clip",
+        "page_number": 8,
+        "figure_id": null,
+        "score": 0.8016
+      },
+      {
+        "document_id": "clip",
+        "page_number": 9,
+        "figure_id": null,
+        "score": 0.7345
+      },
+      {
+        "document_id": "clip",
+        "page_number": 7,
+        "figure_id": null,
+        "score": 0.7262
+      },
+      {
+        "document_id": "clip",
+        "page_number": 6,
+        "figure_id": null,
+        "score": 0.7255
+      },
+      {
+        "document_id": "clip",
+        "page_number": 7,
+        "figure_id": null,
+        "score": 0.7245
+      }
+    ],
+    "expected_canonical_evidence": [
+      {
+        "document_id": "clip",
+        "page_number": 7,
+        "figure_id": null
+      }
+    ]
+  },
+  {
+    "query_id": "q_v2_025",
+    "query": "What does the paper report about how zero-shot CLIP performance scales with model compute?",
+    "intent": "text",
+    "document_id": "clip",
+    "recall_at_5": 1.0,
+    "hit_at_5": 1.0,
+    "mrr": 1.0,
+    "ndcg_at_5": 1.0,
+    "retrieved_canonical_evidence": [
+      {
+        "document_id": "clip",
+        "page_number": 11,
+        "figure_id": null,
+        "score": 0.8073
+      },
+      {
+        "document_id": "clip",
+        "page_number": 10,
+        "figure_id": null,
+        "score": 0.8007
+      },
+      {
+        "document_id": "clip",
+        "page_number": 10,
+        "figure_id": null,
+        "score": 0.7996
+      },
+      {
+        "document_id": "clip",
+        "page_number": 14,
+        "figure_id": null,
+        "score": 0.799
+      },
+      {
+        "document_id": "clip",
+        "page_number": 19,
+        "figure_id": null,
+        "score": 0.7916
+      }
+    ],
+    "expected_canonical_evidence": [
+      {
+        "document_id": "clip",
+        "page_number": 11,
+        "figure_id": null
+      }
+    ]
+  },
+  {
+    "query_id": "q_v2_026",
+    "query": "Which figure summarizes CLIP's three-stage approach from contrastive pre-training to zero-shot prediction?",
+    "intent": "visual_caption",
+    "document_id": "clip",
+    "recall_at_5": 0.0,
+    "hit_at_5": 0.0,
+    "mrr": 0.0,
+    "ndcg_at_5": 0.0,
+    "retrieved_canonical_evidence": [
+      {
+        "document_id": "clip",
+        "page_number": 9,
+        "figure_id": null,
+        "score": 0.7288
+      },
+      {
+        "document_id": "clip",
+        "page_number": 6,
+        "figure_id": null,
+        "score": 0.7116
+      },
+      {
+        "document_id": "clip",
+        "page_number": 3,
+        "figure_id": null,
+        "score": 0.7056
+      },
+      {
+        "document_id": "blip2",
+        "page_number": 6,
+        "figure_id": null,
+        "score": 0.6994
+      },
+      {
+        "document_id": "siglip",
+        "page_number": 13,
+        "figure_id": null,
+        "score": 0.6981
+      }
+    ],
+    "expected_canonical_evidence": [
+      {
+        "document_id": "clip",
+        "page_number": 2,
+        "figure_id": "fig_clip_approach"
+      }
+    ]
+  },
+  {
+    "query_id": "q_v2_027",
+    "query": "Which figure compares contrastive CLIP pre-training with bag-of-words and transformer language-model baselines?",
+    "intent": "visual_caption",
+    "document_id": "clip",
+    "recall_at_5": 0.0,
+    "hit_at_5": 0.0,
+    "mrr": 0.0,
+    "ndcg_at_5": 0.0,
+    "retrieved_canonical_evidence": [
+      {
+        "document_id": "siglip",
+        "page_number": 17,
+        "figure_id": null,
+        "score": 0.7972
+      },
+      {
+        "document_id": "llava",
+        "page_number": 13,
+        "figure_id": null,
+        "score": 0.7818
+      },
+      {
+        "document_id": "siglip",
+        "page_number": 2,
+        "figure_id": null,
+        "score": 0.774
+      },
+      {
+        "document_id": "blip2",
+        "page_number": 2,
+        "figure_id": null,
+        "score": 0.7499
+      },
+      {
+        "document_id": "clip",
+        "page_number": 2,
+        "figure_id": null,
+        "score": 0.7483
+      }
+    ],
+    "expected_canonical_evidence": [
+      {
+        "document_id": "clip",
+        "page_number": 3,
+        "figure_id": "fig_clip_efficiency"
+      }
+    ]
+  },
+  {
+    "query_id": "q_v2_028",
+    "query": "Find the figure containing Numpy-like pseudocode for the core CLIP training procedure.",
+    "intent": "visual_caption",
+    "document_id": "clip",
+    "recall_at_5": 0.0,
+    "hit_at_5": 0.0,
+    "mrr": 0.0,
+    "ndcg_at_5": 0.0,
+    "retrieved_canonical_evidence": [
+      {
+        "document_id": "blip2",
+        "page_number": 1,
+        "figure_id": null,
+        "score": 0.695
+      },
+      {
+        "document_id": "blip2",
+        "page_number": 2,
+        "figure_id": null,
+        "score": 0.6874
+      },
+      {
+        "document_id": "clip",
+        "page_number": 2,
+        "figure_id": null,
+        "score": 0.6837
+      },
+      {
+        "document_id": "llava",
+        "page_number": 14,
+        "figure_id": null,
+        "score": 0.6808
+      },
+      {
+        "document_id": "siglip",
+        "page_number": 1,
+        "figure_id": null,
+        "score": 0.6796
+      }
+    ],
+    "expected_canonical_evidence": [
+      {
+        "document_id": "clip",
+        "page_number": 5,
+        "figure_id": "fig_clip_pseudocode"
+      }
+    ]
+  },
+  {
+    "query_id": "q_v2_029",
+    "query": "Which figure shows the effect of prompt engineering and ensembling on zero-shot performance?",
+    "intent": "visual_caption",
+    "document_id": "clip",
+    "recall_at_5": 0.0,
+    "hit_at_5": 0.0,
+    "mrr": 0.0,
+    "ndcg_at_5": 0.0,
+    "retrieved_canonical_evidence": [
+      {
+        "document_id": "clip",
+        "page_number": 7,
+        "figure_id": null,
+        "score": 0.7617
+      },
+      {
+        "document_id": "clip",
+        "page_number": 8,
+        "figure_id": null,
+        "score": 0.7456
+      },
+      {
+        "document_id": "clip",
+        "page_number": 8,
+        "figure_id": null,
+        "score": 0.7383
+      },
+      {
+        "document_id": "clip",
+        "page_number": 10,
+        "figure_id": null,
+        "score": 0.7373
+      },
+      {
+        "document_id": "clip",
+        "page_number": 9,
+        "figure_id": null,
+        "score": 0.7232
+      }
+    ],
+    "expected_canonical_evidence": [
+      {
+        "document_id": "clip",
+        "page_number": 7,
+        "figure_id": "fig_clip_prompt_engineering"
+      }
+    ]
+  },
+  {
+    "query_id": "q_v2_030",
+    "query": "Find the diagram with a square grid of image-text pair similarities and a highlighted diagonal of correct pairs.",
+    "intent": "visual_layout",
+    "document_id": "clip",
+    "recall_at_5": 0.0,
+    "hit_at_5": 0.0,
+    "mrr": 0.0,
+    "ndcg_at_5": 0.0,
+    "retrieved_canonical_evidence": [
+      {
+        "document_id": "siglip",
+        "page_number": 13,
+        "figure_id": null,
+        "score": 0.6948
+      },
+      {
+        "document_id": "siglip",
+        "page_number": 1,
+        "figure_id": null,
+        "score": 0.6683
+      },
+      {
+        "document_id": "clip",
+        "page_number": 6,
+        "figure_id": null,
+        "score": 0.6655
+      },
+      {
+        "document_id": "clip",
+        "page_number": 5,
+        "figure_id": null,
+        "score": 0.6621
+      },
+      {
+        "document_id": "siglip",
+        "page_number": 1,
+        "figure_id": null,
+        "score": 0.6545
+      }
+    ],
+    "expected_canonical_evidence": [
+      {
+        "document_id": "clip",
+        "page_number": 2,
+        "figure_id": "fig_clip_approach"
+      }
+    ]
+  },
+  {
+    "query_id": "q_v2_031",
+    "query": "Find the plot with three colored learning curves where the contrastive method rises fastest as more images are processed.",
+    "intent": "visual_layout",
+    "document_id": "clip",
+    "recall_at_5": 0.0,
+    "hit_at_5": 0.0,
+    "mrr": 0.0,
+    "ndcg_at_5": 0.0,
+    "retrieved_canonical_evidence": [
+      {
+        "document_id": "clip",
+        "page_number": 33,
+        "figure_id": null,
+        "score": 0.7243
+      },
+      {
+        "document_id": "siglip",
+        "page_number": 11,
+        "figure_id": null,
+        "score": 0.6842
+      },
+      {
+        "document_id": "clip",
+        "page_number": 28,
+        "figure_id": null,
+        "score": 0.6836
+      },
+      {
+        "document_id": "siglip",
+        "page_number": 2,
+        "figure_id": null,
+        "score": 0.6832
+      },
+      {
+        "document_id": "siglip",
+        "page_number": 1,
+        "figure_id": null,
+        "score": 0.6798
+      }
+    ],
+    "expected_canonical_evidence": [
+      {
+        "document_id": "clip",
+        "page_number": 3,
+        "figure_id": "fig_clip_efficiency"
+      }
+    ]
+  },
+  {
+    "query_id": "q_v2_032",
+    "query": "Which visual is primarily a code block rather than a chart or architecture diagram?",
+    "intent": "visual_layout",
+    "document_id": "clip",
+    "recall_at_5": 0.0,
+    "hit_at_5": 0.0,
+    "mrr": 0.0,
+    "ndcg_at_5": 0.0,
+    "retrieved_canonical_evidence": [
+      {
+        "document_id": "llava",
+        "page_number": 3,
+        "figure_id": null,
+        "score": 0.6672
+      },
+      {
+        "document_id": "llava",
+        "page_number": 4,
+        "figure_id": null,
+        "score": 0.6535
+      },
+      {
+        "document_id": "blip2",
+        "page_number": 4,
+        "figure_id": null,
+        "score": 0.6501
+      },
+      {
+        "document_id": "llava",
+        "page_number": 4,
+        "figure_id": null,
+        "score": 0.6467
+      },
+      {
+        "document_id": "llava",
+        "page_number": 4,
+        "figure_id": null,
+        "score": 0.6447
+      }
+    ],
+    "expected_canonical_evidence": [
+      {
+        "document_id": "clip",
+        "page_number": 5,
+        "figure_id": "fig_clip_pseudocode"
+      }
+    ]
+  },
+  {
+    "query_id": "q_v2_033",
+    "query": "Find the chart where two model-scaling lines are compared and the improved prompting line stays above the contextless baseline.",
+    "intent": "visual_layout",
+    "document_id": "clip",
+    "recall_at_5": 0.0,
+    "hit_at_5": 0.0,
+    "mrr": 0.0,
+    "ndcg_at_5": 0.0,
+    "retrieved_canonical_evidence": [
+      {
+        "document_id": "llava",
+        "page_number": 9,
+        "figure_id": null,
+        "score": 0.6872
+      },
+      {
+        "document_id": "clip",
+        "page_number": 12,
+        "figure_id": null,
+        "score": 0.6747
+      },
+      {
+        "document_id": "clip",
+        "page_number": 37,
+        "figure_id": null,
+        "score": 0.6746
+      },
+      {
+        "document_id": "clip",
+        "page_number": 5,
+        "figure_id": null,
+        "score": 0.6742
+      },
+      {
+        "document_id": "clip",
+        "page_number": 10,
+        "figure_id": null,
+        "score": 0.6719
+      }
+    ],
+    "expected_canonical_evidence": [
+      {
+        "document_id": "clip",
+        "page_number": 7,
+        "figure_id": "fig_clip_prompt_engineering"
+      }
+    ]
+  },
+  {
+    "query_id": "q_v2_034",
+    "query": "Using the approach diagram and text, explain how CLIP trains on image-text pairings and later performs zero-shot classification.",
+    "intent": "hybrid",
+    "document_id": "clip",
+    "recall_at_5": 0.0,
+    "hit_at_5": 0.0,
+    "mrr": 0.0,
+    "ndcg_at_5": 0.0,
+    "retrieved_canonical_evidence": [
+      {
+        "document_id": "clip",
+        "page_number": 6,
+        "figure_id": null,
+        "score": 0.7827
+      },
+      {
+        "document_id": "clip",
+        "page_number": 6,
+        "figure_id": null,
+        "score": 0.7668
+      },
+      {
+        "document_id": "siglip",
+        "page_number": 13,
+        "figure_id": null,
+        "score": 0.7629
+      },
+      {
+        "document_id": "clip",
+        "page_number": 20,
+        "figure_id": null,
+        "score": 0.7587
+      },
+      {
+        "document_id": "blip2",
+        "page_number": 6,
+        "figure_id": null,
+        "score": 0.7532
+      }
+    ],
+    "expected_canonical_evidence": [
+      {
+        "document_id": "clip",
+        "page_number": 2,
+        "figure_id": "fig_clip_approach"
+      },
+      {
+        "document_id": "clip",
+        "page_number": 4,
+        "figure_id": null
+      }
+    ]
+  },
+  {
+    "query_id": "q_v2_035",
+    "query": "How does Figure 2 support the paper's decision to prefer a contrastive objective over predicting captions word by word?",
+    "intent": "hybrid",
+    "document_id": "clip",
+    "recall_at_5": 0.5,
+    "hit_at_5": 1.0,
+    "mrr": 1.0,
+    "ndcg_at_5": 0.6131,
+    "retrieved_canonical_evidence": [
+      {
+        "document_id": "clip",
+        "page_number": 4,
+        "figure_id": null,
+        "score": 0.7492
+      },
+      {
+        "document_id": "clip",
+        "page_number": 19,
+        "figure_id": null,
+        "score": 0.733
+      },
+      {
+        "document_id": "clip",
+        "page_number": 3,
+        "figure_id": null,
+        "score": 0.7293
+      },
+      {
+        "document_id": "clip",
+        "page_number": 3,
+        "figure_id": null,
+        "score": 0.7239
+      },
+      {
+        "document_id": "clip",
+        "page_number": 2,
+        "figure_id": null,
+        "score": 0.711
+      }
+    ],
+    "expected_canonical_evidence": [
+      {
+        "document_id": "clip",
+        "page_number": 3,
+        "figure_id": "fig_clip_efficiency"
+      },
+      {
+        "document_id": "clip",
+        "page_number": 4,
+        "figure_id": null
+      }
+    ]
+  },
+  {
+    "query_id": "q_v2_036",
+    "query": "Using the pseudocode and method description, explain how CLIP normalizes image and text embeddings and computes the symmetric loss.",
+    "intent": "hybrid",
+    "document_id": "clip",
+    "recall_at_5": 0.0,
+    "hit_at_5": 0.0,
+    "mrr": 0.0,
+    "ndcg_at_5": 0.0,
+    "retrieved_canonical_evidence": [
+      {
+        "document_id": "clip",
+        "page_number": 5,
+        "figure_id": null,
+        "score": 0.7882
+      },
+      {
+        "document_id": "clip",
+        "page_number": 6,
+        "figure_id": null,
+        "score": 0.7238
+      },
+      {
+        "document_id": "clip",
+        "page_number": 5,
+        "figure_id": null,
+        "score": 0.7144
+      },
+      {
+        "document_id": "blip2",
+        "page_number": 3,
+        "figure_id": null,
+        "score": 0.7021
+      },
+      {
+        "document_id": "siglip",
+        "page_number": 3,
+        "figure_id": null,
+        "score": 0.6959
+      }
+    ],
+    "expected_canonical_evidence": [
+      {
+        "document_id": "clip",
+        "page_number": 5,
+        "figure_id": "fig_clip_pseudocode"
+      },
+      {
+        "document_id": "clip",
+        "page_number": 4,
+        "figure_id": null
+      }
+    ]
+  },
+  {
+    "query_id": "q_v2_037",
+    "query": "How does the prompt-engineering plot support the claim that contextual prompts and prompt ensembling improve zero-shot accuracy?",
+    "intent": "hybrid",
+    "document_id": "clip",
+    "recall_at_5": 0.5,
+    "hit_at_5": 1.0,
+    "mrr": 0.3333,
+    "ndcg_at_5": 0.3066,
+    "retrieved_canonical_evidence": [
+      {
+        "document_id": "clip",
+        "page_number": 8,
+        "figure_id": null,
+        "score": 0.759
+      },
+      {
+        "document_id": "clip",
+        "page_number": 8,
+        "figure_id": null,
+        "score": 0.7584
+      },
+      {
+        "document_id": "clip",
+        "page_number": 7,
+        "figure_id": null,
+        "score": 0.7437
+      },
+      {
+        "document_id": "clip",
+        "page_number": 8,
+        "figure_id": null,
+        "score": 0.7107
+      },
+      {
+        "document_id": "clip",
+        "page_number": 10,
+        "figure_id": null,
+        "score": 0.704
+      }
+    ],
+    "expected_canonical_evidence": [
+      {
+        "document_id": "clip",
+        "page_number": 7,
+        "figure_id": "fig_clip_prompt_engineering"
+      },
+      {
+        "document_id": "clip",
+        "page_number": 7,
+        "figure_id": null
+      }
+    ]
+  },
+  {
+    "query_id": "q_v2_038",
+    "query": "Using the model-compute scaling plot and nearby discussion, describe the relationship between compute and average zero-shot error.",
+    "intent": "hybrid",
+    "document_id": "clip",
+    "recall_at_5": 0.5,
+    "hit_at_5": 1.0,
+    "mrr": 1.0,
+    "ndcg_at_5": 0.6131,
+    "retrieved_canonical_evidence": [
+      {
+        "document_id": "clip",
+        "page_number": 11,
+        "figure_id": null,
+        "score": 0.7881
+      },
+      {
+        "document_id": "clip",
+        "page_number": 10,
+        "figure_id": null,
+        "score": 0.7755
+      },
+      {
+        "document_id": "clip",
+        "page_number": 19,
+        "figure_id": null,
+        "score": 0.7548
+      },
+      {
+        "document_id": "clip",
+        "page_number": 10,
+        "figure_id": null,
+        "score": 0.7334
+      },
+      {
+        "document_id": "clip",
+        "page_number": 10,
+        "figure_id": null,
+        "score": 0.727
+      }
+    ],
+    "expected_canonical_evidence": [
+      {
+        "document_id": "clip",
+        "page_number": 11,
+        "figure_id": "fig_clip_compute_scaling"
+      },
+      {
+        "document_id": "clip",
+        "page_number": 11,
+        "figure_id": null
+      }
+    ]
+  },
+  {
+    "query_id": "q_v2_039",
+    "query": "Find the CLIP visual that explains the training-and-zero-shot pipeline rather than a plot of training efficiency.",
+    "intent": "hard_visual",
+    "document_id": "clip",
+    "recall_at_5": 0.0,
+    "hit_at_5": 0.0,
+    "mrr": 0.0,
+    "ndcg_at_5": 0.0,
+    "retrieved_canonical_evidence": [
+      {
+        "document_id": "clip",
+        "page_number": 6,
+        "figure_id": null,
+        "score": 0.7443
+      },
+      {
+        "document_id": "clip",
+        "page_number": 8,
+        "figure_id": null,
+        "score": 0.7319
+      },
+      {
+        "document_id": "clip",
+        "page_number": 9,
+        "figure_id": null,
+        "score": 0.7296
+      },
+      {
+        "document_id": "blip2",
+        "page_number": 6,
+        "figure_id": null,
+        "score": 0.7174
+      },
+      {
+        "document_id": "clip",
+        "page_number": 20,
+        "figure_id": null,
+        "score": 0.7042
+      }
+    ],
+    "expected_canonical_evidence": [
+      {
+        "document_id": "clip",
+        "page_number": 2,
+        "figure_id": "fig_clip_approach"
+      }
+    ]
+  },
+  {
+    "query_id": "q_v2_040",
+    "query": "Which CLIP visual shows executable-style training logic rather than the conceptual pipeline or performance curves?",
+    "intent": "hard_visual",
+    "document_id": "clip",
+    "recall_at_5": 0.0,
+    "hit_at_5": 0.0,
+    "mrr": 0.0,
+    "ndcg_at_5": 0.0,
+    "retrieved_canonical_evidence": [
+      {
+        "document_id": "llava",
+        "page_number": 14,
+        "figure_id": null,
+        "score": 0.6986
+      },
+      {
+        "document_id": "siglip",
+        "page_number": 13,
+        "figure_id": null,
+        "score": 0.6763
+      },
+      {
+        "document_id": "llava",
+        "page_number": 14,
+        "figure_id": null,
+        "score": 0.6702
+      },
+      {
+        "document_id": "blip2",
+        "page_number": 2,
+        "figure_id": null,
+        "score": 0.6685
+      },
+      {
+        "document_id": "llava",
+        "page_number": 9,
+        "figure_id": null,
+        "score": 0.6668
+      }
+    ],
+    "expected_canonical_evidence": [
+      {
+        "document_id": "clip",
+        "page_number": 5,
+        "figure_id": "fig_clip_pseudocode"
+      }
+    ]
+  },
+  {
+    "query_id": "q_v2_041",
+    "query": "How does SigLIP's pairwise sigmoid loss differ from the softmax-normalized contrastive loss used in standard language-image pre-training?",
+    "intent": "text",
+    "document_id": "siglip",
+    "recall_at_5": 0.0,
+    "hit_at_5": 0.0,
+    "mrr": 0.0,
+    "ndcg_at_5": 0.0,
+    "retrieved_canonical_evidence": [
+      {
+        "document_id": "siglip",
+        "page_number": 1,
+        "figure_id": null,
+        "score": 0.8698
+      },
+      {
+        "document_id": "siglip",
+        "page_number": 10,
+        "figure_id": null,
+        "score": 0.864
+      },
+      {
+        "document_id": "siglip",
+        "page_number": 10,
+        "figure_id": null,
+        "score": 0.8582
+      },
+      {
+        "document_id": "siglip",
+        "page_number": 2,
+        "figure_id": null,
+        "score": 0.8382
+      },
+      {
+        "document_id": "siglip",
+        "page_number": 2,
+        "figure_id": null,
+        "score": 0.8258
+      }
+    ],
+    "expected_canonical_evidence": [
+      {
+        "document_id": "siglip",
+        "page_number": 3,
+        "figure_id": null
+      }
+    ]
+  },
+  {
+    "query_id": "q_v2_042",
+    "query": "Why does the sigmoid loss avoid requiring a global normalization over all image-text similarities in a batch?",
+    "intent": "text",
+    "document_id": "siglip",
+    "recall_at_5": 1.0,
+    "hit_at_5": 1.0,
+    "mrr": 1.0,
+    "ndcg_at_5": 1.0,
+    "retrieved_canonical_evidence": [
+      {
+        "document_id": "siglip",
+        "page_number": 3,
+        "figure_id": null,
+        "score": 0.8369
+      },
+      {
+        "document_id": "siglip",
+        "page_number": 1,
+        "figure_id": null,
+        "score": 0.814
+      },
+      {
+        "document_id": "siglip",
+        "page_number": 10,
+        "figure_id": null,
+        "score": 0.7906
+      },
+      {
+        "document_id": "siglip",
+        "page_number": 2,
+        "figure_id": null,
+        "score": 0.7899
+      },
+      {
+        "document_id": "siglip",
+        "page_number": 1,
+        "figure_id": null,
+        "score": 0.7868
+      }
+    ],
+    "expected_canonical_evidence": [
+      {
+        "document_id": "siglip",
+        "page_number": 3,
+        "figure_id": null
+      }
+    ]
+  },
+  {
+    "query_id": "q_v2_043",
+    "query": "Why are a learnable temperature and bias included in the SigLIP loss?",
+    "intent": "text",
+    "document_id": "siglip",
+    "recall_at_5": 1.0,
+    "hit_at_5": 1.0,
+    "mrr": 1.0,
+    "ndcg_at_5": 1.0,
+    "retrieved_canonical_evidence": [
+      {
+        "document_id": "siglip",
+        "page_number": 3,
+        "figure_id": null,
+        "score": 0.7323
+      },
+      {
+        "document_id": "siglip",
+        "page_number": 9,
+        "figure_id": null,
+        "score": 0.6992
+      },
+      {
+        "document_id": "clip",
+        "page_number": 5,
+        "figure_id": null,
+        "score": 0.6852
+      },
+      {
+        "document_id": "siglip",
+        "page_number": 9,
+        "figure_id": null,
+        "score": 0.6813
+      },
+      {
+        "document_id": "siglip",
+        "page_number": 9,
+        "figure_id": null,
+        "score": 0.6737
+      }
+    ],
+    "expected_canonical_evidence": [
+      {
+        "document_id": "siglip",
+        "page_number": 3,
+        "figure_id": null
+      }
+    ]
+  },
+  {
+    "query_id": "q_v2_044",
+    "query": "What conclusion does the paper draw about increasing batch size beyond roughly 32k examples?",
+    "intent": "text",
+    "document_id": "siglip",
+    "recall_at_5": 1.0,
+    "hit_at_5": 1.0,
+    "mrr": 1.0,
+    "ndcg_at_5": 1.0,
+    "retrieved_canonical_evidence": [
+      {
+        "document_id": "siglip",
+        "page_number": 4,
+        "figure_id": null,
+        "score": 0.7491
+      },
+      {
+        "document_id": "siglip",
+        "page_number": 6,
+        "figure_id": null,
+        "score": 0.7464
+      },
+      {
+        "document_id": "siglip",
+        "page_number": 4,
+        "figure_id": null,
+        "score": 0.7436
+      },
+      {
+        "document_id": "siglip",
+        "page_number": 4,
+        "figure_id": null,
+        "score": 0.7396
+      },
+      {
+        "document_id": "siglip",
+        "page_number": 5,
+        "figure_id": null,
+        "score": 0.7221
+      }
+    ],
+    "expected_canonical_evidence": [
+      {
+        "document_id": "siglip",
+        "page_number": 4,
+        "figure_id": null
+      }
+    ]
+  },
+  {
+    "query_id": "q_v2_045",
+    "query": "Why does disabling weight decay on pre-trained encoder weights improve the SigLIP fine-tuning setup?",
+    "intent": "text",
+    "document_id": "siglip",
+    "recall_at_5": 1.0,
+    "hit_at_5": 1.0,
+    "mrr": 1.0,
+    "ndcg_at_5": 1.0,
+    "retrieved_canonical_evidence": [
+      {
+        "document_id": "siglip",
+        "page_number": 6,
+        "figure_id": null,
+        "score": 0.7869
+      },
+      {
+        "document_id": "siglip",
+        "page_number": 7,
+        "figure_id": null,
+        "score": 0.7816
+      },
+      {
+        "document_id": "clip",
+        "page_number": 5,
+        "figure_id": null,
+        "score": 0.7076
+      },
+      {
+        "document_id": "siglip",
+        "page_number": 8,
+        "figure_id": null,
+        "score": 0.7035
+      },
+      {
+        "document_id": "siglip",
+        "page_number": 2,
+        "figure_id": null,
+        "score": 0.7029
+      }
+    ],
+    "expected_canonical_evidence": [
+      {
+        "document_id": "siglip",
+        "page_number": 6,
+        "figure_id": null
+      }
+    ]
+  },
+  {
+    "query_id": "q_v2_046",
+    "query": "Which figure illustrates SigLIP's distributed chunked loss computation across multiple devices?",
+    "intent": "visual_caption",
+    "document_id": "siglip",
+    "recall_at_5": 0.0,
+    "hit_at_5": 0.0,
+    "mrr": 0.0,
+    "ndcg_at_5": 0.0,
+    "retrieved_canonical_evidence": [
+      {
+        "document_id": "siglip",
+        "page_number": 3,
+        "figure_id": null,
+        "score": 0.7363
+      },
+      {
+        "document_id": "siglip",
+        "page_number": 4,
+        "figure_id": null,
+        "score": 0.7266
+      },
+      {
+        "document_id": "siglip",
+        "page_number": 3,
+        "figure_id": null,
+        "score": 0.704
+      },
+      {
+        "document_id": "siglip",
+        "page_number": 3,
+        "figure_id": null,
+        "score": 0.7029
+      },
+      {
+        "document_id": "siglip",
+        "page_number": 4,
+        "figure_id": null,
+        "score": 0.6918
+      }
+    ],
+    "expected_canonical_evidence": [
+      {
+        "document_id": "siglip",
+        "page_number": 3,
+        "figure_id": "fig_siglip_chunked_loss"
+      }
+    ]
+  },
+  {
+    "query_id": "q_v2_047",
+    "query": "Which figure compares sigmoid and softmax performance across different pre-training batch sizes?",
+    "intent": "visual_caption",
+    "document_id": "siglip",
+    "recall_at_5": 0.0,
+    "hit_at_5": 0.0,
+    "mrr": 0.0,
+    "ndcg_at_5": 0.0,
+    "retrieved_canonical_evidence": [
+      {
+        "document_id": "siglip",
+        "page_number": 4,
+        "figure_id": null,
+        "score": 0.855
+      },
+      {
+        "document_id": "siglip",
+        "page_number": 14,
+        "figure_id": null,
+        "score": 0.8193
+      },
+      {
+        "document_id": "siglip",
+        "page_number": 10,
+        "figure_id": null,
+        "score": 0.8142
+      },
+      {
+        "document_id": "siglip",
+        "page_number": 4,
+        "figure_id": null,
+        "score": 0.7838
+      },
+      {
+        "document_id": "siglip",
+        "page_number": 14,
+        "figure_id": null,
+        "score": 0.782
+      }
+    ],
+    "expected_canonical_evidence": [
+      {
+        "document_id": "siglip",
+        "page_number": 4,
+        "figure_id": "fig_siglip_batch_size"
+      }
+    ]
+  },
+  {
+    "query_id": "q_v2_048",
+    "query": "Find the figure showing ImageNet zero-shot performance as training duration changes for small and very large batch sizes.",
+    "intent": "visual_caption",
+    "document_id": "siglip",
+    "recall_at_5": 0.0,
+    "hit_at_5": 0.0,
+    "mrr": 0.0,
+    "ndcg_at_5": 0.0,
+    "retrieved_canonical_evidence": [
+      {
+        "document_id": "siglip",
+        "page_number": 5,
+        "figure_id": null,
+        "score": 0.8465
+      },
+      {
+        "document_id": "siglip",
+        "page_number": 4,
+        "figure_id": null,
+        "score": 0.7891
+      },
+      {
+        "document_id": "clip",
+        "page_number": 10,
+        "figure_id": null,
+        "score": 0.7883
+      },
+      {
+        "document_id": "siglip",
+        "page_number": 5,
+        "figure_id": null,
+        "score": 0.7839
+      },
+      {
+        "document_id": "clip",
+        "page_number": 47,
+        "figure_id": null,
+        "score": 0.7824
+      }
+    ],
+    "expected_canonical_evidence": [
+      {
+        "document_id": "siglip",
+        "page_number": 5,
+        "figure_id": "fig_siglip_training_duration"
+      }
+    ]
+  },
+  {
+    "query_id": "q_v2_049",
+    "query": "Which figure shows the effect of keeping or disabling weight decay on pre-trained encoder weights?",
+    "intent": "visual_caption",
+    "document_id": "siglip",
+    "recall_at_5": 0.0,
+    "hit_at_5": 0.0,
+    "mrr": 0.0,
+    "ndcg_at_5": 0.0,
+    "retrieved_canonical_evidence": [
+      {
+        "document_id": "siglip",
+        "page_number": 7,
+        "figure_id": null,
+        "score": 0.778
+      },
+      {
+        "document_id": "siglip",
+        "page_number": 6,
+        "figure_id": null,
+        "score": 0.7593
+      },
+      {
+        "document_id": "clip",
+        "page_number": 5,
+        "figure_id": null,
+        "score": 0.7067
+      },
+      {
+        "document_id": "siglip",
+        "page_number": 8,
+        "figure_id": null,
+        "score": 0.7018
+      },
+      {
+        "document_id": "siglip",
+        "page_number": 2,
+        "figure_id": null,
+        "score": 0.6994
+      }
+    ],
+    "expected_canonical_evidence": [
+      {
+        "document_id": "siglip",
+        "page_number": 6,
+        "figure_id": "fig_siglip_weight_decay"
+      }
+    ]
+  },
+  {
+    "query_id": "q_v2_050",
+    "query": "Find the multi-panel diagram made of device-by-device similarity matrices with colored square blocks moving between panels.",
+    "intent": "visual_layout",
+    "document_id": "siglip",
+    "recall_at_5": 0.0,
+    "hit_at_5": 0.0,
+    "mrr": 0.0,
+    "ndcg_at_5": 0.0,
+    "retrieved_canonical_evidence": [
+      {
+        "document_id": "attention_is_all_you_need",
+        "page_number": 12,
+        "figure_id": null,
+        "score": 0.6344
+      },
+      {
+        "document_id": "clip",
+        "page_number": 5,
+        "figure_id": null,
+        "score": 0.6337
+      },
+      {
+        "document_id": "siglip",
+        "page_number": 17,
+        "figure_id": null,
+        "score": 0.6323
+      },
+      {
+        "document_id": "clip",
+        "page_number": 6,
+        "figure_id": null,
+        "score": 0.627
+      },
+      {
+        "document_id": "siglip",
+        "page_number": 1,
+        "figure_id": null,
+        "score": 0.6229
+      }
+    ],
+    "expected_canonical_evidence": [
+      {
+        "document_id": "siglip",
+        "page_number": 3,
+        "figure_id": "fig_siglip_chunked_loss"
+      }
+    ]
+  },
+  {
+    "query_id": "q_v2_051",
+    "query": "Find the three-panel plot whose horizontal axes are batch size and whose curves compare sigmoid and softmax behavior.",
+    "intent": "visual_layout",
+    "document_id": "siglip",
+    "recall_at_5": 0.0,
+    "hit_at_5": 0.0,
+    "mrr": 0.0,
+    "ndcg_at_5": 0.0,
+    "retrieved_canonical_evidence": [
+      {
+        "document_id": "siglip",
+        "page_number": 8,
+        "figure_id": null,
+        "score": 0.709
+      },
+      {
+        "document_id": "siglip",
+        "page_number": 4,
+        "figure_id": null,
+        "score": 0.6747
+      },
+      {
+        "document_id": "siglip",
+        "page_number": 10,
+        "figure_id": null,
+        "score": 0.6745
+      },
+      {
+        "document_id": "siglip",
+        "page_number": 14,
+        "figure_id": null,
+        "score": 0.6712
+      },
+      {
+        "document_id": "siglip",
+        "page_number": 4,
+        "figure_id": null,
+        "score": 0.6644
+      }
+    ],
+    "expected_canonical_evidence": [
+      {
+        "document_id": "siglip",
+        "page_number": 4,
+        "figure_id": "fig_siglip_batch_size"
+      }
+    ]
+  },
+  {
+    "query_id": "q_v2_052",
+    "query": "Which visual has examples-seen on the horizontal axis and separate curves for 8k and 262k batch sizes?",
+    "intent": "visual_layout",
+    "document_id": "siglip",
+    "recall_at_5": 0.0,
+    "hit_at_5": 0.0,
+    "mrr": 0.0,
+    "ndcg_at_5": 0.0,
+    "retrieved_canonical_evidence": [
+      {
+        "document_id": "siglip",
+        "page_number": 15,
+        "figure_id": null,
+        "score": 0.6572
+      },
+      {
+        "document_id": "siglip",
+        "page_number": 4,
+        "figure_id": null,
+        "score": 0.6509
+      },
+      {
+        "document_id": "siglip",
+        "page_number": 8,
+        "figure_id": null,
+        "score": 0.6369
+      },
+      {
+        "document_id": "siglip",
+        "page_number": 4,
+        "figure_id": null,
+        "score": 0.6236
+      },
+      {
+        "document_id": "siglip",
+        "page_number": 4,
+        "figure_id": null,
+        "score": 0.6233
+      }
+    ],
+    "expected_canonical_evidence": [
+      {
+        "document_id": "siglip",
+        "page_number": 5,
+        "figure_id": "fig_siglip_training_duration"
+      }
+    ]
+  },
+  {
+    "query_id": "q_v2_053",
+    "query": "Find the two vertically stacked plots contrasting zero-shot and 10-shot ImageNet performance under different fine-tuning strategies.",
+    "intent": "visual_layout",
+    "document_id": "siglip",
+    "recall_at_5": 0.0,
+    "hit_at_5": 0.0,
+    "mrr": 0.0,
+    "ndcg_at_5": 0.0,
+    "retrieved_canonical_evidence": [
+      {
+        "document_id": "clip",
+        "page_number": 10,
+        "figure_id": null,
+        "score": 0.7367
+      },
+      {
+        "document_id": "clip",
+        "page_number": 11,
+        "figure_id": null,
+        "score": 0.6995
+      },
+      {
+        "document_id": "clip",
+        "page_number": 10,
+        "figure_id": null,
+        "score": 0.6938
+      },
+      {
+        "document_id": "clip",
+        "page_number": 8,
+        "figure_id": null,
+        "score": 0.6901
+      },
+      {
+        "document_id": "clip",
+        "page_number": 9,
+        "figure_id": null,
+        "score": 0.6876
+      }
+    ],
+    "expected_canonical_evidence": [
+      {
+        "document_id": "siglip",
+        "page_number": 6,
+        "figure_id": "fig_siglip_weight_decay"
+      }
+    ]
+  },
+  {
+    "query_id": "q_v2_054",
+    "query": "Using the distributed-loss figure and method text, explain how SigLIP avoids materializing the full global pairwise similarity matrix.",
+    "intent": "hybrid",
+    "document_id": "siglip",
+    "recall_at_5": 0.5,
+    "hit_at_5": 1.0,
+    "mrr": 1.0,
+    "ndcg_at_5": 0.6131,
+    "retrieved_canonical_evidence": [
+      {
+        "document_id": "siglip",
+        "page_number": 3,
+        "figure_id": null,
+        "score": 0.7229
+      },
+      {
+        "document_id": "siglip",
+        "page_number": 1,
+        "figure_id": null,
+        "score": 0.6994
+      },
+      {
+        "document_id": "siglip",
+        "page_number": 1,
+        "figure_id": null,
+        "score": 0.6957
+      },
+      {
+        "document_id": "siglip",
+        "page_number": 1,
+        "figure_id": null,
+        "score": 0.6697
+      },
+      {
+        "document_id": "clip",
+        "page_number": 4,
+        "figure_id": null,
+        "score": 0.6675
+      }
+    ],
+    "expected_canonical_evidence": [
+      {
+        "document_id": "siglip",
+        "page_number": 3,
+        "figure_id": "fig_siglip_chunked_loss"
+      },
+      {
+        "document_id": "siglip",
+        "page_number": 3,
+        "figure_id": null
+      }
+    ]
+  },
+  {
+    "query_id": "q_v2_055",
+    "query": "How does the batch-size figure support the claim that sigmoid loss is especially advantageous at smaller batch sizes?",
+    "intent": "hybrid",
+    "document_id": "siglip",
+    "recall_at_5": 0.5,
+    "hit_at_5": 1.0,
+    "mrr": 0.5,
+    "ndcg_at_5": 0.3869,
+    "retrieved_canonical_evidence": [
+      {
+        "document_id": "siglip",
+        "page_number": 8,
+        "figure_id": null,
+        "score": 0.8285
+      },
+      {
+        "document_id": "siglip",
+        "page_number": 4,
+        "figure_id": null,
+        "score": 0.814
+      },
+      {
+        "document_id": "siglip",
+        "page_number": 10,
+        "figure_id": null,
+        "score": 0.7966
+      },
+      {
+        "document_id": "siglip",
+        "page_number": 4,
+        "figure_id": null,
+        "score": 0.7794
+      },
+      {
+        "document_id": "siglip",
+        "page_number": 1,
+        "figure_id": null,
+        "score": 0.7743
+      }
+    ],
+    "expected_canonical_evidence": [
+      {
+        "document_id": "siglip",
+        "page_number": 4,
+        "figure_id": "fig_siglip_batch_size"
+      },
+      {
+        "document_id": "siglip",
+        "page_number": 4,
+        "figure_id": null
+      }
+    ]
+  },
+  {
+    "query_id": "q_v2_056",
+    "query": "Using the batch-size plots and text, explain why the authors conclude that extremely large batches are unnecessary.",
+    "intent": "hybrid",
+    "document_id": "siglip",
+    "recall_at_5": 0.5,
+    "hit_at_5": 1.0,
+    "mrr": 1.0,
+    "ndcg_at_5": 0.6131,
+    "retrieved_canonical_evidence": [
+      {
+        "document_id": "siglip",
+        "page_number": 4,
+        "figure_id": null,
+        "score": 0.7139
+      },
+      {
+        "document_id": "siglip",
+        "page_number": 4,
+        "figure_id": null,
+        "score": 0.7133
+      },
+      {
+        "document_id": "siglip",
+        "page_number": 4,
+        "figure_id": null,
+        "score": 0.7062
+      },
+      {
+        "document_id": "siglip",
+        "page_number": 5,
+        "figure_id": null,
+        "score": 0.6925
+      },
+      {
+        "document_id": "siglip",
+        "page_number": 6,
+        "figure_id": null,
+        "score": 0.6919
+      }
+    ],
+    "expected_canonical_evidence": [
+      {
+        "document_id": "siglip",
+        "page_number": 4,
+        "figure_id": "fig_siglip_batch_size"
+      },
+      {
+        "document_id": "siglip",
+        "page_number": 4,
+        "figure_id": null
+      }
+    ]
+  },
+  {
+    "query_id": "q_v2_057",
+    "query": "How does the training-duration plot qualify the claim that very large batches can improve performance?",
+    "intent": "hybrid",
+    "document_id": "siglip",
+    "recall_at_5": 0.5,
+    "hit_at_5": 1.0,
+    "mrr": 1.0,
+    "ndcg_at_5": 0.6131,
+    "retrieved_canonical_evidence": [
+      {
+        "document_id": "siglip",
+        "page_number": 5,
+        "figure_id": null,
+        "score": 0.7708
+      },
+      {
+        "document_id": "siglip",
+        "page_number": 4,
+        "figure_id": null,
+        "score": 0.7373
+      },
+      {
+        "document_id": "siglip",
+        "page_number": 5,
+        "figure_id": null,
+        "score": 0.7334
+      },
+      {
+        "document_id": "siglip",
+        "page_number": 4,
+        "figure_id": null,
+        "score": 0.7299
+      },
+      {
+        "document_id": "siglip",
+        "page_number": 14,
+        "figure_id": null,
+        "score": 0.7111
+      }
+    ],
+    "expected_canonical_evidence": [
+      {
+        "document_id": "siglip",
+        "page_number": 5,
+        "figure_id": "fig_siglip_training_duration"
+      },
+      {
+        "document_id": "siglip",
+        "page_number": 5,
+        "figure_id": null
+      }
+    ]
+  },
+  {
+    "query_id": "q_v2_058",
+    "query": "How does the weight-decay figure support the recommendation to avoid decaying pre-trained encoder weights?",
+    "intent": "hybrid",
+    "document_id": "siglip",
+    "recall_at_5": 0.5,
+    "hit_at_5": 1.0,
+    "mrr": 0.5,
+    "ndcg_at_5": 0.3869,
+    "retrieved_canonical_evidence": [
+      {
+        "document_id": "siglip",
+        "page_number": 7,
+        "figure_id": null,
+        "score": 0.7774
+      },
+      {
+        "document_id": "siglip",
+        "page_number": 6,
+        "figure_id": null,
+        "score": 0.7549
+      },
+      {
+        "document_id": "clip",
+        "page_number": 5,
+        "figure_id": null,
+        "score": 0.7044
+      },
+      {
+        "document_id": "siglip",
+        "page_number": 8,
+        "figure_id": null,
+        "score": 0.6954
+      },
+      {
+        "document_id": "siglip",
+        "page_number": 2,
+        "figure_id": null,
+        "score": 0.6818
+      }
+    ],
+    "expected_canonical_evidence": [
+      {
+        "document_id": "siglip",
+        "page_number": 6,
+        "figure_id": "fig_siglip_weight_decay"
+      },
+      {
+        "document_id": "siglip",
+        "page_number": 6,
+        "figure_id": null
+      }
+    ]
+  },
+  {
+    "query_id": "q_v2_059",
+    "query": "Find the SigLIP visual about distributed memory-efficient loss computation rather than batch-size scaling results.",
+    "intent": "hard_visual",
+    "document_id": "siglip",
+    "recall_at_5": 0.0,
+    "hit_at_5": 0.0,
+    "mrr": 0.0,
+    "ndcg_at_5": 0.0,
+    "retrieved_canonical_evidence": [
+      {
+        "document_id": "siglip",
+        "page_number": 1,
+        "figure_id": null,
+        "score": 0.8051
+      },
+      {
+        "document_id": "siglip",
+        "page_number": 4,
+        "figure_id": null,
+        "score": 0.7932
+      },
+      {
+        "document_id": "siglip",
+        "page_number": 4,
+        "figure_id": null,
+        "score": 0.762
+      },
+      {
+        "document_id": "siglip",
+        "page_number": 3,
+        "figure_id": null,
+        "score": 0.7497
+      },
+      {
+        "document_id": "siglip",
+        "page_number": 4,
+        "figure_id": null,
+        "score": 0.7342
+      }
+    ],
+    "expected_canonical_evidence": [
+      {
+        "document_id": "siglip",
+        "page_number": 3,
+        "figure_id": "fig_siglip_chunked_loss"
+      }
+    ]
+  },
+  {
+    "query_id": "q_v2_060",
+    "query": "Which visual specifically diagnoses pre-trained-weight decay rather than comparing sigmoid and softmax across batch sizes?",
+    "intent": "hard_visual",
+    "document_id": "siglip",
+    "recall_at_5": 0.0,
+    "hit_at_5": 0.0,
+    "mrr": 0.0,
+    "ndcg_at_5": 0.0,
+    "retrieved_canonical_evidence": [
+      {
+        "document_id": "siglip",
+        "page_number": 10,
+        "figure_id": null,
+        "score": 0.765
+      },
+      {
+        "document_id": "siglip",
+        "page_number": 4,
+        "figure_id": null,
+        "score": 0.7602
+      },
+      {
+        "document_id": "siglip",
+        "page_number": 2,
+        "figure_id": null,
+        "score": 0.7501
+      },
+      {
+        "document_id": "siglip",
+        "page_number": 8,
+        "figure_id": null,
+        "score": 0.7454
+      },
+      {
+        "document_id": "siglip",
+        "page_number": 14,
+        "figure_id": null,
+        "score": 0.7446
+      }
+    ],
+    "expected_canonical_evidence": [
+      {
+        "document_id": "siglip",
+        "page_number": 6,
+        "figure_id": "fig_siglip_weight_decay"
+      }
+    ]
+  },
+  {
+    "query_id": "q_v2_061",
+    "query": "Why does BLIP-2 keep both the pre-trained image encoder and the large language model frozen during vision-language pre-training?",
+    "intent": "text",
+    "document_id": "blip2",
+    "recall_at_5": 1.0,
+    "hit_at_5": 1.0,
+    "mrr": 1.0,
+    "ndcg_at_5": 1.0,
+    "retrieved_canonical_evidence": [
+      {
+        "document_id": "blip2",
+        "page_number": 1,
+        "figure_id": null,
+        "score": 0.8514
+      },
+      {
+        "document_id": "blip2",
+        "page_number": 2,
+        "figure_id": null,
+        "score": 0.8373
+      },
+      {
+        "document_id": "blip2",
+        "page_number": 2,
+        "figure_id": null,
+        "score": 0.837
+      },
+      {
+        "document_id": "blip2",
+        "page_number": 2,
+        "figure_id": null,
+        "score": 0.8298
+      },
+      {
+        "document_id": "blip2",
+        "page_number": 2,
+        "figure_id": null,
+        "score": 0.8189
+      }
+    ],
+    "expected_canonical_evidence": [
+      {
+        "document_id": "blip2",
+        "page_number": 1,
+        "figure_id": null
+      }
+    ]
+  },
+  {
+    "query_id": "q_v2_062",
+    "query": "What role does the Q-Former play between the frozen image encoder and frozen language model?",
+    "intent": "text",
+    "document_id": "blip2",
+    "recall_at_5": 1.0,
+    "hit_at_5": 1.0,
+    "mrr": 1.0,
+    "ndcg_at_5": 1.0,
+    "retrieved_canonical_evidence": [
+      {
+        "document_id": "blip2",
+        "page_number": 2,
+        "figure_id": null,
+        "score": 0.8305
+      },
+      {
+        "document_id": "blip2",
+        "page_number": 2,
+        "figure_id": null,
+        "score": 0.8211
+      },
+      {
+        "document_id": "blip2",
+        "page_number": 1,
+        "figure_id": null,
+        "score": 0.818
+      },
+      {
+        "document_id": "blip2",
+        "page_number": 1,
+        "figure_id": null,
+        "score": 0.7803
+      },
+      {
+        "document_id": "blip2",
+        "page_number": 4,
+        "figure_id": null,
+        "score": 0.7801
+      }
+    ],
+    "expected_canonical_evidence": [
+      {
+        "document_id": "blip2",
+        "page_number": 2,
+        "figure_id": null
+      }
+    ]
+  },
+  {
+    "query_id": "q_v2_063",
+    "query": "How do the learnable queries in Q-Former interact with frozen image features and text?",
+    "intent": "text",
+    "document_id": "blip2",
+    "recall_at_5": 1.0,
+    "hit_at_5": 1.0,
+    "mrr": 1.0,
+    "ndcg_at_5": 1.0,
+    "retrieved_canonical_evidence": [
+      {
+        "document_id": "blip2",
+        "page_number": 3,
+        "figure_id": null,
+        "score": 0.784
+      },
+      {
+        "document_id": "blip2",
+        "page_number": 3,
+        "figure_id": null,
+        "score": 0.7592
+      },
+      {
+        "document_id": "blip2",
+        "page_number": 2,
+        "figure_id": null,
+        "score": 0.7382
+      },
+      {
+        "document_id": "blip2",
+        "page_number": 3,
+        "figure_id": null,
+        "score": 0.7328
+      },
+      {
+        "document_id": "blip2",
+        "page_number": 2,
+        "figure_id": null,
+        "score": 0.7285
+      }
+    ],
+    "expected_canonical_evidence": [
+      {
+        "document_id": "blip2",
+        "page_number": 3,
+        "figure_id": null
+      }
+    ]
+  },
+  {
+    "query_id": "q_v2_064",
+    "query": "What are the three objectives used in BLIP-2's first-stage vision-language representation learning?",
+    "intent": "text",
+    "document_id": "blip2",
+    "recall_at_5": 0.0,
+    "hit_at_5": 0.0,
+    "mrr": 0.0,
+    "ndcg_at_5": 0.0,
+    "retrieved_canonical_evidence": [
+      {
+        "document_id": "blip2",
+        "page_number": 6,
+        "figure_id": null,
+        "score": 0.7822
+      },
+      {
+        "document_id": "blip2",
+        "page_number": 2,
+        "figure_id": null,
+        "score": 0.7695
+      },
+      {
+        "document_id": "blip2",
+        "page_number": 1,
+        "figure_id": null,
+        "score": 0.7356
+      },
+      {
+        "document_id": "blip2",
+        "page_number": 2,
+        "figure_id": null,
+        "score": 0.7354
+      },
+      {
+        "document_id": "blip2",
+        "page_number": 10,
+        "figure_id": null,
+        "score": 0.7344
+      }
+    ],
+    "expected_canonical_evidence": [
+      {
+        "document_id": "blip2",
+        "page_number": 3,
+        "figure_id": null
+      }
+    ]
+  },
+  {
+    "query_id": "q_v2_065",
+    "query": "How are Q-Former outputs adapted to condition decoder-only and encoder-decoder LLMs in the second pre-training stage?",
+    "intent": "text",
+    "document_id": "blip2",
+    "recall_at_5": 1.0,
+    "hit_at_5": 1.0,
+    "mrr": 1.0,
+    "ndcg_at_5": 1.0,
+    "retrieved_canonical_evidence": [
+      {
+        "document_id": "blip2",
+        "page_number": 4,
+        "figure_id": null,
+        "score": 0.7614
+      },
+      {
+        "document_id": "blip2",
+        "page_number": 4,
+        "figure_id": null,
+        "score": 0.7418
+      },
+      {
+        "document_id": "blip2",
+        "page_number": 2,
+        "figure_id": null,
+        "score": 0.7172
+      },
+      {
+        "document_id": "blip2",
+        "page_number": 4,
+        "figure_id": null,
+        "score": 0.7137
+      },
+      {
+        "document_id": "blip2",
+        "page_number": 2,
+        "figure_id": null,
+        "score": 0.705
+      }
+    ],
+    "expected_canonical_evidence": [
+      {
+        "document_id": "blip2",
+        "page_number": 4,
+        "figure_id": null
+      }
+    ]
+  },
+  {
+    "query_id": "q_v2_066",
+    "query": "Which figure gives the overall two-stage BLIP-2 framework with the Q-Former between frozen vision and language models?",
+    "intent": "visual_caption",
+    "document_id": "blip2",
+    "recall_at_5": 0.0,
+    "hit_at_5": 0.0,
+    "mrr": 0.0,
+    "ndcg_at_5": 0.0,
+    "retrieved_canonical_evidence": [
+      {
+        "document_id": "blip2",
+        "page_number": 2,
+        "figure_id": null,
+        "score": 0.7944
+      },
+      {
+        "document_id": "blip2",
+        "page_number": 2,
+        "figure_id": null,
+        "score": 0.7819
+      },
+      {
+        "document_id": "llava",
+        "page_number": 11,
+        "figure_id": null,
+        "score": 0.7686
+      },
+      {
+        "document_id": "blip2",
+        "page_number": 1,
+        "figure_id": null,
+        "score": 0.7682
+      },
+      {
+        "document_id": "blip2",
+        "page_number": 2,
+        "figure_id": null,
+        "score": 0.7673
+      }
+    ],
+    "expected_canonical_evidence": [
+      {
+        "document_id": "blip2",
+        "page_number": 1,
+        "figure_id": "fig_blip2_overview"
+      }
+    ]
+  },
+  {
+    "query_id": "q_v2_067",
+    "query": "Which figure shows Q-Former's architecture together with the three first-stage training objectives and attention masks?",
+    "intent": "visual_caption",
+    "document_id": "blip2",
+    "recall_at_5": 0.0,
+    "hit_at_5": 0.0,
+    "mrr": 0.0,
+    "ndcg_at_5": 0.0,
+    "retrieved_canonical_evidence": [
+      {
+        "document_id": "llava",
+        "page_number": 14,
+        "figure_id": null,
+        "score": 0.7121
+      },
+      {
+        "document_id": "llava",
+        "page_number": 4,
+        "figure_id": null,
+        "score": 0.6926
+      },
+      {
+        "document_id": "blip2",
+        "page_number": 3,
+        "figure_id": null,
+        "score": 0.6861
+      },
+      {
+        "document_id": "siglip",
+        "page_number": 17,
+        "figure_id": null,
+        "score": 0.6763
+      },
+      {
+        "document_id": "blip2",
+        "page_number": 6,
+        "figure_id": null,
+        "score": 0.6761
+      }
+    ],
+    "expected_canonical_evidence": [
+      {
+        "document_id": "blip2",
+        "page_number": 3,
+        "figure_id": "fig_blip2_qformer"
+      }
+    ]
+  },
+  {
+    "query_id": "q_v2_068",
+    "query": "Find the figure comparing BLIP-2's decoder-based and encoder-decoder-based second-stage LLM bootstrapping.",
+    "intent": "visual_caption",
+    "document_id": "blip2",
+    "recall_at_5": 0.0,
+    "hit_at_5": 0.0,
+    "mrr": 0.0,
+    "ndcg_at_5": 0.0,
+    "retrieved_canonical_evidence": [
+      {
+        "document_id": "blip2",
+        "page_number": 6,
+        "figure_id": null,
+        "score": 0.7192
+      },
+      {
+        "document_id": "blip2",
+        "page_number": 1,
+        "figure_id": null,
+        "score": 0.7142
+      },
+      {
+        "document_id": "blip2",
+        "page_number": 4,
+        "figure_id": null,
+        "score": 0.7105
+      },
+      {
+        "document_id": "blip2",
+        "page_number": 4,
+        "figure_id": null,
+        "score": 0.7078
+      },
+      {
+        "document_id": "blip2",
+        "page_number": 4,
+        "figure_id": null,
+        "score": 0.707
+      }
+    ],
+    "expected_canonical_evidence": [
+      {
+        "document_id": "blip2",
+        "page_number": 4,
+        "figure_id": "fig_blip2_second_stage"
+      }
+    ]
+  },
+  {
+    "query_id": "q_v2_069",
+    "query": "Which figure presents a grid of instructed zero-shot image-to-text examples such as visual reasoning, conversation, and storytelling?",
+    "intent": "visual_caption",
+    "document_id": "blip2",
+    "recall_at_5": 0.0,
+    "hit_at_5": 0.0,
+    "mrr": 0.0,
+    "ndcg_at_5": 0.0,
+    "retrieved_canonical_evidence": [
+      {
+        "document_id": "blip2",
+        "page_number": 5,
+        "figure_id": null,
+        "score": 0.7764
+      },
+      {
+        "document_id": "blip2",
+        "page_number": 6,
+        "figure_id": null,
+        "score": 0.76
+      },
+      {
+        "document_id": "clip",
+        "page_number": 8,
+        "figure_id": null,
+        "score": 0.7092
+      },
+      {
+        "document_id": "llava",
+        "page_number": 4,
+        "figure_id": null,
+        "score": 0.7088
+      },
+      {
+        "document_id": "blip2",
+        "page_number": 6,
+        "figure_id": null,
+        "score": 0.7062
+      }
+    ],
+    "expected_canonical_evidence": [
+      {
+        "document_id": "blip2",
+        "page_number": 5,
+        "figure_id": "fig_blip2_zero_shot_examples"
+      }
+    ]
+  },
+  {
+    "query_id": "q_v2_070",
+    "query": "Find the diagram with a compact central querying transformer visually bridging a vision model on the left and a language model on the right.",
+    "intent": "visual_layout",
+    "document_id": "blip2",
+    "recall_at_5": 0.0,
+    "hit_at_5": 0.0,
+    "mrr": 0.0,
+    "ndcg_at_5": 0.0,
+    "retrieved_canonical_evidence": [
+      {
+        "document_id": "llava",
+        "page_number": 1,
+        "figure_id": null,
+        "score": 0.7189
+      },
+      {
+        "document_id": "llava",
+        "page_number": 13,
+        "figure_id": null,
+        "score": 0.713
+      },
+      {
+        "document_id": "siglip",
+        "page_number": 17,
+        "figure_id": null,
+        "score": 0.7073
+      },
+      {
+        "document_id": "blip2",
+        "page_number": 11,
+        "figure_id": null,
+        "score": 0.7067
+      },
+      {
+        "document_id": "clip",
+        "page_number": 27,
+        "figure_id": null,
+        "score": 0.7065
+      }
+    ],
+    "expected_canonical_evidence": [
+      {
+        "document_id": "blip2",
+        "page_number": 1,
+        "figure_id": "fig_blip2_overview"
+      }
+    ]
+  },
+  {
+    "query_id": "q_v2_071",
+    "query": "Find the dense architecture diagram containing learned query tokens, cross-attention, self-attention, and three small attention-mask grids.",
+    "intent": "visual_layout",
+    "document_id": "blip2",
+    "recall_at_5": 0.0,
+    "hit_at_5": 0.0,
+    "mrr": 0.0,
+    "ndcg_at_5": 0.0,
+    "retrieved_canonical_evidence": [
+      {
+        "document_id": "blip2",
+        "page_number": 3,
+        "figure_id": null,
+        "score": 0.737
+      },
+      {
+        "document_id": "blip2",
+        "page_number": 3,
+        "figure_id": null,
+        "score": 0.7211
+      },
+      {
+        "document_id": "blip2",
+        "page_number": 3,
+        "figure_id": null,
+        "score": 0.7124
+      },
+      {
+        "document_id": "attention_is_all_you_need",
+        "page_number": 5,
+        "figure_id": null,
+        "score": 0.6995
+      },
+      {
+        "document_id": "attention_is_all_you_need",
+        "page_number": 3,
+        "figure_id": null,
+        "score": 0.684
+      }
+    ],
+    "expected_canonical_evidence": [
+      {
+        "document_id": "blip2",
+        "page_number": 3,
+        "figure_id": "fig_blip2_qformer"
+      }
+    ]
+  },
+  {
+    "query_id": "q_v2_072",
+    "query": "Which visual is split into an upper and lower pipeline, one ending in an LLM decoder and one containing both an LLM encoder and decoder?",
+    "intent": "visual_layout",
+    "document_id": "blip2",
+    "recall_at_5": 0.0,
+    "hit_at_5": 0.0,
+    "mrr": 0.0,
+    "ndcg_at_5": 0.0,
+    "retrieved_canonical_evidence": [
+      {
+        "document_id": "blip2",
+        "page_number": 4,
+        "figure_id": null,
+        "score": 0.7676
+      },
+      {
+        "document_id": "attention_is_all_you_need",
+        "page_number": 3,
+        "figure_id": null,
+        "score": 0.7026
+      },
+      {
+        "document_id": "blip2",
+        "page_number": 1,
+        "figure_id": null,
+        "score": 0.6999
+      },
+      {
+        "document_id": "llava",
+        "page_number": 1,
+        "figure_id": null,
+        "score": 0.6998
+      },
+      {
+        "document_id": "attention_is_all_you_need",
+        "page_number": 3,
+        "figure_id": null,
+        "score": 0.6983
+      }
+    ],
+    "expected_canonical_evidence": [
+      {
+        "document_id": "blip2",
+        "page_number": 4,
+        "figure_id": "fig_blip2_second_stage"
+      }
+    ]
+  },
+  {
+    "query_id": "q_v2_073",
+    "query": "Find the page-wide visual arranged as many image-and-dialogue example cards rather than an architecture schematic.",
+    "intent": "visual_layout",
+    "document_id": "blip2",
+    "recall_at_5": 0.0,
+    "hit_at_5": 0.0,
+    "mrr": 0.0,
+    "ndcg_at_5": 0.0,
+    "retrieved_canonical_evidence": [
+      {
+        "document_id": "llava",
+        "page_number": 4,
+        "figure_id": null,
+        "score": 0.6922
+      },
+      {
+        "document_id": "llava",
+        "page_number": 20,
+        "figure_id": null,
+        "score": 0.6467
+      },
+      {
+        "document_id": "llava",
+        "page_number": 1,
+        "figure_id": null,
+        "score": 0.6453
+      },
+      {
+        "document_id": "llava",
+        "page_number": 7,
+        "figure_id": null,
+        "score": 0.6424
+      },
+      {
+        "document_id": "llava",
+        "page_number": 3,
+        "figure_id": null,
+        "score": 0.6394
+      }
+    ],
+    "expected_canonical_evidence": [
+      {
+        "document_id": "blip2",
+        "page_number": 5,
+        "figure_id": "fig_blip2_zero_shot_examples"
+      }
+    ]
+  },
+  {
+    "query_id": "q_v2_074",
+    "query": "Using the overview figure and text, explain BLIP-2's two-stage strategy for bridging frozen image and language models.",
+    "intent": "hybrid",
+    "document_id": "blip2",
+    "recall_at_5": 0.5,
+    "hit_at_5": 1.0,
+    "mrr": 1.0,
+    "ndcg_at_5": 0.6131,
+    "retrieved_canonical_evidence": [
+      {
+        "document_id": "blip2",
+        "page_number": 2,
+        "figure_id": null,
+        "score": 0.7926
+      },
+      {
+        "document_id": "blip2",
+        "page_number": 2,
+        "figure_id": null,
+        "score": 0.7797
+      },
+      {
+        "document_id": "blip2",
+        "page_number": 2,
+        "figure_id": null,
+        "score": 0.775
+      },
+      {
+        "document_id": "blip2",
+        "page_number": 1,
+        "figure_id": null,
+        "score": 0.768
+      },
+      {
+        "document_id": "blip2",
+        "page_number": 1,
+        "figure_id": null,
+        "score": 0.7632
+      }
+    ],
+    "expected_canonical_evidence": [
+      {
+        "document_id": "blip2",
+        "page_number": 1,
+        "figure_id": "fig_blip2_overview"
+      },
+      {
+        "document_id": "blip2",
+        "page_number": 2,
+        "figure_id": null
+      }
+    ]
+  },
+  {
+    "query_id": "q_v2_075",
+    "query": "How does the Q-Former diagram support the claim that learned queries form an information bottleneck for language-relevant visual features?",
+    "intent": "hybrid",
+    "document_id": "blip2",
+    "recall_at_5": 0.5,
+    "hit_at_5": 1.0,
+    "mrr": 1.0,
+    "ndcg_at_5": 0.6131,
+    "retrieved_canonical_evidence": [
+      {
+        "document_id": "blip2",
+        "page_number": 3,
+        "figure_id": null,
+        "score": 0.7562
+      },
+      {
+        "document_id": "blip2",
+        "page_number": 4,
+        "figure_id": null,
+        "score": 0.755
+      },
+      {
+        "document_id": "clip",
+        "page_number": 46,
+        "figure_id": null,
+        "score": 0.7305
+      },
+      {
+        "document_id": "blip2",
+        "page_number": 8,
+        "figure_id": null,
+        "score": 0.7256
+      },
+      {
+        "document_id": "blip2",
+        "page_number": 6,
+        "figure_id": null,
+        "score": 0.7178
+      }
+    ],
+    "expected_canonical_evidence": [
+      {
+        "document_id": "blip2",
+        "page_number": 3,
+        "figure_id": "fig_blip2_qformer"
+      },
+      {
+        "document_id": "blip2",
+        "page_number": 3,
+        "figure_id": null
+      }
+    ]
+  },
+  {
+    "query_id": "q_v2_076",
+    "query": "Using Figure 2 and the method description, explain why BLIP-2 uses different attention masks for ITC, ITG, and ITM.",
+    "intent": "hybrid",
+    "document_id": "blip2",
+    "recall_at_5": 0.5,
+    "hit_at_5": 1.0,
+    "mrr": 0.3333,
+    "ndcg_at_5": 0.3066,
+    "retrieved_canonical_evidence": [
+      {
+        "document_id": "attention_is_all_you_need",
+        "page_number": 5,
+        "figure_id": null,
+        "score": 0.7165
+      },
+      {
+        "document_id": "attention_is_all_you_need",
+        "page_number": 2,
+        "figure_id": null,
+        "score": 0.7098
+      },
+      {
+        "document_id": "blip2",
+        "page_number": 3,
+        "figure_id": null,
+        "score": 0.7046
+      },
+      {
+        "document_id": "attention_is_all_you_need",
+        "page_number": 4,
+        "figure_id": null,
+        "score": 0.6996
+      },
+      {
+        "document_id": "blip2",
+        "page_number": 2,
+        "figure_id": null,
+        "score": 0.6969
+      }
+    ],
+    "expected_canonical_evidence": [
+      {
+        "document_id": "blip2",
+        "page_number": 3,
+        "figure_id": "fig_blip2_qformer"
+      },
+      {
+        "document_id": "blip2",
+        "page_number": 3,
+        "figure_id": null
+      }
+    ]
+  },
+  {
+    "query_id": "q_v2_077",
+    "query": "How does the second-stage figure show the difference between conditioning an OPT-style decoder and a FlanT5-style encoder-decoder?",
+    "intent": "hybrid",
+    "document_id": "blip2",
+    "recall_at_5": 0.5,
+    "hit_at_5": 1.0,
+    "mrr": 1.0,
+    "ndcg_at_5": 0.6131,
+    "retrieved_canonical_evidence": [
+      {
+        "document_id": "blip2",
+        "page_number": 4,
+        "figure_id": null,
+        "score": 0.7467
+      },
+      {
+        "document_id": "blip2",
+        "page_number": 4,
+        "figure_id": null,
+        "score": 0.7246
+      },
+      {
+        "document_id": "siglip",
+        "page_number": 17,
+        "figure_id": null,
+        "score": 0.7229
+      },
+      {
+        "document_id": "attention_is_all_you_need",
+        "page_number": 3,
+        "figure_id": null,
+        "score": 0.7038
+      },
+      {
+        "document_id": "blip2",
+        "page_number": 6,
+        "figure_id": null,
+        "score": 0.7019
+      }
+    ],
+    "expected_canonical_evidence": [
+      {
+        "document_id": "blip2",
+        "page_number": 4,
+        "figure_id": "fig_blip2_second_stage"
+      },
+      {
+        "document_id": "blip2",
+        "page_number": 4,
+        "figure_id": null
+      }
+    ]
+  },
+  {
+    "query_id": "q_v2_078",
+    "query": "What capabilities are demonstrated by the grid of instructed zero-shot examples, and how does the surrounding text characterize them?",
+    "intent": "hybrid",
+    "document_id": "blip2",
+    "recall_at_5": 0.0,
+    "hit_at_5": 0.0,
+    "mrr": 0.0,
+    "ndcg_at_5": 0.0,
+    "retrieved_canonical_evidence": [
+      {
+        "document_id": "clip",
+        "page_number": 8,
+        "figure_id": null,
+        "score": 0.7738
+      },
+      {
+        "document_id": "clip",
+        "page_number": 9,
+        "figure_id": null,
+        "score": 0.739
+      },
+      {
+        "document_id": "clip",
+        "page_number": 20,
+        "figure_id": null,
+        "score": 0.7359
+      },
+      {
+        "document_id": "clip",
+        "page_number": 8,
+        "figure_id": null,
+        "score": 0.7144
+      },
+      {
+        "document_id": "clip",
+        "page_number": 6,
+        "figure_id": null,
+        "score": 0.7128
+      }
+    ],
+    "expected_canonical_evidence": [
+      {
+        "document_id": "blip2",
+        "page_number": 5,
+        "figure_id": "fig_blip2_zero_shot_examples"
+      },
+      {
+        "document_id": "blip2",
+        "page_number": 6,
+        "figure_id": null
+      }
+    ]
+  },
+  {
+    "query_id": "q_v2_079",
+    "query": "Find the BLIP-2 visual showing the overall two-stage framework rather than the detailed Q-Former internals.",
+    "intent": "hard_visual",
+    "document_id": "blip2",
+    "recall_at_5": 0.0,
+    "hit_at_5": 0.0,
+    "mrr": 0.0,
+    "ndcg_at_5": 0.0,
+    "retrieved_canonical_evidence": [
+      {
+        "document_id": "blip2",
+        "page_number": 2,
+        "figure_id": null,
+        "score": 0.6559
+      },
+      {
+        "document_id": "llava",
+        "page_number": 1,
+        "figure_id": null,
+        "score": 0.6512
+      },
+      {
+        "document_id": "llava",
+        "page_number": 10,
+        "figure_id": null,
+        "score": 0.6372
+      },
+      {
+        "document_id": "siglip",
+        "page_number": 13,
+        "figure_id": null,
+        "score": 0.6365
+      },
+      {
+        "document_id": "blip2",
+        "page_number": 1,
+        "figure_id": null,
+        "score": 0.6286
+      }
+    ],
+    "expected_canonical_evidence": [
+      {
+        "document_id": "blip2",
+        "page_number": 1,
+        "figure_id": "fig_blip2_overview"
+      }
+    ]
+  },
+  {
+    "query_id": "q_v2_080",
+    "query": "Which BLIP-2 visual compares two types of frozen LLM interfaces rather than showing first-stage attention masks?",
+    "intent": "hard_visual",
+    "document_id": "blip2",
+    "recall_at_5": 0.0,
+    "hit_at_5": 0.0,
+    "mrr": 0.0,
+    "ndcg_at_5": 0.0,
+    "retrieved_canonical_evidence": [
+      {
+        "document_id": "blip2",
+        "page_number": 2,
+        "figure_id": null,
+        "score": 0.7045
+      },
+      {
+        "document_id": "blip2",
+        "page_number": 2,
+        "figure_id": null,
+        "score": 0.6913
+      },
+      {
+        "document_id": "blip2",
+        "page_number": 2,
+        "figure_id": null,
+        "score": 0.6903
+      },
+      {
+        "document_id": "blip2",
+        "page_number": 3,
+        "figure_id": null,
+        "score": 0.6856
+      },
+      {
+        "document_id": "blip2",
+        "page_number": 1,
+        "figure_id": null,
+        "score": 0.6804
+      }
+    ],
+    "expected_canonical_evidence": [
+      {
+        "document_id": "blip2",
+        "page_number": 4,
+        "figure_id": "fig_blip2_second_stage"
+      }
+    ]
+  },
+  {
+    "query_id": "q_v2_081",
+    "query": "How does LLaVA create multimodal instruction-following data using language-only GPT-4?",
+    "intent": "text",
+    "document_id": "llava",
+    "recall_at_5": 1.0,
+    "hit_at_5": 1.0,
+    "mrr": 0.25,
+    "ndcg_at_5": 0.4307,
+    "retrieved_canonical_evidence": [
+      {
+        "document_id": "llava",
+        "page_number": 1,
+        "figure_id": null,
+        "score": 0.8167
+      },
+      {
+        "document_id": "llava",
+        "page_number": 2,
+        "figure_id": null,
+        "score": 0.782
+      },
+      {
+        "document_id": "llava",
+        "page_number": 9,
+        "figure_id": null,
+        "score": 0.7503
+      },
+      {
+        "document_id": "llava",
+        "page_number": 3,
+        "figure_id": null,
+        "score": 0.7412
+      },
+      {
+        "document_id": "llava",
+        "page_number": 1,
+        "figure_id": null,
+        "score": 0.7292
+      }
+    ],
+    "expected_canonical_evidence": [
+      {
+        "document_id": "llava",
+        "page_number": 3,
+        "figure_id": null
+      }
+    ]
+  },
+  {
+    "query_id": "q_v2_082",
+    "query": "What visual and language models are connected in LLaVA, and what trainable component maps between their representation spaces?",
+    "intent": "text",
+    "document_id": "llava",
+    "recall_at_5": 1.0,
+    "hit_at_5": 1.0,
+    "mrr": 0.3333,
+    "ndcg_at_5": 0.5,
+    "retrieved_canonical_evidence": [
+      {
+        "document_id": "llava",
+        "page_number": 1,
+        "figure_id": null,
+        "score": 0.7504
+      },
+      {
+        "document_id": "clip",
+        "page_number": 27,
+        "figure_id": null,
+        "score": 0.7424
+      },
+      {
+        "document_id": "llava",
+        "page_number": 4,
+        "figure_id": null,
+        "score": 0.737
+      },
+      {
+        "document_id": "siglip",
+        "page_number": 17,
+        "figure_id": null,
+        "score": 0.7339
+      },
+      {
+        "document_id": "blip2",
+        "page_number": 1,
+        "figure_id": null,
+        "score": 0.7331
+      }
+    ],
+    "expected_canonical_evidence": [
+      {
+        "document_id": "llava",
+        "page_number": 4,
+        "figure_id": null
+      }
+    ]
+  },
+  {
+    "query_id": "q_v2_083",
+    "query": "What is trained and what remains frozen during LLaVA's first feature-alignment stage?",
+    "intent": "text",
+    "document_id": "llava",
+    "recall_at_5": 0.0,
+    "hit_at_5": 0.0,
+    "mrr": 0.0,
+    "ndcg_at_5": 0.0,
+    "retrieved_canonical_evidence": [
+      {
+        "document_id": "blip2",
+        "page_number": 1,
+        "figure_id": null,
+        "score": 0.7375
+      },
+      {
+        "document_id": "blip2",
+        "page_number": 2,
+        "figure_id": null,
+        "score": 0.7353
+      },
+      {
+        "document_id": "llava",
+        "page_number": 14,
+        "figure_id": null,
+        "score": 0.7285
+      },
+      {
+        "document_id": "blip2",
+        "page_number": 2,
+        "figure_id": null,
+        "score": 0.7158
+      },
+      {
+        "document_id": "blip2",
+        "page_number": 1,
+        "figure_id": null,
+        "score": 0.7025
+      }
+    ],
+    "expected_canonical_evidence": [
+      {
+        "document_id": "llava",
+        "page_number": 5,
+        "figure_id": null
+      }
+    ]
+  },
+  {
+    "query_id": "q_v2_084",
+    "query": "How does the second LLaVA training stage differ from feature alignment in terms of trainable parameters and data?",
+    "intent": "text",
+    "document_id": "llava",
+    "recall_at_5": 0.0,
+    "hit_at_5": 0.0,
+    "mrr": 0.0,
+    "ndcg_at_5": 0.0,
+    "retrieved_canonical_evidence": [
+      {
+        "document_id": "llava",
+        "page_number": 14,
+        "figure_id": null,
+        "score": 0.7395
+      },
+      {
+        "document_id": "clip",
+        "page_number": 7,
+        "figure_id": null,
+        "score": 0.7219
+      },
+      {
+        "document_id": "blip2",
+        "page_number": 6,
+        "figure_id": null,
+        "score": 0.7094
+      },
+      {
+        "document_id": "llava",
+        "page_number": 9,
+        "figure_id": null,
+        "score": 0.7085
+      },
+      {
+        "document_id": "blip2",
+        "page_number": 6,
+        "figure_id": null,
+        "score": 0.7026
+      }
+    ],
+    "expected_canonical_evidence": [
+      {
+        "document_id": "llava",
+        "page_number": 5,
+        "figure_id": null
+      }
+    ]
+  },
+  {
+    "query_id": "q_v2_085",
+    "query": "What do the LLaVA-Bench results indicate about the effect of visual instruction tuning on conversation, detailed description, and complex reasoning?",
+    "intent": "text",
+    "document_id": "llava",
+    "recall_at_5": 1.0,
+    "hit_at_5": 1.0,
+    "mrr": 1.0,
+    "ndcg_at_5": 1.0,
+    "retrieved_canonical_evidence": [
+      {
+        "document_id": "llava",
+        "page_number": 7,
+        "figure_id": null,
+        "score": 0.7596
+      },
+      {
+        "document_id": "llava",
+        "page_number": 14,
+        "figure_id": null,
+        "score": 0.7557
+      },
+      {
+        "document_id": "llava",
+        "page_number": 4,
+        "figure_id": null,
+        "score": 0.7541
+      },
+      {
+        "document_id": "llava",
+        "page_number": 9,
+        "figure_id": null,
+        "score": 0.7435
+      },
+      {
+        "document_id": "llava",
+        "page_number": 7,
+        "figure_id": null,
+        "score": 0.7398
+      }
+    ],
+    "expected_canonical_evidence": [
+      {
+        "document_id": "llava",
+        "page_number": 7,
+        "figure_id": null
+      }
+    ]
+  },
+  {
+    "query_id": "q_v2_086",
+    "query": "Which figure shows the LLaVA network architecture connecting a CLIP vision encoder to a language model through projection W?",
+    "intent": "visual_caption",
+    "document_id": "llava",
+    "recall_at_5": 0.0,
+    "hit_at_5": 0.0,
+    "mrr": 0.0,
+    "ndcg_at_5": 0.0,
+    "retrieved_canonical_evidence": [
+      {
+        "document_id": "llava",
+        "page_number": 4,
+        "figure_id": null,
+        "score": 0.8354
+      },
+      {
+        "document_id": "attention_is_all_you_need",
+        "page_number": 12,
+        "figure_id": null,
+        "score": 0.763
+      },
+      {
+        "document_id": "blip2",
+        "page_number": 2,
+        "figure_id": null,
+        "score": 0.7624
+      },
+      {
+        "document_id": "siglip",
+        "page_number": 17,
+        "figure_id": null,
+        "score": 0.76
+      },
+      {
+        "document_id": "attention_is_all_you_need",
+        "page_number": 3,
+        "figure_id": null,
+        "score": 0.7587
+      }
+    ],
+    "expected_canonical_evidence": [
+      {
+        "document_id": "llava",
+        "page_number": 4,
+        "figure_id": "fig_llava_architecture"
+      }
+    ]
+  },
+  {
+    "query_id": "q_v2_087",
+    "query": "Which figure shows LLaVA generating HTML/JavaScript for an interactive website from a user's sketch?",
+    "intent": "visual_caption",
+    "document_id": "llava",
+    "recall_at_5": 0.0,
+    "hit_at_5": 0.0,
+    "mrr": 0.0,
+    "ndcg_at_5": 0.0,
+    "retrieved_canonical_evidence": [
+      {
+        "document_id": "llava",
+        "page_number": 14,
+        "figure_id": null,
+        "score": 0.7235
+      },
+      {
+        "document_id": "llava",
+        "page_number": 16,
+        "figure_id": null,
+        "score": 0.6867
+      },
+      {
+        "document_id": "llava",
+        "page_number": 18,
+        "figure_id": null,
+        "score": 0.6615
+      },
+      {
+        "document_id": "llava",
+        "page_number": 10,
+        "figure_id": null,
+        "score": 0.6475
+      },
+      {
+        "document_id": "llava",
+        "page_number": 15,
+        "figure_id": null,
+        "score": 0.6371
+      }
+    ],
+    "expected_canonical_evidence": [
+      {
+        "document_id": "llava",
+        "page_number": 16,
+        "figure_id": "fig_llava_website"
+      }
+    ]
+  },
+  {
+    "query_id": "q_v2_088",
+    "query": "Which figure demonstrates LLaVA following user intent on visual content with follow-up requests about a refrigerator and a travel scene?",
+    "intent": "visual_caption",
+    "document_id": "llava",
+    "recall_at_5": 0.0,
+    "hit_at_5": 0.0,
+    "mrr": 0.0,
+    "ndcg_at_5": 0.0,
+    "retrieved_canonical_evidence": [
+      {
+        "document_id": "llava",
+        "page_number": 23,
+        "figure_id": null,
+        "score": 0.7048
+      },
+      {
+        "document_id": "llava",
+        "page_number": 3,
+        "figure_id": null,
+        "score": 0.6789
+      },
+      {
+        "document_id": "llava",
+        "page_number": 7,
+        "figure_id": null,
+        "score": 0.6775
+      },
+      {
+        "document_id": "llava",
+        "page_number": 7,
+        "figure_id": null,
+        "score": 0.6773
+      },
+      {
+        "document_id": "llava",
+        "page_number": 22,
+        "figure_id": null,
+        "score": 0.6763
+      }
+    ],
+    "expected_canonical_evidence": [
+      {
+        "document_id": "llava",
+        "page_number": 17,
+        "figure_id": "fig_llava_followup"
+      }
+    ]
+  },
+  {
+    "query_id": "q_v2_089",
+    "query": "Which figure compares noun-phrase frequency coverage before and after filtering CC3M?",
+    "intent": "visual_caption",
+    "document_id": "llava",
+    "recall_at_5": 0.0,
+    "hit_at_5": 0.0,
+    "mrr": 0.0,
+    "ndcg_at_5": 0.0,
+    "retrieved_canonical_evidence": [
+      {
+        "document_id": "llava",
+        "page_number": 21,
+        "figure_id": null,
+        "score": 0.7485
+      },
+      {
+        "document_id": "llava",
+        "page_number": 21,
+        "figure_id": null,
+        "score": 0.7105
+      },
+      {
+        "document_id": "llava",
+        "page_number": 20,
+        "figure_id": null,
+        "score": 0.6772
+      },
+      {
+        "document_id": "clip",
+        "page_number": 46,
+        "figure_id": null,
+        "score": 0.6707
+      },
+      {
+        "document_id": "clip",
+        "page_number": 24,
+        "figure_id": null,
+        "score": 0.6612
+      }
+    ],
+    "expected_canonical_evidence": [
+      {
+        "document_id": "llava",
+        "page_number": 21,
+        "figure_id": "fig_llava_cc3m_filtering"
+      }
+    ]
+  },
+  {
+    "query_id": "q_v2_090",
+    "query": "Find the simple architecture diagram where image features pass through a small projection block before entering the language model.",
+    "intent": "visual_layout",
+    "document_id": "llava",
+    "recall_at_5": 0.0,
+    "hit_at_5": 0.0,
+    "mrr": 0.0,
+    "ndcg_at_5": 0.0,
+    "retrieved_canonical_evidence": [
+      {
+        "document_id": "llava",
+        "page_number": 4,
+        "figure_id": null,
+        "score": 0.7385
+      },
+      {
+        "document_id": "llava",
+        "page_number": 1,
+        "figure_id": null,
+        "score": 0.7099
+      },
+      {
+        "document_id": "llava",
+        "page_number": 13,
+        "figure_id": null,
+        "score": 0.6928
+      },
+      {
+        "document_id": "llava",
+        "page_number": 4,
+        "figure_id": null,
+        "score": 0.6919
+      },
+      {
+        "document_id": "attention_is_all_you_need",
+        "page_number": 3,
+        "figure_id": null,
+        "score": 0.6908
+      }
+    ],
+    "expected_canonical_evidence": [
+      {
+        "document_id": "llava",
+        "page_number": 4,
+        "figure_id": "fig_llava_architecture"
+      }
+    ]
+  },
+  {
+    "query_id": "q_v2_091",
+    "query": "Find the visual containing a hand-drawn webpage mock-up, generated code, and rendered website outputs.",
+    "intent": "visual_layout",
+    "document_id": "llava",
+    "recall_at_5": 0.0,
+    "hit_at_5": 0.0,
+    "mrr": 0.0,
+    "ndcg_at_5": 0.0,
+    "retrieved_canonical_evidence": [
+      {
+        "document_id": "llava",
+        "page_number": 14,
+        "figure_id": null,
+        "score": 0.694
+      },
+      {
+        "document_id": "llava",
+        "page_number": 16,
+        "figure_id": null,
+        "score": 0.6645
+      },
+      {
+        "document_id": "llava",
+        "page_number": 21,
+        "figure_id": null,
+        "score": 0.6424
+      },
+      {
+        "document_id": "blip2",
+        "page_number": 5,
+        "figure_id": null,
+        "score": 0.642
+      },
+      {
+        "document_id": "blip2",
+        "page_number": 2,
+        "figure_id": null,
+        "score": 0.6401
+      }
+    ],
+    "expected_canonical_evidence": [
+      {
+        "document_id": "llava",
+        "page_number": 16,
+        "figure_id": "fig_llava_website"
+      }
+    ]
+  },
+  {
+    "query_id": "q_v2_092",
+    "query": "Which page-wide visual contains multiple long user/model exchanges tied to different photographs rather than a model architecture?",
+    "intent": "visual_layout",
+    "document_id": "llava",
+    "recall_at_5": 0.0,
+    "hit_at_5": 0.0,
+    "mrr": 0.0,
+    "ndcg_at_5": 0.0,
+    "retrieved_canonical_evidence": [
+      {
+        "document_id": "llava",
+        "page_number": 1,
+        "figure_id": null,
+        "score": 0.6988
+      },
+      {
+        "document_id": "clip",
+        "page_number": 46,
+        "figure_id": null,
+        "score": 0.6524
+      },
+      {
+        "document_id": "clip",
+        "page_number": 26,
+        "figure_id": null,
+        "score": 0.649
+      },
+      {
+        "document_id": "clip",
+        "page_number": 5,
+        "figure_id": null,
+        "score": 0.6483
+      },
+      {
+        "document_id": "blip2",
+        "page_number": 9,
+        "figure_id": null,
+        "score": 0.6456
+      }
+    ],
+    "expected_canonical_evidence": [
+      {
+        "document_id": "llava",
+        "page_number": 17,
+        "figure_id": "fig_llava_followup"
+      }
+    ]
+  },
+  {
+    "query_id": "q_v2_093",
+    "query": "Find the single log-scale frequency plot comparing an original caption corpus with a filtered subset.",
+    "intent": "visual_layout",
+    "document_id": "llava",
+    "recall_at_5": 0.0,
+    "hit_at_5": 0.0,
+    "mrr": 0.0,
+    "ndcg_at_5": 0.0,
+    "retrieved_canonical_evidence": [
+      {
+        "document_id": "llava",
+        "page_number": 21,
+        "figure_id": null,
+        "score": 0.7072
+      },
+      {
+        "document_id": "llava",
+        "page_number": 20,
+        "figure_id": null,
+        "score": 0.6799
+      },
+      {
+        "document_id": "blip2",
+        "page_number": 4,
+        "figure_id": null,
+        "score": 0.6749
+      },
+      {
+        "document_id": "clip",
+        "page_number": 24,
+        "figure_id": null,
+        "score": 0.6627
+      },
+      {
+        "document_id": "clip",
+        "page_number": 19,
+        "figure_id": null,
+        "score": 0.6589
+      }
+    ],
+    "expected_canonical_evidence": [
+      {
+        "document_id": "llava",
+        "page_number": 21,
+        "figure_id": "fig_llava_cc3m_filtering"
+      }
+    ]
+  },
+  {
+    "query_id": "q_v2_094",
+    "query": "Using the LLaVA architecture diagram and equation, explain how CLIP visual features are transformed into language-model embedding tokens.",
+    "intent": "hybrid",
+    "document_id": "llava",
+    "recall_at_5": 0.5,
+    "hit_at_5": 1.0,
+    "mrr": 1.0,
+    "ndcg_at_5": 0.6131,
+    "retrieved_canonical_evidence": [
+      {
+        "document_id": "llava",
+        "page_number": 4,
+        "figure_id": null,
+        "score": 0.7375
+      },
+      {
+        "document_id": "llava",
+        "page_number": 1,
+        "figure_id": null,
+        "score": 0.7137
+      },
+      {
+        "document_id": "llava",
+        "page_number": 13,
+        "figure_id": null,
+        "score": 0.7102
+      },
+      {
+        "document_id": "clip",
+        "page_number": 27,
+        "figure_id": null,
+        "score": 0.704
+      },
+      {
+        "document_id": "llava",
+        "page_number": 10,
+        "figure_id": null,
+        "score": 0.7037
+      }
+    ],
+    "expected_canonical_evidence": [
+      {
+        "document_id": "llava",
+        "page_number": 4,
+        "figure_id": "fig_llava_architecture"
+      },
+      {
+        "document_id": "llava",
+        "page_number": 4,
+        "figure_id": null
+      }
+    ]
+  },
+  {
+    "query_id": "q_v2_095",
+    "query": "How does the architecture figure support LLaVA's choice of a lightweight projection compared with more complex vision-language connectors?",
+    "intent": "hybrid",
+    "document_id": "llava",
+    "recall_at_5": 0.5,
+    "hit_at_5": 1.0,
+    "mrr": 1.0,
+    "ndcg_at_5": 0.6131,
+    "retrieved_canonical_evidence": [
+      {
+        "document_id": "llava",
+        "page_number": 4,
+        "figure_id": null,
+        "score": 0.7063
+      },
+      {
+        "document_id": "llava",
+        "page_number": 1,
+        "figure_id": null,
+        "score": 0.6785
+      },
+      {
+        "document_id": "attention_is_all_you_need",
+        "page_number": 12,
+        "figure_id": null,
+        "score": 0.6671
+      },
+      {
+        "document_id": "blip2",
+        "page_number": 6,
+        "figure_id": null,
+        "score": 0.662
+      },
+      {
+        "document_id": "siglip",
+        "page_number": 13,
+        "figure_id": null,
+        "score": 0.6565
+      }
+    ],
+    "expected_canonical_evidence": [
+      {
+        "document_id": "llava",
+        "page_number": 4,
+        "figure_id": "fig_llava_architecture"
+      },
+      {
+        "document_id": "llava",
+        "page_number": 4,
+        "figure_id": null
+      }
+    ]
+  },
+  {
+    "query_id": "q_v2_096",
+    "query": "What does the interactive-website example show about LLaVA's ability to translate visual instructions into executable output?",
+    "intent": "hybrid",
+    "document_id": "llava",
+    "recall_at_5": 0.0,
+    "hit_at_5": 0.0,
+    "mrr": 0.0,
+    "ndcg_at_5": 0.0,
+    "retrieved_canonical_evidence": [
+      {
+        "document_id": "llava",
+        "page_number": 14,
+        "figure_id": null,
+        "score": 0.7787
+      },
+      {
+        "document_id": "llava",
+        "page_number": 2,
+        "figure_id": null,
+        "score": 0.6965
+      },
+      {
+        "document_id": "llava",
+        "page_number": 9,
+        "figure_id": null,
+        "score": 0.693
+      },
+      {
+        "document_id": "llava",
+        "page_number": 1,
+        "figure_id": null,
+        "score": 0.6859
+      },
+      {
+        "document_id": "llava",
+        "page_number": 2,
+        "figure_id": null,
+        "score": 0.6818
+      }
+    ],
+    "expected_canonical_evidence": [
+      {
+        "document_id": "llava",
+        "page_number": 16,
+        "figure_id": "fig_llava_website"
+      },
+      {
+        "document_id": "llava",
+        "page_number": 16,
+        "figure_id": null
+      }
+    ]
+  },
+  {
+    "query_id": "q_v2_097",
+    "query": "How do the follow-up interaction examples support the claim that LLaVA can respond according to user intent rather than merely captioning an image?",
+    "intent": "hybrid",
+    "document_id": "llava",
+    "recall_at_5": 0.0,
+    "hit_at_5": 0.0,
+    "mrr": 0.0,
+    "ndcg_at_5": 0.0,
+    "retrieved_canonical_evidence": [
+      {
+        "document_id": "llava",
+        "page_number": 14,
+        "figure_id": null,
+        "score": 0.7115
+      },
+      {
+        "document_id": "llava",
+        "page_number": 6,
+        "figure_id": null,
+        "score": 0.7021
+      },
+      {
+        "document_id": "llava",
+        "page_number": 23,
+        "figure_id": null,
+        "score": 0.6912
+      },
+      {
+        "document_id": "llava",
+        "page_number": 8,
+        "figure_id": null,
+        "score": 0.6763
+      },
+      {
+        "document_id": "llava",
+        "page_number": 4,
+        "figure_id": null,
+        "score": 0.6736
+      }
+    ],
+    "expected_canonical_evidence": [
+      {
+        "document_id": "llava",
+        "page_number": 17,
+        "figure_id": "fig_llava_followup"
+      },
+      {
+        "document_id": "llava",
+        "page_number": 17,
+        "figure_id": null
+      }
+    ]
+  },
+  {
+    "query_id": "q_v2_098",
+    "query": "How does the CC3M noun-phrase plot support the paper's filtering strategy for constructing the feature-alignment dataset?",
+    "intent": "hybrid",
+    "document_id": "llava",
+    "recall_at_5": 0.5,
+    "hit_at_5": 1.0,
+    "mrr": 1.0,
+    "ndcg_at_5": 0.6131,
+    "retrieved_canonical_evidence": [
+      {
+        "document_id": "llava",
+        "page_number": 21,
+        "figure_id": null,
+        "score": 0.6554
+      },
+      {
+        "document_id": "clip",
+        "page_number": 46,
+        "figure_id": null,
+        "score": 0.6361
+      },
+      {
+        "document_id": "llava",
+        "page_number": 20,
+        "figure_id": null,
+        "score": 0.6346
+      },
+      {
+        "document_id": "clip",
+        "page_number": 34,
+        "figure_id": null,
+        "score": 0.6279
+      },
+      {
+        "document_id": "blip2",
+        "page_number": 3,
+        "figure_id": null,
+        "score": 0.627
+      }
+    ],
+    "expected_canonical_evidence": [
+      {
+        "document_id": "llava",
+        "page_number": 21,
+        "figure_id": "fig_llava_cc3m_filtering"
+      },
+      {
+        "document_id": "llava",
+        "page_number": 21,
+        "figure_id": null
+      }
+    ]
+  },
+  {
+    "query_id": "q_v2_099",
+    "query": "Find the LLaVA visual that shows the model's vision-to-language architecture rather than a qualitative interaction example.",
+    "intent": "hard_visual",
+    "document_id": "llava",
+    "recall_at_5": 0.0,
+    "hit_at_5": 0.0,
+    "mrr": 0.0,
+    "ndcg_at_5": 0.0,
+    "retrieved_canonical_evidence": [
+      {
+        "document_id": "llava",
+        "page_number": 1,
+        "figure_id": null,
+        "score": 0.7919
+      },
+      {
+        "document_id": "blip2",
+        "page_number": 1,
+        "figure_id": null,
+        "score": 0.7478
+      },
+      {
+        "document_id": "blip2",
+        "page_number": 10,
+        "figure_id": null,
+        "score": 0.7455
+      },
+      {
+        "document_id": "llava",
+        "page_number": 10,
+        "figure_id": null,
+        "score": 0.7428
+      },
+      {
+        "document_id": "clip",
+        "page_number": 27,
+        "figure_id": null,
+        "score": 0.7403
+      }
+    ],
+    "expected_canonical_evidence": [
+      {
+        "document_id": "llava",
+        "page_number": 4,
+        "figure_id": "fig_llava_architecture"
+      }
+    ]
+  },
+  {
+    "query_id": "q_v2_100",
+    "query": "Which visual shows dataset filtering statistics rather than model architecture or multimodal conversation examples?",
+    "intent": "hard_visual",
+    "document_id": "llava",
+    "recall_at_5": 0.0,
+    "hit_at_5": 0.0,
+    "mrr": 0.0,
+    "ndcg_at_5": 0.0,
+    "retrieved_canonical_evidence": [
+      {
+        "document_id": "llava",
+        "page_number": 1,
+        "figure_id": null,
+        "score": 0.6916
+      },
+      {
+        "document_id": "llava",
+        "page_number": 9,
+        "figure_id": null,
+        "score": 0.6785
+      },
+      {
+        "document_id": "clip",
+        "page_number": 31,
+        "figure_id": null,
+        "score": 0.6731
+      },
+      {
+        "document_id": "llava",
+        "page_number": 24,
+        "figure_id": null,
+        "score": 0.6725
+      },
+      {
+        "document_id": "llava",
+        "page_number": 25,
+        "figure_id": null,
+        "score": 0.6724
+      }
+    ],
+    "expected_canonical_evidence": [
+      {
+        "document_id": "llava",
+        "page_number": 21,
+        "figure_id": "fig_llava_cc3m_filtering"
+      }
+    ]
+  }
+]

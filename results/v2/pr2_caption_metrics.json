@@ -1,0 +1,112 @@
+{
+  "status": "measured",
+  "benchmark": "v2",
+  "dataset_version": "v2.0.0",
+  "corpus_version": "v2.0.0",
+  "retrieval_system": {
+    "caption": "CaptionVectorStore (EvidenceRecord.retrieval_text, nomic-embed-text)",
+    "text": "VectorStore (text-only FAISS, nomic-embed-text)",
+    "pooling": "naive_raw_score_pooling"
+  },
+  "k": 5,
+  "score_pooling_validity": "CONFIRMED: both stores use the same embedder (nomic-embed-text), IndexFlatIP, and L2-normalized vectors. Cosine scores are directly comparable. Pooling is a diagnostic baseline; RRF deferred to PR4.",
+  "pr1_baseline_source": "results/v2/pr1_baseline_metrics.json",
+  "caption_only": {
+    "overall": {
+      "recall_at_5": 0.33,
+      "figure_recall_at_5": 0.5467,
+      "mrr": 0.2835,
+      "ndcg_at_5": 0.2644,
+      "hit_at_5": 0.41
+    },
+    "hard_visual": {
+      "sample_count": 10,
+      "recall_at_5": 0.4,
+      "figure_recall_at_5": 0.4,
+      "mrr": 0.2583,
+      "ndcg_at_5": 0.2931,
+      "hit_at_5": 0.4
+    },
+    "hybrid": {
+      "sample_count": 25,
+      "recall_at_5": 0.32,
+      "figure_recall_at_5": 0.64,
+      "mrr": 0.4813,
+      "ndcg_at_5": 0.3191,
+      "hit_at_5": 0.64
+    },
+    "text": {
+      "sample_count": 25,
+      "recall_at_5": 0.0,
+      "figure_recall_at_5": null,
+      "mrr": 0.0,
+      "ndcg_at_5": 0.0,
+      "hit_at_5": 0.0
+    },
+    "visual_caption": {
+      "sample_count": 20,
+      "recall_at_5": 0.5,
+      "figure_recall_at_5": 0.5,
+      "mrr": 0.3833,
+      "ndcg_at_5": 0.4131,
+      "hit_at_5": 0.5
+    },
+    "visual_layout": {
+      "sample_count": 20,
+      "recall_at_5": 0.55,
+      "figure_recall_at_5": 0.55,
+      "mrr": 0.3033,
+      "ndcg_at_5": 0.3633,
+      "hit_at_5": 0.55
+    }
+  },
+  "naive_raw_score_pooling": {
+    "overall": {
+      "recall_at_5": 0.42,
+      "figure_recall_at_5": 0.1867,
+      "mrr": 0.3898,
+      "ndcg_at_5": 0.3622,
+      "hit_at_5": 0.5
+    },
+    "hard_visual": {
+      "sample_count": 10,
+      "recall_at_5": 0.2,
+      "figure_recall_at_5": 0.2,
+      "mrr": 0.0533,
+      "ndcg_at_5": 0.0887,
+      "hit_at_5": 0.2
+    },
+    "hybrid": {
+      "sample_count": 25,
+      "recall_at_5": 0.4,
+      "figure_recall_at_5": 0.12,
+      "mrr": 0.6033,
+      "ndcg_at_5": 0.413,
+      "hit_at_5": 0.72
+    },
+    "text": {
+      "sample_count": 25,
+      "recall_at_5": 0.84,
+      "figure_recall_at_5": null,
+      "mrr": 0.73,
+      "ndcg_at_5": 0.7572,
+      "hit_at_5": 0.84
+    },
+    "visual_caption": {
+      "sample_count": 20,
+      "recall_at_5": 0.3,
+      "figure_recall_at_5": 0.3,
+      "mrr": 0.1767,
+      "ndcg_at_5": 0.2074,
+      "hit_at_5": 0.3
+    },
+    "visual_layout": {
+      "sample_count": 20,
+      "recall_at_5": 0.15,
+      "figure_recall_at_5": 0.15,
+      "mrr": 0.0792,
+      "ndcg_at_5": 0.0965,
+      "hit_at_5": 0.15
+    }
+  }
+}

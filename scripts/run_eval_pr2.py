@@ -3,7 +3,7 @@
 Runs two experiments:
 
   Experiment A — Isolated Caption Retrieval
-    CaptionVectorStore alone, evaluated on visual and hybrid queries.
+    CaptionVectorStore alone, evaluated across all intent slices.
     Primary metric: Figure Recall@5.
 
   Experiment B — Naive Raw-Score Pooling (diagnostic only)
@@ -15,23 +15,22 @@ Runs two experiments:
     explicit that this is a diagnostic baseline, not principled fusion (RRF
     is deferred to PR4).
 
-PR1 baseline results are embedded for comparison but the original files
-(results/baseline_metrics.json, results/baseline_per_query.json) are not
-overwritten.
+PR1 baseline results are loaded from their own result file for comparison but
+never overwritten.
 
 Usage:
-    python scripts/run_eval_pr2.py
+    python scripts/run_eval_pr2.py                  # v1 (default, unchanged)
+    python scripts/run_eval_pr2.py --benchmark v2    # v2 (5 papers, 100 queries)
 
 Requirements:
     - Ollama running with nomic-embed-text (query embedding)
-    - data/vector_store/aiayn/ (PR1 text index)
-    - data/eval/indices/caption_index/ (built by build_caption_index.py)
-    - data/eval/corpus/v1/manifest.json
-    - data/eval/queries_v1.json
+    - The benchmark's text vector store and caption index already built
+      (see build_text_index.py / build_caption_index.py --benchmark v2)
 """
 
 from __future__ import annotations
 
+import argparse
 import json
 import sys
 from pathlib import Path
@@ -40,18 +39,28 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO_ROOT / "src"))
 
 K = 5
-VECTOR_STORE_PATH = REPO_ROOT / "data" / "vector_store" / "aiayn"
-CAPTION_INDEX_PATH = REPO_ROOT / "data" / "eval" / "indices" / "caption_index"
-MANIFEST_PATH = REPO_ROOT / "data" / "eval" / "corpus" / "v1" / "manifest.json"
-QUERIES_PATH = REPO_ROOT / "data" / "eval" / "queries_v1.json"
-RESULTS_DIR = REPO_ROOT / "results"
 
-PR1_BASELINE = {
-    "overall_recall_at_5": 0.4667,
-    "text_recall_at_5": 0.8750,
-    "visual_recall_at_5": 0.0000,
-    "hybrid_recall_at_5": 0.3889,
-    "text_mrr": 0.7917,
+BENCHMARKS = {
+    "v1": {
+        "vector_store": REPO_ROOT / "data" / "vector_store" / "aiayn",
+        "caption_index": REPO_ROOT / "data" / "eval" / "indices" / "caption_index",
+        "manifest": REPO_ROOT / "data" / "eval" / "corpus" / "v1" / "manifest.json",
+        "queries": REPO_ROOT / "data" / "eval" / "queries_v1.json",
+        "results_dir": REPO_ROOT / "results",
+        "metrics_filename": "pr2_caption_metrics.json",
+        "per_query_filename": "pr2_per_query.json",
+        "pr1_results": REPO_ROOT / "results" / "baseline_metrics.json",
+    },
+    "v2": {
+        "vector_store": REPO_ROOT / "data" / "vector_store" / "v2_corpus",
+        "caption_index": REPO_ROOT / "data" / "eval" / "indices" / "v2" / "caption_index",
+        "manifest": REPO_ROOT / "data" / "eval" / "corpus" / "v2" / "manifest.json",
+        "queries": REPO_ROOT / "data" / "eval" / "queries_v2.json",
+        "results_dir": REPO_ROOT / "results" / "v2",
+        "metrics_filename": "pr2_caption_metrics.json",
+        "per_query_filename": "pr2_per_query.json",
+        "pr1_results": REPO_ROOT / "results" / "v2" / "pr1_baseline_metrics.json",
+    },
 }
 
 
@@ -62,6 +71,11 @@ PR1_BASELINE = {
 
 def _load_json(path: Path) -> dict | list:
     return json.loads(path.read_text(encoding="utf-8"))
+
+
+def _evidence_list(query: dict) -> list[dict]:
+    """v1 uses 'target_evidence'; v2 uses 'expected_evidence'. Support both."""
+    return query.get("target_evidence", query.get("expected_evidence", []))
 
 
 def _probe_ollama(host: str) -> None:
@@ -130,10 +144,14 @@ def _print_table(label: str, m: dict) -> None:
     fr5 = m["figure_recall_at_5"]
     fr5_str = f"{fr5:14.4f}" if fr5 is not None else f"{'N/A':>14}"
     print(
-        f"  {label:8s}  {m['recall_at_5']:8.4f}  {fr5_str}"
+        f"  {label:16s}  {m['recall_at_5']:8.4f}  {fr5_str}"
         f"  {m['mrr']:6.4f}  {m['ndcg_at_5']:7.4f}  {m['hit_at_5']:6.4f}"
         f"  (n={m['sample_count']})"
     )
+
+
+def _fmt(v: float | None, width: int) -> str:
+    return f"{v:{width}.4f}" if v is not None else f"{'N/A':>{width}}"
 
 
 # ---------------------------------------------------------------------------
@@ -156,35 +174,34 @@ def main() -> None:
     from mrta.retrieval.embedder import Embedder
     from mrta.retrieval.vector_store import VectorStore
 
-    print("=== PR2 Evaluation — Caption Retrieval ===")
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--benchmark", choices=sorted(BENCHMARKS), default="v1")
+    args = parser.parse_args()
+    cfg = BENCHMARKS[args.benchmark]
+
+    print(f"=== PR2 Evaluation — Caption Retrieval ({args.benchmark}) ===")
     print()
 
     _probe_ollama(settings.ollama_host)
 
-    # Load stores
     embedder = Embedder(settings.embedding_model)
 
-    if not VECTOR_STORE_PATH.exists():
-        print(f"ERROR: Text vector store not found at {VECTOR_STORE_PATH}")
-        print("Build it first: python scripts/ingest.py data/eval/corpus/v1/papers/...")
+    if not cfg["vector_store"].exists():
+        print(f"ERROR: Text vector store not found at {cfg['vector_store']}")
+        sys.exit(1)
+    if not cfg["caption_index"].exists():
+        print(f"ERROR: Caption index not found at {cfg['caption_index']}")
+        print(f"Build it first: python scripts/build_caption_index.py --benchmark {args.benchmark}")
         sys.exit(1)
 
-    if not CAPTION_INDEX_PATH.exists():
-        print(f"ERROR: Caption index not found at {CAPTION_INDEX_PATH}")
-        print("Build it first: python scripts/build_caption_index.py")
-        sys.exit(1)
-
-    print(f"Loading text VectorStore from {VECTOR_STORE_PATH} ...")
-    text_store = VectorStore.load(VECTOR_STORE_PATH, embedder)
+    print(f"Loading text VectorStore from {cfg['vector_store']} ...")
+    text_store = VectorStore.load(cfg["vector_store"], embedder)
     print(f"  {len(text_store._chunks)} text chunks")
 
-    print(f"Loading CaptionVectorStore from {CAPTION_INDEX_PATH} ...")
-    caption_store = CaptionVectorStore.load(CAPTION_INDEX_PATH, embedder)
+    print(f"Loading CaptionVectorStore from {cfg['caption_index']} ...")
+    caption_store = CaptionVectorStore.load(cfg["caption_index"], embedder)
     print(f"  {caption_store.size} caption record(s)")
 
-    # Score comparability note — both stores use the same embedder + IndexFlatIP
-    # with L2-normalized vectors, so inner-product scores are cosine similarities
-    # in the same [0, 1] space. Naive pooling by raw score is valid here.
     print()
     print("Score comparability: CONFIRMED")
     print("  Both stores use the same embedder, IndexFlatIP, L2-normalized vectors.")
@@ -192,10 +209,13 @@ def main() -> None:
     print("  'naive_raw_score_pooling' (diagnostic baseline; RRF deferred to PR4).")
     print()
 
-    manifest = _load_json(MANIFEST_PATH)
-    dataset = _load_json(QUERIES_PATH)
+    manifest = _load_json(cfg["manifest"])
+    dataset = _load_json(cfg["queries"])
     adapter = EvalAdapter(manifest)
     queries = dataset["queries"]
+    intents = sorted(dataset.get("counts_by_intent", {}).keys()) or sorted(
+        {q["intent"] for q in queries}
+    )
 
     print(f"Running {len(queries)} queries at k={K} ...")
     print()
@@ -206,7 +226,7 @@ def main() -> None:
         qid = q["query_id"]
         query_text = q["query"]
         intent = q["intent"]
-        targets = _parse_targets(q["target_evidence"])
+        targets = _parse_targets(_evidence_list(q))
 
         # --- Experiment A: caption-only ---
         caption_raw = caption_store.search_with_scores(query_text, k=K)
@@ -262,9 +282,9 @@ def main() -> None:
         hit_sym = "✓" if cap_h5 > 0 else "✗"
         fr5_display = f"{cap_fr5:.2f}" if cap_fr5 is not None else "N/A"
         print(
-            f"  {qid} [{intent:6s}] {hit_sym}"
+            f"  {qid} [{intent:14s}] {hit_sym}"
             f"  capR={cap_r5:.2f} figR={fr5_display}"
-            f"  | {query_text[:55]!r}"
+            f"  | {query_text[:45]!r}"
         )
 
         per_query_results.append(
@@ -272,6 +292,7 @@ def main() -> None:
                 "query_id": qid,
                 "query": query_text,
                 "intent": intent,
+                "document_id": q.get("document_id"),
                 "expected_canonical_evidence": [
                     {
                         "document_id": t.document_id,
@@ -321,83 +342,93 @@ def main() -> None:
     print()
     print("=== Experiment A — Caption-Only Results ===")
     header = (
-        f"  {'':8s}  {'Recall@5':>8}  {'FigRecall@5':>14}"
+        f"  {'':16s}  {'Recall@5':>8}  {'FigRecall@5':>14}"
         f"  {'MRR':>6}  {'nDCG@5':>7}  {'Hit@5':>6}"
     )
     print(header)
     cap_overall = _aggregate(per_query_results, "caption_")
-    cap_text = _aggregate(per_query_results, "caption_", "text")
-    cap_visual = _aggregate(per_query_results, "caption_", "visual")
-    cap_hybrid = _aggregate(per_query_results, "caption_", "hybrid")
+    cap_by_intent = {
+        intent: _aggregate(per_query_results, "caption_", intent) for intent in intents
+    }
     _print_table("Overall", cap_overall)
-    _print_table("Text", cap_text)
-    _print_table("Visual", cap_visual)
-    _print_table("Hybrid", cap_hybrid)
+    for intent in intents:
+        _print_table(intent, cap_by_intent[intent])
 
     print()
     print("=== Experiment B — Naive Pooled (diagnostic) ===")
     print(header)
     pool_overall = _aggregate(per_query_results, "pooled_")
-    pool_text = _aggregate(per_query_results, "pooled_", "text")
-    pool_visual = _aggregate(per_query_results, "pooled_", "visual")
-    pool_hybrid = _aggregate(per_query_results, "pooled_", "hybrid")
+    pool_by_intent = {
+        intent: _aggregate(per_query_results, "pooled_", intent) for intent in intents
+    }
     _print_table("Overall", pool_overall)
-    _print_table("Text", pool_text)
-    _print_table("Visual", pool_visual)
-    _print_table("Hybrid", pool_hybrid)
+    for intent in intents:
+        _print_table(intent, pool_by_intent[intent])
 
-    print()
-    print("=== PR1 → PR2 Comparison ===")
-    print(f"  {'':30s}  {'PR1':>8}  {'PR2 cap':>9}  {'PR2 pool':>10}")
+    # --- PR1 comparison (loaded from PR1's own result file, never hardcoded) ---
+    pr1_metrics: dict | None = None
+    if cfg["pr1_results"].exists():
+        pr1_metrics = _load_json(cfg["pr1_results"])
+    else:
+        print(
+            f"\n  NOTE: PR1 results not found at {cfg['pr1_results']}; skipping comparison table."
+        )
 
-    def _fmt(v: float | None, width: int) -> str:
-        return f"{v:{width}.4f}" if v is not None else f"{'N/A':>{width}}"
+    if pr1_metrics is not None:
+        print()
+        print(f"=== PR1 → PR2 Comparison ({args.benchmark}) ===")
+        print(f"  {'':30s}  {'PR1':>8}  {'PR2 cap':>9}  {'PR2 pool':>10}")
 
-    rows = [
-        (
-            "Text Recall@5",
-            PR1_BASELINE["text_recall_at_5"],
-            cap_text["recall_at_5"],
-            pool_text["recall_at_5"],
-        ),
-        (
-            "Visual Recall@5",
-            PR1_BASELINE["visual_recall_at_5"],
-            cap_visual["recall_at_5"],
-            pool_visual["recall_at_5"],
-        ),
-        (
-            "Hybrid Recall@5",
-            PR1_BASELINE["hybrid_recall_at_5"],
-            cap_hybrid["recall_at_5"],
-            pool_hybrid["recall_at_5"],
-        ),
-        (
-            "Figure Recall@5 (fig targets only)",
-            None,
-            cap_overall["figure_recall_at_5"],
-            pool_overall["figure_recall_at_5"],
-        ),
-        ("Text MRR", PR1_BASELINE.get("text_mrr"), cap_text["mrr"], pool_text["mrr"]),
-    ]
-    for label, pr1, pr2_cap, pr2_pool in rows:
-        print(f"  {label:36s}  {_fmt(pr1, 8)}  {_fmt(pr2_cap, 9)}  {_fmt(pr2_pool, 10)}")
+        pr1m = pr1_metrics["metrics"]
+        rows = [
+            (
+                "Figure Recall@5 (fig targets only)",
+                None,
+                cap_overall["figure_recall_at_5"],
+                pool_overall["figure_recall_at_5"],
+            )
+        ]
+        for intent in intents:
+            pr1_r5 = pr1m.get(intent, {}).get("recall_at_5")
+            rows.append(
+                (
+                    f"{intent} Recall@5",
+                    pr1_r5,
+                    cap_by_intent[intent]["recall_at_5"],
+                    pool_by_intent[intent]["recall_at_5"],
+                )
+            )
+        for intent in intents:
+            pr1_mrr = pr1m.get(intent, {}).get("mrr")
+            rows.append(
+                (
+                    f"{intent} MRR",
+                    pr1_mrr,
+                    cap_by_intent[intent]["mrr"],
+                    pool_by_intent[intent]["mrr"],
+                )
+            )
+        for label, pr1, pr2_cap, pr2_pool in rows:
+            print(f"  {label:30s}  {_fmt(pr1, 8)}  {_fmt(pr2_cap, 9)}  {_fmt(pr2_pool, 10)}")
 
-    print()
-    print("  Note — Text MRR (pooled vs PR1):")
-    pr1_text_mrr = 0.7917
-    pool_text_mrr = pool_text["mrr"]
-    print(f"    PR1 text-only MRR : {pr1_text_mrr:.4f}")
-    print(f"    PR2 pooled   MRR  : {pool_text_mrr:.4f}  (Δ = {pool_text_mrr - pr1_text_mrr:+.4f})")
-    print("    Pooling preserves Recall@5 (text evidence still retrieved) but degrades")
-    print("    ranking quality — caption candidates displace text results from top positions.")
-    print("    This motivates proper rank fusion (RRF) in PR4.")
+        if "text" in pr1m:
+            print()
+            print("  Note — Text MRR (pooled vs PR1):")
+            pr1_text_mrr = pr1m["text"]["mrr"]
+            pool_text_mrr = pool_by_intent.get("text", {}).get("mrr", 0.0)
+            print(f"    PR1 text-only MRR : {pr1_text_mrr:.4f}")
+            delta = pool_text_mrr - pr1_text_mrr
+            print(f"    PR2 pooled   MRR  : {pool_text_mrr:.4f}  (Δ = {delta:+.4f})")
+            print("    Pooling preserves Recall@5 (text evidence still retrieved) but may")
+            print("    degrade ranking quality — caption candidates can displace text results.")
+            print("    This motivates proper rank fusion (RRF) in PR4.")
 
     # Write results
-    RESULTS_DIR.mkdir(exist_ok=True)
+    cfg["results_dir"].mkdir(parents=True, exist_ok=True)
 
     metrics_out = {
         "status": "measured",
+        "benchmark": args.benchmark,
         "dataset_version": dataset["dataset_version"],
         "corpus_version": dataset["corpus_version"],
         "retrieval_system": {
@@ -411,23 +442,19 @@ def main() -> None:
             "IndexFlatIP, and L2-normalized vectors. Cosine scores are directly "
             "comparable. Pooling is a diagnostic baseline; RRF deferred to PR4."
         ),
-        "pr1_baseline": PR1_BASELINE,
+        "pr1_baseline_source": str(cfg["pr1_results"].relative_to(REPO_ROOT)),
         "caption_only": {
             "overall": {k: v for k, v in cap_overall.items() if k != "sample_count"},
-            "text": cap_text,
-            "visual": cap_visual,
-            "hybrid": cap_hybrid,
+            **cap_by_intent,
         },
         "naive_raw_score_pooling": {
             "overall": {k: v for k, v in pool_overall.items() if k != "sample_count"},
-            "text": pool_text,
-            "visual": pool_visual,
-            "hybrid": pool_hybrid,
+            **pool_by_intent,
         },
     }
 
-    metrics_path = RESULTS_DIR / "pr2_caption_metrics.json"
-    per_query_path = RESULTS_DIR / "pr2_per_query.json"
+    metrics_path = cfg["results_dir"] / cfg["metrics_filename"]
+    per_query_path = cfg["results_dir"] / cfg["per_query_filename"]
 
     metrics_path.write_text(json.dumps(metrics_out, indent=2), encoding="utf-8")
     per_query_path.write_text(json.dumps(per_query_results, indent=2), encoding="utf-8")

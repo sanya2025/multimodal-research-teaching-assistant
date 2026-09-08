@@ -2,7 +2,7 @@
 
 Experiment A — Isolated CLIP Retrieval
     ImageStore alone (openai/clip-vit-base-patch32), text query → image search.
-    Reported over all intent slices; visual and hybrid are the meaningful ones.
+    Reported over all intent slices; visual/hybrid slices are the meaningful ones.
 
 Experiment B — Caption vs CLIP Complementarity
     For every query carrying figure targets, records where each stream ranked the
@@ -15,11 +15,12 @@ uncalibrated with respect to each other, so sorting their cosines together would
 be meaningless. Cross-stream combination is a rank-fusion concern (PR4).
 
 Usage:
-    python scripts/run_eval_pr3.py
+    python scripts/run_eval_pr3.py                  # v1 (default, unchanged)
+    python scripts/run_eval_pr3.py --benchmark v2    # v2 (5 papers, 100 queries)
 
 Requirements:
-    - data/eval/indices/clip_image_index/  (built by build_clip_image_index.py)
-    - data/eval/indices/caption_index/     (PR2, for Experiment B)
+    - The benchmark's CLIP index (build_clip_image_index.py --benchmark ...)
+    - The benchmark's caption index (build_caption_index.py --benchmark ..., for Experiment B)
     - Ollama running with nomic-embed-text (Experiment B query embedding only)
 
 If Ollama is unavailable, Experiment A still runs and Experiment B is reported as
@@ -28,6 +29,7 @@ unavailable rather than estimated.
 
 from __future__ import annotations
 
+import argparse
 import json
 import sys
 from pathlib import Path
@@ -36,19 +38,28 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO_ROOT / "src"))
 
 K = 5
-CLIP_INDEX_PATH = REPO_ROOT / "data" / "eval" / "indices" / "clip_image_index"
-CAPTION_INDEX_PATH = REPO_ROOT / "data" / "eval" / "indices" / "caption_index"
-MANIFEST_PATH = REPO_ROOT / "data" / "eval" / "corpus" / "v1" / "manifest.json"
-QUERIES_PATH = REPO_ROOT / "data" / "eval" / "queries_v1.json"
-RESULTS_DIR = REPO_ROOT / "results"
 
-# Measured in PR1 / PR2. Carried here for comparison only; those artifacts are
-# never rewritten by this script.
-PR1_BASELINE = {
-    "text_recall_at_5": 0.8750,
-    "visual_recall_at_5": 0.0000,
-    "hybrid_recall_at_5": 0.3889,
-    "text_mrr": 0.7917,
+BENCHMARKS = {
+    "v1": {
+        "clip_index": REPO_ROOT / "data" / "eval" / "indices" / "clip_image_index",
+        "caption_index": REPO_ROOT / "data" / "eval" / "indices" / "caption_index",
+        "manifest": REPO_ROOT / "data" / "eval" / "corpus" / "v1" / "manifest.json",
+        "queries": REPO_ROOT / "data" / "eval" / "queries_v1.json",
+        "results_dir": REPO_ROOT / "results",
+        "metrics_filename": "pr3_clip_metrics.json",
+        "per_query_filename": "pr3_per_query.json",
+        "pr1_results": REPO_ROOT / "results" / "baseline_metrics.json",
+    },
+    "v2": {
+        "clip_index": REPO_ROOT / "data" / "eval" / "indices" / "v2" / "clip_image_index",
+        "caption_index": REPO_ROOT / "data" / "eval" / "indices" / "v2" / "caption_index",
+        "manifest": REPO_ROOT / "data" / "eval" / "corpus" / "v2" / "manifest.json",
+        "queries": REPO_ROOT / "data" / "eval" / "queries_v2.json",
+        "results_dir": REPO_ROOT / "results" / "v2",
+        "metrics_filename": "pr3_clip_metrics.json",
+        "per_query_filename": "pr3_per_query.json",
+        "pr1_results": REPO_ROOT / "results" / "v2" / "pr1_baseline_metrics.json",
+    },
 }
 
 
@@ -59,6 +70,11 @@ PR1_BASELINE = {
 
 def _load_json(path: Path) -> dict:
     return json.loads(path.read_text(encoding="utf-8"))
+
+
+def _evidence_list(query: dict) -> list[dict]:
+    """v1 uses 'target_evidence'; v2 uses 'expected_evidence'. Support both."""
+    return query.get("target_evidence", query.get("expected_evidence", []))
 
 
 def _parse_targets(target_list: list[dict]) -> list:
@@ -155,14 +171,14 @@ def _fmt(v: float | None, width: int) -> str:
 
 def _print_row(label: str, m: dict) -> None:
     print(
-        f"  {label:8s}  {_fmt(m['recall_at_5'], 8)}  {_fmt(m['figure_recall_at_5'], 13)}"
+        f"  {label:16s}  {_fmt(m['recall_at_5'], 8)}  {_fmt(m['figure_recall_at_5'], 13)}"
         f"  {_fmt(m['mrr'], 6)}  {_fmt(m['ndcg_at_5'], 7)}"
         f"  {_fmt(m['hit_at_5'], 6)}  {_fmt(m['hit_at_1'], 6)}  (n={m['sample_count']})"
     )
 
 
 HEADER = (
-    f"  {'':8s}  {'Recall@5':>8}  {'FigRecall@5':>13}  {'MRR':>6}"
+    f"  {'':16s}  {'Recall@5':>8}  {'FigRecall@5':>13}  {'MRR':>6}"
     f"  {'nDCG@5':>7}  {'Hit@5':>6}  {'Hit@1':>6}"
 )
 
@@ -185,45 +201,63 @@ def main() -> None:
     from mrta.retrieval.clip_embedder import CLIP_MODEL_ID, CLIPEmbedder
     from mrta.retrieval.image_store import ImageStore
 
-    print("=== PR3 Evaluation — Direct CLIP Visual Retrieval ===")
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--benchmark", choices=sorted(BENCHMARKS), default="v1")
+    args = parser.parse_args()
+    cfg = BENCHMARKS[args.benchmark]
+
+    print(f"=== PR3 Evaluation — Direct CLIP Visual Retrieval ({args.benchmark}) ===")
     print()
 
-    if not CLIP_INDEX_PATH.exists():
-        print(f"ERROR: CLIP index not found at {CLIP_INDEX_PATH}")
-        print("Build it first: python scripts/build_clip_image_index.py")
+    if not cfg["clip_index"].exists():
+        print(f"ERROR: CLIP index not found at {cfg['clip_index']}")
+        print(
+            f"Build it first: python scripts/build_clip_image_index.py --benchmark {args.benchmark}"
+        )
         sys.exit(1)
 
     clip = CLIPEmbedder()
-    image_store = ImageStore.load(CLIP_INDEX_PATH, clip)
+    image_store = ImageStore.load(cfg["clip_index"], clip)
     print(f"CLIP model : {CLIP_MODEL_ID}  (dim={clip.dim}, L2-normalized, IndexFlatIP)")
     print(f"CLIP index : {image_store.size} figure record(s)")
 
-    # Experiment B needs the PR2 caption index, which embeds queries via Ollama.
+    # Experiment B needs the benchmark's caption index, which embeds queries via Ollama.
     caption_store = None
-    if CAPTION_INDEX_PATH.exists() and _probe_ollama(settings.ollama_host):
+    if cfg["caption_index"].exists() and _probe_ollama(settings.ollama_host):
         from mrta.retrieval.caption_store import CaptionVectorStore
         from mrta.retrieval.embedder import Embedder
 
         caption_store = CaptionVectorStore.load(
-            CAPTION_INDEX_PATH, Embedder(settings.embedding_model)
+            cfg["caption_index"], Embedder(settings.embedding_model)
         )
         print(f"Caption idx: {caption_store.size} record(s) (for Experiment B)")
     else:
         print("Caption idx: UNAVAILABLE — Experiment B will be skipped")
-        print(f"             (needs {CAPTION_INDEX_PATH.name} + Ollama at {settings.ollama_host})")
+        print(
+            f"             (needs {cfg['caption_index'].name} + Ollama at {settings.ollama_host})"
+        )
 
-    # The benchmark's k exceeds the index size, which caps what Recall can show.
+    # The benchmark's k caps what Recall can show once the pool is small enough.
     if image_store.size <= K:
         print()
         print(f"  NOTE: k={K} >= index size ({image_store.size}). Every search returns")
         print("  every figure, so Recall@5 and Figure Recall@5 are 1.0 by construction")
         print("  and carry no signal. MRR, nDCG@5 and Hit@1 are the rank-sensitive")
         print("  metrics that actually discriminate on this benchmark.")
+    else:
+        print()
+        print(
+            f"  Candidate pool: N={image_store.size} vs k={K} "
+            f"({image_store.size / K:.1f}x) — Recall@5 is not structurally saturated."
+        )
 
-    manifest = _load_json(MANIFEST_PATH)
-    dataset = _load_json(QUERIES_PATH)
+    manifest = _load_json(cfg["manifest"])
+    dataset = _load_json(cfg["queries"])
     adapter = EvalAdapter(manifest)
     queries = dataset["queries"]
+    intents = sorted(dataset.get("counts_by_intent", {}).keys()) or sorted(
+        {q["intent"] for q in queries}
+    )
 
     print()
     print(f"Running {len(queries)} queries at k={K} ...")
@@ -233,7 +267,7 @@ def main() -> None:
 
     for q in queries:
         qid, text, intent = q["query_id"], q["query"], q["intent"]
-        targets = _parse_targets(q["target_evidence"])
+        targets = _parse_targets(_evidence_list(q))
         has_figs = _has_figure_targets(targets)
 
         # --- Experiment A: isolated CLIP ---
@@ -259,6 +293,7 @@ def main() -> None:
             "query_id": qid,
             "query": text,
             "intent": intent,
+            "document_id": q.get("document_id"),
             "has_figure_targets": has_figs,
             "expected_canonical_evidence": [
                 {
@@ -326,9 +361,9 @@ def main() -> None:
         mark = "✓" if clip_metrics["clip_hit_at_5"] > 0 else "✗"
         rank_s = str(clip_fig_rank) if clip_fig_rank else "—"
         print(
-            f"  {qid} [{intent:6s}] {mark}  MRR={clip_metrics['clip_mrr']:.2f}"
+            f"  {qid} [{intent:14s}] {mark}  MRR={clip_metrics['clip_mrr']:.2f}"
             f"  H@1={clip_metrics['clip_hit_at_1']:.0f}  figRank={rank_s:2s}"
-            f"  | {text[:48]!r}"
+            f"  | {text[:40]!r}"
         )
 
     # -----------------------------------------------------------------
@@ -337,28 +372,24 @@ def main() -> None:
     print()
     print("=== Experiment A — Isolated CLIP Retrieval ===")
     print(HEADER)
-    clip_agg = {
-        "overall": _aggregate(per_query, "clip_"),
-        "text": _aggregate(per_query, "clip_", "text"),
-        "visual": _aggregate(per_query, "clip_", "visual"),
-        "hybrid": _aggregate(per_query, "clip_", "hybrid"),
-    }
-    for label in ("overall", "text", "visual", "hybrid"):
-        _print_row(label.capitalize(), clip_agg[label])
+    clip_agg = {"overall": _aggregate(per_query, "clip_")}
+    for intent in intents:
+        clip_agg[intent] = _aggregate(per_query, "clip_", intent)
+    _print_row("Overall", clip_agg["overall"])
+    for intent in intents:
+        _print_row(intent, clip_agg[intent])
 
     caption_agg = None
     if caption_store is not None:
         print()
-        print("=== PR2 Caption Retrieval (re-measured for comparison) ===")
+        print(f"=== PR2 Caption Retrieval (re-measured for comparison, {args.benchmark}) ===")
         print(HEADER)
-        caption_agg = {
-            "overall": _aggregate(per_query, "caption_"),
-            "text": _aggregate(per_query, "caption_", "text"),
-            "visual": _aggregate(per_query, "caption_", "visual"),
-            "hybrid": _aggregate(per_query, "caption_", "hybrid"),
-        }
-        for label in ("overall", "text", "visual", "hybrid"):
-            _print_row(label.capitalize(), caption_agg[label])
+        caption_agg = {"overall": _aggregate(per_query, "caption_")}
+        for intent in intents:
+            caption_agg[intent] = _aggregate(per_query, "caption_", intent)
+        _print_row("Overall", caption_agg["overall"])
+        for intent in intents:
+            _print_row(intent, caption_agg[intent])
 
     # -----------------------------------------------------------------
     # Experiment B — complementarity
@@ -391,16 +422,20 @@ def main() -> None:
         print("=== Experiment B — Caption vs CLIP Complementarity ===")
         print(f"  Queries with figure targets : {len(fig_queries)}")
         print(f"  Both found the figure       : {len(both)}")
-        print(f"  Caption only                : {len(cap_only)}  {cap_only or ''}")
-        print(f"  CLIP only                   : {len(clip_only)}  {clip_only or ''}")
-        print(f"  Neither                     : {len(neither)}  {neither or ''}")
+        print(f"  Caption only                : {len(cap_only)}")
+        print(f"  CLIP only                   : {len(clip_only)}")
+        print(f"  Neither                     : {len(neither)}")
         print()
         print(f"  Caption ranked higher       : {len(cap_better)}")
-        for qid, cap_r, clip_r in cap_better:
+        for qid, cap_r, clip_r in cap_better[:15]:
             print(f"      {qid}  caption@{cap_r}  clip@{clip_r}")
+        if len(cap_better) > 15:
+            print(f"      ... and {len(cap_better) - 15} more")
         print(f"  CLIP ranked higher          : {len(clip_better)}")
-        for qid, cap_r, clip_r in clip_better:
+        for qid, cap_r, clip_r in clip_better[:15]:
             print(f"      {qid}  caption@{cap_r}  clip@{clip_r}")
+        if len(clip_better) > 15:
+            print(f"      ... and {len(clip_better) - 15} more")
         print(f"  Tied                        : {len(tied)}")
 
         n_fig = len(fig_queries) or 1
@@ -437,48 +472,62 @@ def main() -> None:
         }
 
     # -----------------------------------------------------------------
-    # Comparison table
+    # Comparison table (PR1 loaded from its own result file, never hardcoded)
     # -----------------------------------------------------------------
-    print()
-    print("=== PR1 → PR2 → PR3 Comparison ===")
-    print(f"  {'':24s}  {'PR1 text':>9}  {'PR2 caption':>12}  {'PR3 CLIP':>9}")
+    pr1_metrics: dict | None = None
+    if cfg["pr1_results"].exists():
+        pr1_metrics = _load_json(cfg["pr1_results"])
+    else:
+        print(
+            f"\n  NOTE: PR1 results not found at {cfg['pr1_results']}; skipping comparison table."
+        )
 
-    def cap_val(slice_name: str, key: str):
-        return caption_agg[slice_name][key] if caption_agg else None
+    if pr1_metrics is not None:
+        pr1m = pr1_metrics["metrics"]
+        print()
+        print(f"=== PR1 → PR2 → PR3 Comparison ({args.benchmark}) ===")
+        print(f"  {'':26s}  {'PR1 text':>9}  {'PR2 caption':>12}  {'PR3 CLIP':>9}")
 
-    rows = [
-        (
-            "Visual Recall@5",
-            PR1_BASELINE["visual_recall_at_5"],
-            cap_val("visual", "recall_at_5"),
-            clip_agg["visual"]["recall_at_5"],
-        ),
-        (
-            "Hybrid Recall@5",
-            PR1_BASELINE["hybrid_recall_at_5"],
-            cap_val("hybrid", "recall_at_5"),
-            clip_agg["hybrid"]["recall_at_5"],
-        ),
-        (
-            "Figure Recall@5",
-            None,
-            cap_val("overall", "figure_recall_at_5"),
-            clip_agg["overall"]["figure_recall_at_5"],
-        ),
-        ("Visual MRR", None, cap_val("visual", "mrr"), clip_agg["visual"]["mrr"]),
-        ("Visual nDCG@5", None, cap_val("visual", "ndcg_at_5"), clip_agg["visual"]["ndcg_at_5"]),
-        ("Visual Hit@1", None, cap_val("visual", "hit_at_1"), clip_agg["visual"]["hit_at_1"]),
-    ]
-    for label, a, b, c in rows:
-        print(f"  {label:24s}  {_fmt(a, 9)}  {_fmt(b, 12)}  {_fmt(c, 9)}")
+        def cap_val(slice_name: str, key: str):
+            return caption_agg[slice_name][key] if caption_agg else None
+
+        rows = [
+            (
+                "Figure Recall@5",
+                None,
+                cap_val("overall", "figure_recall_at_5"),
+                clip_agg["overall"]["figure_recall_at_5"],
+            ),
+        ]
+        for intent in intents:
+            rows.append(
+                (
+                    f"{intent} Recall@5",
+                    pr1m.get(intent, {}).get("recall_at_5"),
+                    cap_val(intent, "recall_at_5"),
+                    clip_agg[intent]["recall_at_5"],
+                )
+            )
+        for intent in intents:
+            rows.append(
+                (
+                    f"{intent} MRR",
+                    pr1m.get(intent, {}).get("mrr"),
+                    cap_val(intent, "mrr"),
+                    clip_agg[intent]["mrr"],
+                )
+            )
+        for label, a, b, c in rows:
+            print(f"  {label:26s}  {_fmt(a, 9)}  {_fmt(b, 12)}  {_fmt(c, 9)}")
 
     # -----------------------------------------------------------------
     # Persist
     # -----------------------------------------------------------------
-    RESULTS_DIR.mkdir(exist_ok=True)
+    cfg["results_dir"].mkdir(parents=True, exist_ok=True)
 
     metrics_out = {
         "status": "measured",
+        "benchmark": args.benchmark,
         "model": CLIP_MODEL_ID,
         "embedding_dimension": clip.dim,
         "normalization": "L2",
@@ -487,28 +536,27 @@ def main() -> None:
         "dataset_version": dataset["dataset_version"],
         "corpus_version": dataset["corpus_version"],
         "index_size": image_store.size,
-        "benchmark_caveat": (
-            f"k={K} >= CLIP index size ({image_store.size}), so every search returns every "
-            "figure. Recall@5 and Figure Recall@5 are 1.0 by construction and carry no "
-            "signal on this benchmark. MRR, nDCG@5 and Hit@1 are the rank-sensitive metrics."
+        "candidate_pool_note": (
+            f"k={K}, N_visual={image_store.size} (ratio {image_store.size / K:.2f}x). "
+            + (
+                "N <= k: Recall@5/Figure Recall@5 are 1.0 by construction, no signal."
+                if image_store.size <= K
+                else "N > k: Recall@5 is not structurally saturated on this benchmark."
+            )
         ),
         "score_pooling": (
             "NOT PERFORMED. CLIP (512-D CLIP space) and nomic-embed-text scores are "
             "uncalibrated with respect to each other; pooling raw cosines would be "
             "meaningless. Cross-stream combination is deferred to PR4 (RRF)."
         ),
+        "pr1_baseline_source": str(cfg["pr1_results"].relative_to(REPO_ROOT)),
         "clip_only": clip_agg,
         "caption_only": caption_agg,
-        "comparison": {
-            "pr1_text_baseline": PR1_BASELINE,
-            "pr2_caption": caption_agg,
-            "pr3_clip": clip_agg,
-        },
         "complementarity": complementarity,
     }
 
-    metrics_path = RESULTS_DIR / "pr3_clip_metrics.json"
-    per_query_path = RESULTS_DIR / "pr3_per_query.json"
+    metrics_path = cfg["results_dir"] / cfg["metrics_filename"]
+    per_query_path = cfg["results_dir"] / cfg["per_query_filename"]
     metrics_path.write_text(json.dumps(metrics_out, indent=2), encoding="utf-8")
     per_query_path.write_text(json.dumps(per_query, indent=2), encoding="utf-8")
 

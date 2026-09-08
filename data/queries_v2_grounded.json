@@ -1,0 +1,1739 @@
+{
+  "benchmark_version": "v2",
+  "page_number_convention": "1-indexed physical PDF page",
+  "grounding_policy": "Targets were grounded to the uploaded pinned PDFs. Figure IDs are proposed stable canonical IDs and should be copied into the v2 manifest exactly or remapped once during manifest construction.",
+  "documents": [
+    "attention_is_all_you_need",
+    "clip",
+    "siglip",
+    "blip2",
+    "llava"
+  ],
+  "queries": [
+    {
+      "query_id": "q_v2_001",
+      "query": "What limitation of recurrent sequence models motivates replacing recurrence with self-attention in the Transformer?",
+      "intent": "text",
+      "document_id": "attention_is_all_you_need",
+      "expected_evidence": [
+        {
+          "document_id": "attention_is_all_you_need",
+          "page_number": 2,
+          "figure_id": null
+        }
+      ],
+      "difficulty": "medium",
+      "retrieval_challenge": "semantic_text",
+      "source_note": "Physical PDF p.2, Introduction."
+    },
+    {
+      "query_id": "q_v2_002",
+      "query": "Why does the Transformer permit more parallelization during training than recurrent sequence models?",
+      "intent": "text",
+      "document_id": "attention_is_all_you_need",
+      "expected_evidence": [
+        {
+          "document_id": "attention_is_all_you_need",
+          "page_number": 2,
+          "figure_id": null
+        }
+      ],
+      "difficulty": "medium",
+      "retrieval_challenge": "semantic_text",
+      "source_note": "Physical PDF p.2, Introduction."
+    },
+    {
+      "query_id": "q_v2_003",
+      "query": "What are the two sub-layers in each Transformer encoder layer, and what extra sub-layer is added in the decoder?",
+      "intent": "text",
+      "document_id": "attention_is_all_you_need",
+      "expected_evidence": [
+        {
+          "document_id": "attention_is_all_you_need",
+          "page_number": 3,
+          "figure_id": null
+        }
+      ],
+      "difficulty": "medium",
+      "retrieval_challenge": "semantic_text",
+      "source_note": "Physical PDF p.3, Sec. 3.1."
+    },
+    {
+      "query_id": "q_v2_004",
+      "query": "Why are dot products scaled by the square root of the key dimension in Scaled Dot-Product Attention?",
+      "intent": "text",
+      "document_id": "attention_is_all_you_need",
+      "expected_evidence": [
+        {
+          "document_id": "attention_is_all_you_need",
+          "page_number": 4,
+          "figure_id": null
+        }
+      ],
+      "difficulty": "medium",
+      "retrieval_challenge": "semantic_text",
+      "source_note": "Physical PDF p.4, Sec. 3.2.1."
+    },
+    {
+      "query_id": "q_v2_005",
+      "query": "Why does the Transformer add sinusoidal positional encodings to the input embeddings?",
+      "intent": "text",
+      "document_id": "attention_is_all_you_need",
+      "expected_evidence": [
+        {
+          "document_id": "attention_is_all_you_need",
+          "page_number": 6,
+          "figure_id": null
+        }
+      ],
+      "difficulty": "medium",
+      "retrieval_challenge": "semantic_text",
+      "source_note": "Physical PDF p.6, Sec. 3.5."
+    },
+    {
+      "query_id": "q_v2_006",
+      "query": "Which figure shows the full Transformer encoder-decoder architecture?",
+      "intent": "visual_caption",
+      "document_id": "attention_is_all_you_need",
+      "expected_evidence": [
+        {
+          "document_id": "attention_is_all_you_need",
+          "page_number": 3,
+          "figure_id": "fig_transformer_arch"
+        }
+      ],
+      "difficulty": "easy",
+      "retrieval_challenge": "caption_semantics",
+      "source_note": "Physical PDF p.3, Figure 1."
+    },
+    {
+      "query_id": "q_v2_007",
+      "query": "Find the figure that presents Scaled Dot-Product Attention next to Multi-Head Attention.",
+      "intent": "visual_caption",
+      "document_id": "attention_is_all_you_need",
+      "expected_evidence": [
+        {
+          "document_id": "attention_is_all_you_need",
+          "page_number": 4,
+          "figure_id": "fig_attention_mechanisms"
+        }
+      ],
+      "difficulty": "easy",
+      "retrieval_challenge": "caption_semantics",
+      "source_note": "Physical PDF p.4, Figure 2."
+    },
+    {
+      "query_id": "q_v2_008",
+      "query": "Which figure visualizes a long-distance dependency involving the word 'making' in encoder self-attention?",
+      "intent": "visual_caption",
+      "document_id": "attention_is_all_you_need",
+      "expected_evidence": [
+        {
+          "document_id": "attention_is_all_you_need",
+          "page_number": 13,
+          "figure_id": "fig_long_distance_attention"
+        }
+      ],
+      "difficulty": "medium",
+      "retrieval_challenge": "caption_semantics",
+      "source_note": "Physical PDF p.13, Figure 3."
+    },
+    {
+      "query_id": "q_v2_009",
+      "query": "Which figure shows attention heads associated with anaphora resolution for the word 'its'?",
+      "intent": "visual_caption",
+      "document_id": "attention_is_all_you_need",
+      "expected_evidence": [
+        {
+          "document_id": "attention_is_all_you_need",
+          "page_number": 14,
+          "figure_id": "fig_anaphora_attention"
+        }
+      ],
+      "difficulty": "medium",
+      "retrieval_challenge": "caption_semantics",
+      "source_note": "Physical PDF p.14, Figure 4."
+    },
+    {
+      "query_id": "q_v2_010",
+      "query": "Find the diagram with two tall side-by-side processing stacks, one for encoding and one for decoding.",
+      "intent": "visual_layout",
+      "document_id": "attention_is_all_you_need",
+      "expected_evidence": [
+        {
+          "document_id": "attention_is_all_you_need",
+          "page_number": 3,
+          "figure_id": "fig_transformer_arch"
+        }
+      ],
+      "difficulty": "medium",
+      "retrieval_challenge": "visual_layout",
+      "source_note": "Physical PDF p.3, Figure 1."
+    },
+    {
+      "query_id": "q_v2_011",
+      "query": "Find the visual where several attention branches run in parallel and are concatenated before a final projection.",
+      "intent": "visual_layout",
+      "document_id": "attention_is_all_you_need",
+      "expected_evidence": [
+        {
+          "document_id": "attention_is_all_you_need",
+          "page_number": 4,
+          "figure_id": "fig_attention_mechanisms"
+        }
+      ],
+      "difficulty": "medium",
+      "retrieval_challenge": "visual_layout",
+      "source_note": "Physical PDF p.4, Figure 2."
+    },
+    {
+      "query_id": "q_v2_012",
+      "query": "Find the attention visualization with many colored links converging on a distant word relationship.",
+      "intent": "visual_layout",
+      "document_id": "attention_is_all_you_need",
+      "expected_evidence": [
+        {
+          "document_id": "attention_is_all_you_need",
+          "page_number": 13,
+          "figure_id": "fig_long_distance_attention"
+        }
+      ],
+      "difficulty": "hard",
+      "retrieval_challenge": "visual_layout",
+      "source_note": "Physical PDF p.13, Figure 3."
+    },
+    {
+      "query_id": "q_v2_013",
+      "query": "Which visual contains two stacked attention maps and isolates sharp links from the pronoun 'its'?",
+      "intent": "visual_layout",
+      "document_id": "attention_is_all_you_need",
+      "expected_evidence": [
+        {
+          "document_id": "attention_is_all_you_need",
+          "page_number": 14,
+          "figure_id": "fig_anaphora_attention"
+        }
+      ],
+      "difficulty": "hard",
+      "retrieval_challenge": "visual_layout",
+      "source_note": "Physical PDF p.14, Figure 4."
+    },
+    {
+      "query_id": "q_v2_014",
+      "query": "Using the architecture diagram and surrounding text, explain how the encoder and decoder stacks differ.",
+      "intent": "hybrid",
+      "document_id": "attention_is_all_you_need",
+      "expected_evidence": [
+        {
+          "document_id": "attention_is_all_you_need",
+          "page_number": 3,
+          "figure_id": "fig_transformer_arch"
+        },
+        {
+          "document_id": "attention_is_all_you_need",
+          "page_number": 3,
+          "figure_id": null
+        }
+      ],
+      "difficulty": "medium",
+      "retrieval_challenge": "multi_evidence",
+      "source_note": "Physical PDF p.3, Figure 1 + Sec. 3.1."
+    },
+    {
+      "query_id": "q_v2_015",
+      "query": "Using the attention schematic and text, explain how Q, K, and V are used in Scaled Dot-Product Attention.",
+      "intent": "hybrid",
+      "document_id": "attention_is_all_you_need",
+      "expected_evidence": [
+        {
+          "document_id": "attention_is_all_you_need",
+          "page_number": 4,
+          "figure_id": "fig_attention_mechanisms"
+        },
+        {
+          "document_id": "attention_is_all_you_need",
+          "page_number": 4,
+          "figure_id": null
+        }
+      ],
+      "difficulty": "medium",
+      "retrieval_challenge": "multi_evidence",
+      "source_note": "Physical PDF p.4, Figure 2 + Sec. 3.2.1."
+    },
+    {
+      "query_id": "q_v2_016",
+      "query": "How does the Multi-Head Attention diagram support the paper's claim that different representation subspaces can be attended to in parallel?",
+      "intent": "hybrid",
+      "document_id": "attention_is_all_you_need",
+      "expected_evidence": [
+        {
+          "document_id": "attention_is_all_you_need",
+          "page_number": 4,
+          "figure_id": "fig_attention_mechanisms"
+        },
+        {
+          "document_id": "attention_is_all_you_need",
+          "page_number": 5,
+          "figure_id": null
+        }
+      ],
+      "difficulty": "hard",
+      "retrieval_challenge": "cross_modal",
+      "source_note": "Physical PDF pp.4-5, Figure 2 + Sec. 3.2.2."
+    },
+    {
+      "query_id": "q_v2_017",
+      "query": "What does the long-distance attention visualization show about the kinds of dependencies learned by encoder self-attention?",
+      "intent": "hybrid",
+      "document_id": "attention_is_all_you_need",
+      "expected_evidence": [
+        {
+          "document_id": "attention_is_all_you_need",
+          "page_number": 13,
+          "figure_id": "fig_long_distance_attention"
+        },
+        {
+          "document_id": "attention_is_all_you_need",
+          "page_number": 13,
+          "figure_id": null
+        }
+      ],
+      "difficulty": "hard",
+      "retrieval_challenge": "cross_modal",
+      "source_note": "Physical PDF p.13, Figure 3 + caption."
+    },
+    {
+      "query_id": "q_v2_018",
+      "query": "How does the anaphora attention visualization support the claim that individual heads can learn syntactic or semantic behavior?",
+      "intent": "hybrid",
+      "document_id": "attention_is_all_you_need",
+      "expected_evidence": [
+        {
+          "document_id": "attention_is_all_you_need",
+          "page_number": 14,
+          "figure_id": "fig_anaphora_attention"
+        },
+        {
+          "document_id": "attention_is_all_you_need",
+          "page_number": 7,
+          "figure_id": null
+        }
+      ],
+      "difficulty": "hard",
+      "retrieval_challenge": "cross_modal",
+      "source_note": "Physical PDF p.14, Figure 4; claim discussed on p.7."
+    },
+    {
+      "query_id": "q_v2_019",
+      "query": "Find the complete Transformer model diagram rather than one of the attention-weight visualizations in the appendix.",
+      "intent": "hard_visual",
+      "document_id": "attention_is_all_you_need",
+      "expected_evidence": [
+        {
+          "document_id": "attention_is_all_you_need",
+          "page_number": 3,
+          "figure_id": "fig_transformer_arch"
+        }
+      ],
+      "difficulty": "hard",
+      "retrieval_challenge": "same_paper_distractor",
+      "source_note": "Physical PDF p.3, Figure 1; distractors Figures 3-4."
+    },
+    {
+      "query_id": "q_v2_020",
+      "query": "Which visual explains the attention computation itself rather than showing learned token-to-token attention patterns?",
+      "intent": "hard_visual",
+      "document_id": "attention_is_all_you_need",
+      "expected_evidence": [
+        {
+          "document_id": "attention_is_all_you_need",
+          "page_number": 4,
+          "figure_id": "fig_attention_mechanisms"
+        }
+      ],
+      "difficulty": "hard",
+      "retrieval_challenge": "same_paper_distractor",
+      "source_note": "Physical PDF p.4, Figure 2; distractors Figures 3-4."
+    },
+    {
+      "query_id": "q_v2_021",
+      "query": "How does CLIP use natural-language supervision to learn transferable visual representations?",
+      "intent": "text",
+      "document_id": "clip",
+      "expected_evidence": [
+        {
+          "document_id": "clip",
+          "page_number": 2,
+          "figure_id": null
+        }
+      ],
+      "difficulty": "medium",
+      "retrieval_challenge": "semantic_text",
+      "source_note": "Physical PDF p.2, approach overview."
+    },
+    {
+      "query_id": "q_v2_022",
+      "query": "What training objective does CLIP use to distinguish matching image-text pairs from mismatched pairings in a batch?",
+      "intent": "text",
+      "document_id": "clip",
+      "expected_evidence": [
+        {
+          "document_id": "clip",
+          "page_number": 4,
+          "figure_id": null
+        }
+      ],
+      "difficulty": "medium",
+      "retrieval_challenge": "semantic_text",
+      "source_note": "Physical PDF p.4, Sec. 2.3."
+    },
+    {
+      "query_id": "q_v2_023",
+      "query": "How does CLIP turn class names or descriptions into a zero-shot image classifier?",
+      "intent": "text",
+      "document_id": "clip",
+      "expected_evidence": [
+        {
+          "document_id": "clip",
+          "page_number": 6,
+          "figure_id": null
+        }
+      ],
+      "difficulty": "medium",
+      "retrieval_challenge": "semantic_text",
+      "source_note": "Physical PDF p.6, Sec. 3.1.2."
+    },
+    {
+      "query_id": "q_v2_024",
+      "query": "Why does adding context such as 'A photo of a {label}' improve CLIP zero-shot classification?",
+      "intent": "text",
+      "document_id": "clip",
+      "expected_evidence": [
+        {
+          "document_id": "clip",
+          "page_number": 7,
+          "figure_id": null
+        }
+      ],
+      "difficulty": "medium",
+      "retrieval_challenge": "semantic_text",
+      "source_note": "Physical PDF p.7, Sec. 3.1.4."
+    },
+    {
+      "query_id": "q_v2_025",
+      "query": "What does the paper report about how zero-shot CLIP performance scales with model compute?",
+      "intent": "text",
+      "document_id": "clip",
+      "expected_evidence": [
+        {
+          "document_id": "clip",
+          "page_number": 11,
+          "figure_id": null
+        }
+      ],
+      "difficulty": "medium",
+      "retrieval_challenge": "semantic_text",
+      "source_note": "Physical PDF p.11, Figure 9 discussion."
+    },
+    {
+      "query_id": "q_v2_026",
+      "query": "Which figure summarizes CLIP's three-stage approach from contrastive pre-training to zero-shot prediction?",
+      "intent": "visual_caption",
+      "document_id": "clip",
+      "expected_evidence": [
+        {
+          "document_id": "clip",
+          "page_number": 2,
+          "figure_id": "fig_clip_approach"
+        }
+      ],
+      "difficulty": "easy",
+      "retrieval_challenge": "caption_semantics",
+      "source_note": "Physical PDF p.2, Figure 1."
+    },
+    {
+      "query_id": "q_v2_027",
+      "query": "Which figure compares contrastive CLIP pre-training with bag-of-words and transformer language-model baselines?",
+      "intent": "visual_caption",
+      "document_id": "clip",
+      "expected_evidence": [
+        {
+          "document_id": "clip",
+          "page_number": 3,
+          "figure_id": "fig_clip_efficiency"
+        }
+      ],
+      "difficulty": "medium",
+      "retrieval_challenge": "caption_semantics",
+      "source_note": "Physical PDF p.3, Figure 2."
+    },
+    {
+      "query_id": "q_v2_028",
+      "query": "Find the figure containing Numpy-like pseudocode for the core CLIP training procedure.",
+      "intent": "visual_caption",
+      "document_id": "clip",
+      "expected_evidence": [
+        {
+          "document_id": "clip",
+          "page_number": 5,
+          "figure_id": "fig_clip_pseudocode"
+        }
+      ],
+      "difficulty": "easy",
+      "retrieval_challenge": "caption_semantics",
+      "source_note": "Physical PDF p.5, Figure 3."
+    },
+    {
+      "query_id": "q_v2_029",
+      "query": "Which figure shows the effect of prompt engineering and ensembling on zero-shot performance?",
+      "intent": "visual_caption",
+      "document_id": "clip",
+      "expected_evidence": [
+        {
+          "document_id": "clip",
+          "page_number": 7,
+          "figure_id": "fig_clip_prompt_engineering"
+        }
+      ],
+      "difficulty": "medium",
+      "retrieval_challenge": "caption_semantics",
+      "source_note": "Physical PDF p.7, Figure 4."
+    },
+    {
+      "query_id": "q_v2_030",
+      "query": "Find the diagram with a square grid of image-text pair similarities and a highlighted diagonal of correct pairs.",
+      "intent": "visual_layout",
+      "document_id": "clip",
+      "expected_evidence": [
+        {
+          "document_id": "clip",
+          "page_number": 2,
+          "figure_id": "fig_clip_approach"
+        }
+      ],
+      "difficulty": "medium",
+      "retrieval_challenge": "visual_layout",
+      "source_note": "Physical PDF p.2, Figure 1."
+    },
+    {
+      "query_id": "q_v2_031",
+      "query": "Find the plot with three colored learning curves where the contrastive method rises fastest as more images are processed.",
+      "intent": "visual_layout",
+      "document_id": "clip",
+      "expected_evidence": [
+        {
+          "document_id": "clip",
+          "page_number": 3,
+          "figure_id": "fig_clip_efficiency"
+        }
+      ],
+      "difficulty": "medium",
+      "retrieval_challenge": "visual_layout",
+      "source_note": "Physical PDF p.3, Figure 2."
+    },
+    {
+      "query_id": "q_v2_032",
+      "query": "Which visual is primarily a code block rather than a chart or architecture diagram?",
+      "intent": "visual_layout",
+      "document_id": "clip",
+      "expected_evidence": [
+        {
+          "document_id": "clip",
+          "page_number": 5,
+          "figure_id": "fig_clip_pseudocode"
+        }
+      ],
+      "difficulty": "medium",
+      "retrieval_challenge": "visual_layout",
+      "source_note": "Physical PDF p.5, Figure 3."
+    },
+    {
+      "query_id": "q_v2_033",
+      "query": "Find the chart where two model-scaling lines are compared and the improved prompting line stays above the contextless baseline.",
+      "intent": "visual_layout",
+      "document_id": "clip",
+      "expected_evidence": [
+        {
+          "document_id": "clip",
+          "page_number": 7,
+          "figure_id": "fig_clip_prompt_engineering"
+        }
+      ],
+      "difficulty": "hard",
+      "retrieval_challenge": "visual_layout",
+      "source_note": "Physical PDF p.7, Figure 4."
+    },
+    {
+      "query_id": "q_v2_034",
+      "query": "Using the approach diagram and text, explain how CLIP trains on image-text pairings and later performs zero-shot classification.",
+      "intent": "hybrid",
+      "document_id": "clip",
+      "expected_evidence": [
+        {
+          "document_id": "clip",
+          "page_number": 2,
+          "figure_id": "fig_clip_approach"
+        },
+        {
+          "document_id": "clip",
+          "page_number": 4,
+          "figure_id": null
+        }
+      ],
+      "difficulty": "medium",
+      "retrieval_challenge": "multi_evidence",
+      "source_note": "Physical PDF p.2, Figure 1; objective detailed on p.4."
+    },
+    {
+      "query_id": "q_v2_035",
+      "query": "How does Figure 2 support the paper's decision to prefer a contrastive objective over predicting captions word by word?",
+      "intent": "hybrid",
+      "document_id": "clip",
+      "expected_evidence": [
+        {
+          "document_id": "clip",
+          "page_number": 3,
+          "figure_id": "fig_clip_efficiency"
+        },
+        {
+          "document_id": "clip",
+          "page_number": 4,
+          "figure_id": null
+        }
+      ],
+      "difficulty": "hard",
+      "retrieval_challenge": "cross_modal",
+      "source_note": "Physical PDF pp.3-4, Figure 2 + Sec. 2.3."
+    },
+    {
+      "query_id": "q_v2_036",
+      "query": "Using the pseudocode and method description, explain how CLIP normalizes image and text embeddings and computes the symmetric loss.",
+      "intent": "hybrid",
+      "document_id": "clip",
+      "expected_evidence": [
+        {
+          "document_id": "clip",
+          "page_number": 5,
+          "figure_id": "fig_clip_pseudocode"
+        },
+        {
+          "document_id": "clip",
+          "page_number": 4,
+          "figure_id": null
+        }
+      ],
+      "difficulty": "hard",
+      "retrieval_challenge": "multi_evidence",
+      "source_note": "Physical PDF p.5, Figure 3; method on p.4."
+    },
+    {
+      "query_id": "q_v2_037",
+      "query": "How does the prompt-engineering plot support the claim that contextual prompts and prompt ensembling improve zero-shot accuracy?",
+      "intent": "hybrid",
+      "document_id": "clip",
+      "expected_evidence": [
+        {
+          "document_id": "clip",
+          "page_number": 7,
+          "figure_id": "fig_clip_prompt_engineering"
+        },
+        {
+          "document_id": "clip",
+          "page_number": 7,
+          "figure_id": null
+        }
+      ],
+      "difficulty": "medium",
+      "retrieval_challenge": "cross_modal",
+      "source_note": "Physical PDF p.7, Figure 4 + Sec. 3.1.4."
+    },
+    {
+      "query_id": "q_v2_038",
+      "query": "Using the model-compute scaling plot and nearby discussion, describe the relationship between compute and average zero-shot error.",
+      "intent": "hybrid",
+      "document_id": "clip",
+      "expected_evidence": [
+        {
+          "document_id": "clip",
+          "page_number": 11,
+          "figure_id": "fig_clip_compute_scaling"
+        },
+        {
+          "document_id": "clip",
+          "page_number": 11,
+          "figure_id": null
+        }
+      ],
+      "difficulty": "hard",
+      "retrieval_challenge": "cross_modal",
+      "source_note": "Physical PDF p.11, Figure 9."
+    },
+    {
+      "query_id": "q_v2_039",
+      "query": "Find the CLIP visual that explains the training-and-zero-shot pipeline rather than a plot of training efficiency.",
+      "intent": "hard_visual",
+      "document_id": "clip",
+      "expected_evidence": [
+        {
+          "document_id": "clip",
+          "page_number": 2,
+          "figure_id": "fig_clip_approach"
+        }
+      ],
+      "difficulty": "hard",
+      "retrieval_challenge": "same_paper_distractor",
+      "source_note": "Physical PDF p.2, Figure 1; distractor Figure 2."
+    },
+    {
+      "query_id": "q_v2_040",
+      "query": "Which CLIP visual shows executable-style training logic rather than the conceptual pipeline or performance curves?",
+      "intent": "hard_visual",
+      "document_id": "clip",
+      "expected_evidence": [
+        {
+          "document_id": "clip",
+          "page_number": 5,
+          "figure_id": "fig_clip_pseudocode"
+        }
+      ],
+      "difficulty": "hard",
+      "retrieval_challenge": "same_paper_distractor",
+      "source_note": "Physical PDF p.5, Figure 3."
+    },
+    {
+      "query_id": "q_v2_041",
+      "query": "How does SigLIP's pairwise sigmoid loss differ from the softmax-normalized contrastive loss used in standard language-image pre-training?",
+      "intent": "text",
+      "document_id": "siglip",
+      "expected_evidence": [
+        {
+          "document_id": "siglip",
+          "page_number": 3,
+          "figure_id": null
+        }
+      ],
+      "difficulty": "medium",
+      "retrieval_challenge": "semantic_text",
+      "source_note": "Physical PDF p.3, Sec. 3.1-3.2."
+    },
+    {
+      "query_id": "q_v2_042",
+      "query": "Why does the sigmoid loss avoid requiring a global normalization over all image-text similarities in a batch?",
+      "intent": "text",
+      "document_id": "siglip",
+      "expected_evidence": [
+        {
+          "document_id": "siglip",
+          "page_number": 3,
+          "figure_id": null
+        }
+      ],
+      "difficulty": "medium",
+      "retrieval_challenge": "semantic_text",
+      "source_note": "Physical PDF p.3, Sec. 3.2."
+    },
+    {
+      "query_id": "q_v2_043",
+      "query": "Why are a learnable temperature and bias included in the SigLIP loss?",
+      "intent": "text",
+      "document_id": "siglip",
+      "expected_evidence": [
+        {
+          "document_id": "siglip",
+          "page_number": 3,
+          "figure_id": null
+        }
+      ],
+      "difficulty": "medium",
+      "retrieval_challenge": "semantic_text",
+      "source_note": "Physical PDF p.3, Sec. 3.2."
+    },
+    {
+      "query_id": "q_v2_044",
+      "query": "What conclusion does the paper draw about increasing batch size beyond roughly 32k examples?",
+      "intent": "text",
+      "document_id": "siglip",
+      "expected_evidence": [
+        {
+          "document_id": "siglip",
+          "page_number": 4,
+          "figure_id": null
+        }
+      ],
+      "difficulty": "medium",
+      "retrieval_challenge": "semantic_text",
+      "source_note": "Physical PDF p.4, Figure 2 discussion."
+    },
+    {
+      "query_id": "q_v2_045",
+      "query": "Why does disabling weight decay on pre-trained encoder weights improve the SigLIP fine-tuning setup?",
+      "intent": "text",
+      "document_id": "siglip",
+      "expected_evidence": [
+        {
+          "document_id": "siglip",
+          "page_number": 6,
+          "figure_id": null
+        }
+      ],
+      "difficulty": "hard",
+      "retrieval_challenge": "semantic_text",
+      "source_note": "Physical PDF p.6, Sec. 4.5/Figure 4 discussion."
+    },
+    {
+      "query_id": "q_v2_046",
+      "query": "Which figure illustrates SigLIP's distributed chunked loss computation across multiple devices?",
+      "intent": "visual_caption",
+      "document_id": "siglip",
+      "expected_evidence": [
+        {
+          "document_id": "siglip",
+          "page_number": 3,
+          "figure_id": "fig_siglip_chunked_loss"
+        }
+      ],
+      "difficulty": "medium",
+      "retrieval_challenge": "caption_semantics",
+      "source_note": "Physical PDF p.3, Figure 1."
+    },
+    {
+      "query_id": "q_v2_047",
+      "query": "Which figure compares sigmoid and softmax performance across different pre-training batch sizes?",
+      "intent": "visual_caption",
+      "document_id": "siglip",
+      "expected_evidence": [
+        {
+          "document_id": "siglip",
+          "page_number": 4,
+          "figure_id": "fig_siglip_batch_size"
+        }
+      ],
+      "difficulty": "easy",
+      "retrieval_challenge": "caption_semantics",
+      "source_note": "Physical PDF p.4, Figure 2."
+    },
+    {
+      "query_id": "q_v2_048",
+      "query": "Find the figure showing ImageNet zero-shot performance as training duration changes for small and very large batch sizes.",
+      "intent": "visual_caption",
+      "document_id": "siglip",
+      "expected_evidence": [
+        {
+          "document_id": "siglip",
+          "page_number": 5,
+          "figure_id": "fig_siglip_training_duration"
+        }
+      ],
+      "difficulty": "medium",
+      "retrieval_challenge": "caption_semantics",
+      "source_note": "Physical PDF p.5, Figure 3."
+    },
+    {
+      "query_id": "q_v2_049",
+      "query": "Which figure shows the effect of keeping or disabling weight decay on pre-trained encoder weights?",
+      "intent": "visual_caption",
+      "document_id": "siglip",
+      "expected_evidence": [
+        {
+          "document_id": "siglip",
+          "page_number": 6,
+          "figure_id": "fig_siglip_weight_decay"
+        }
+      ],
+      "difficulty": "medium",
+      "retrieval_challenge": "caption_semantics",
+      "source_note": "Physical PDF p.6, Figure 4."
+    },
+    {
+      "query_id": "q_v2_050",
+      "query": "Find the multi-panel diagram made of device-by-device similarity matrices with colored square blocks moving between panels.",
+      "intent": "visual_layout",
+      "document_id": "siglip",
+      "expected_evidence": [
+        {
+          "document_id": "siglip",
+          "page_number": 3,
+          "figure_id": "fig_siglip_chunked_loss"
+        }
+      ],
+      "difficulty": "hard",
+      "retrieval_challenge": "visual_layout",
+      "source_note": "Physical PDF p.3, Figure 1."
+    },
+    {
+      "query_id": "q_v2_051",
+      "query": "Find the three-panel plot whose horizontal axes are batch size and whose curves compare sigmoid and softmax behavior.",
+      "intent": "visual_layout",
+      "document_id": "siglip",
+      "expected_evidence": [
+        {
+          "document_id": "siglip",
+          "page_number": 4,
+          "figure_id": "fig_siglip_batch_size"
+        }
+      ],
+      "difficulty": "medium",
+      "retrieval_challenge": "visual_layout",
+      "source_note": "Physical PDF p.4, Figure 2."
+    },
+    {
+      "query_id": "q_v2_052",
+      "query": "Which visual has examples-seen on the horizontal axis and separate curves for 8k and 262k batch sizes?",
+      "intent": "visual_layout",
+      "document_id": "siglip",
+      "expected_evidence": [
+        {
+          "document_id": "siglip",
+          "page_number": 5,
+          "figure_id": "fig_siglip_training_duration"
+        }
+      ],
+      "difficulty": "hard",
+      "retrieval_challenge": "visual_layout",
+      "source_note": "Physical PDF p.5, Figure 3."
+    },
+    {
+      "query_id": "q_v2_053",
+      "query": "Find the two vertically stacked plots contrasting zero-shot and 10-shot ImageNet performance under different fine-tuning strategies.",
+      "intent": "visual_layout",
+      "document_id": "siglip",
+      "expected_evidence": [
+        {
+          "document_id": "siglip",
+          "page_number": 6,
+          "figure_id": "fig_siglip_weight_decay"
+        }
+      ],
+      "difficulty": "hard",
+      "retrieval_challenge": "visual_layout",
+      "source_note": "Physical PDF p.6, Figure 4."
+    },
+    {
+      "query_id": "q_v2_054",
+      "query": "Using the distributed-loss figure and method text, explain how SigLIP avoids materializing the full global pairwise similarity matrix.",
+      "intent": "hybrid",
+      "document_id": "siglip",
+      "expected_evidence": [
+        {
+          "document_id": "siglip",
+          "page_number": 3,
+          "figure_id": "fig_siglip_chunked_loss"
+        },
+        {
+          "document_id": "siglip",
+          "page_number": 3,
+          "figure_id": null
+        }
+      ],
+      "difficulty": "hard",
+      "retrieval_challenge": "multi_evidence",
+      "source_note": "Physical PDF p.3, Figure 1 + Sec. 3.3."
+    },
+    {
+      "query_id": "q_v2_055",
+      "query": "How does the batch-size figure support the claim that sigmoid loss is especially advantageous at smaller batch sizes?",
+      "intent": "hybrid",
+      "document_id": "siglip",
+      "expected_evidence": [
+        {
+          "document_id": "siglip",
+          "page_number": 4,
+          "figure_id": "fig_siglip_batch_size"
+        },
+        {
+          "document_id": "siglip",
+          "page_number": 4,
+          "figure_id": null
+        }
+      ],
+      "difficulty": "medium",
+      "retrieval_challenge": "cross_modal",
+      "source_note": "Physical PDF p.4, Figure 2 + Sec. 4.1."
+    },
+    {
+      "query_id": "q_v2_056",
+      "query": "Using the batch-size plots and text, explain why the authors conclude that extremely large batches are unnecessary.",
+      "intent": "hybrid",
+      "document_id": "siglip",
+      "expected_evidence": [
+        {
+          "document_id": "siglip",
+          "page_number": 4,
+          "figure_id": "fig_siglip_batch_size"
+        },
+        {
+          "document_id": "siglip",
+          "page_number": 4,
+          "figure_id": null
+        }
+      ],
+      "difficulty": "hard",
+      "retrieval_challenge": "multi_evidence",
+      "source_note": "Physical PDF p.4, Figure 2."
+    },
+    {
+      "query_id": "q_v2_057",
+      "query": "How does the training-duration plot qualify the claim that very large batches can improve performance?",
+      "intent": "hybrid",
+      "document_id": "siglip",
+      "expected_evidence": [
+        {
+          "document_id": "siglip",
+          "page_number": 5,
+          "figure_id": "fig_siglip_training_duration"
+        },
+        {
+          "document_id": "siglip",
+          "page_number": 5,
+          "figure_id": null
+        }
+      ],
+      "difficulty": "hard",
+      "retrieval_challenge": "cross_modal",
+      "source_note": "Physical PDF p.5, Figure 3 + Sec. 4.1."
+    },
+    {
+      "query_id": "q_v2_058",
+      "query": "How does the weight-decay figure support the recommendation to avoid decaying pre-trained encoder weights?",
+      "intent": "hybrid",
+      "document_id": "siglip",
+      "expected_evidence": [
+        {
+          "document_id": "siglip",
+          "page_number": 6,
+          "figure_id": "fig_siglip_weight_decay"
+        },
+        {
+          "document_id": "siglip",
+          "page_number": 6,
+          "figure_id": null
+        }
+      ],
+      "difficulty": "hard",
+      "retrieval_challenge": "cross_modal",
+      "source_note": "Physical PDF p.6, Figure 4 + discussion."
+    },
+    {
+      "query_id": "q_v2_059",
+      "query": "Find the SigLIP visual about distributed memory-efficient loss computation rather than batch-size scaling results.",
+      "intent": "hard_visual",
+      "document_id": "siglip",
+      "expected_evidence": [
+        {
+          "document_id": "siglip",
+          "page_number": 3,
+          "figure_id": "fig_siglip_chunked_loss"
+        }
+      ],
+      "difficulty": "hard",
+      "retrieval_challenge": "same_paper_distractor",
+      "source_note": "Physical PDF p.3, Figure 1; distractor Figure 2."
+    },
+    {
+      "query_id": "q_v2_060",
+      "query": "Which visual specifically diagnoses pre-trained-weight decay rather than comparing sigmoid and softmax across batch sizes?",
+      "intent": "hard_visual",
+      "document_id": "siglip",
+      "expected_evidence": [
+        {
+          "document_id": "siglip",
+          "page_number": 6,
+          "figure_id": "fig_siglip_weight_decay"
+        }
+      ],
+      "difficulty": "hard",
+      "retrieval_challenge": "same_paper_distractor",
+      "source_note": "Physical PDF p.6, Figure 4; distractor Figure 2."
+    },
+    {
+      "query_id": "q_v2_061",
+      "query": "Why does BLIP-2 keep both the pre-trained image encoder and the large language model frozen during vision-language pre-training?",
+      "intent": "text",
+      "document_id": "blip2",
+      "expected_evidence": [
+        {
+          "document_id": "blip2",
+          "page_number": 1,
+          "figure_id": null
+        }
+      ],
+      "difficulty": "medium",
+      "retrieval_challenge": "semantic_text",
+      "source_note": "Physical PDF p.1, Introduction."
+    },
+    {
+      "query_id": "q_v2_062",
+      "query": "What role does the Q-Former play between the frozen image encoder and frozen language model?",
+      "intent": "text",
+      "document_id": "blip2",
+      "expected_evidence": [
+        {
+          "document_id": "blip2",
+          "page_number": 2,
+          "figure_id": null
+        }
+      ],
+      "difficulty": "medium",
+      "retrieval_challenge": "semantic_text",
+      "source_note": "Physical PDF p.2, Sec. 3."
+    },
+    {
+      "query_id": "q_v2_063",
+      "query": "How do the learnable queries in Q-Former interact with frozen image features and text?",
+      "intent": "text",
+      "document_id": "blip2",
+      "expected_evidence": [
+        {
+          "document_id": "blip2",
+          "page_number": 3,
+          "figure_id": null
+        }
+      ],
+      "difficulty": "medium",
+      "retrieval_challenge": "semantic_text",
+      "source_note": "Physical PDF p.3, Sec. 3.1."
+    },
+    {
+      "query_id": "q_v2_064",
+      "query": "What are the three objectives used in BLIP-2's first-stage vision-language representation learning?",
+      "intent": "text",
+      "document_id": "blip2",
+      "expected_evidence": [
+        {
+          "document_id": "blip2",
+          "page_number": 3,
+          "figure_id": null
+        }
+      ],
+      "difficulty": "medium",
+      "retrieval_challenge": "semantic_text",
+      "source_note": "Physical PDF p.3, Sec. 3.2."
+    },
+    {
+      "query_id": "q_v2_065",
+      "query": "How are Q-Former outputs adapted to condition decoder-only and encoder-decoder LLMs in the second pre-training stage?",
+      "intent": "text",
+      "document_id": "blip2",
+      "expected_evidence": [
+        {
+          "document_id": "blip2",
+          "page_number": 4,
+          "figure_id": null
+        }
+      ],
+      "difficulty": "hard",
+      "retrieval_challenge": "semantic_text",
+      "source_note": "Physical PDF p.4, Sec. 3.3."
+    },
+    {
+      "query_id": "q_v2_066",
+      "query": "Which figure gives the overall two-stage BLIP-2 framework with the Q-Former between frozen vision and language models?",
+      "intent": "visual_caption",
+      "document_id": "blip2",
+      "expected_evidence": [
+        {
+          "document_id": "blip2",
+          "page_number": 1,
+          "figure_id": "fig_blip2_overview"
+        }
+      ],
+      "difficulty": "easy",
+      "retrieval_challenge": "caption_semantics",
+      "source_note": "Physical PDF p.1, Figure 1."
+    },
+    {
+      "query_id": "q_v2_067",
+      "query": "Which figure shows Q-Former's architecture together with the three first-stage training objectives and attention masks?",
+      "intent": "visual_caption",
+      "document_id": "blip2",
+      "expected_evidence": [
+        {
+          "document_id": "blip2",
+          "page_number": 3,
+          "figure_id": "fig_blip2_qformer"
+        }
+      ],
+      "difficulty": "easy",
+      "retrieval_challenge": "caption_semantics",
+      "source_note": "Physical PDF p.3, Figure 2."
+    },
+    {
+      "query_id": "q_v2_068",
+      "query": "Find the figure comparing BLIP-2's decoder-based and encoder-decoder-based second-stage LLM bootstrapping.",
+      "intent": "visual_caption",
+      "document_id": "blip2",
+      "expected_evidence": [
+        {
+          "document_id": "blip2",
+          "page_number": 4,
+          "figure_id": "fig_blip2_second_stage"
+        }
+      ],
+      "difficulty": "medium",
+      "retrieval_challenge": "caption_semantics",
+      "source_note": "Physical PDF p.4, Figure 3."
+    },
+    {
+      "query_id": "q_v2_069",
+      "query": "Which figure presents a grid of instructed zero-shot image-to-text examples such as visual reasoning, conversation, and storytelling?",
+      "intent": "visual_caption",
+      "document_id": "blip2",
+      "expected_evidence": [
+        {
+          "document_id": "blip2",
+          "page_number": 5,
+          "figure_id": "fig_blip2_zero_shot_examples"
+        }
+      ],
+      "difficulty": "medium",
+      "retrieval_challenge": "caption_semantics",
+      "source_note": "Physical PDF p.5, Figure 4."
+    },
+    {
+      "query_id": "q_v2_070",
+      "query": "Find the diagram with a compact central querying transformer visually bridging a vision model on the left and a language model on the right.",
+      "intent": "visual_layout",
+      "document_id": "blip2",
+      "expected_evidence": [
+        {
+          "document_id": "blip2",
+          "page_number": 1,
+          "figure_id": "fig_blip2_overview"
+        }
+      ],
+      "difficulty": "medium",
+      "retrieval_challenge": "visual_layout",
+      "source_note": "Physical PDF p.1, Figure 1."
+    },
+    {
+      "query_id": "q_v2_071",
+      "query": "Find the dense architecture diagram containing learned query tokens, cross-attention, self-attention, and three small attention-mask grids.",
+      "intent": "visual_layout",
+      "document_id": "blip2",
+      "expected_evidence": [
+        {
+          "document_id": "blip2",
+          "page_number": 3,
+          "figure_id": "fig_blip2_qformer"
+        }
+      ],
+      "difficulty": "hard",
+      "retrieval_challenge": "visual_layout",
+      "source_note": "Physical PDF p.3, Figure 2."
+    },
+    {
+      "query_id": "q_v2_072",
+      "query": "Which visual is split into an upper and lower pipeline, one ending in an LLM decoder and one containing both an LLM encoder and decoder?",
+      "intent": "visual_layout",
+      "document_id": "blip2",
+      "expected_evidence": [
+        {
+          "document_id": "blip2",
+          "page_number": 4,
+          "figure_id": "fig_blip2_second_stage"
+        }
+      ],
+      "difficulty": "hard",
+      "retrieval_challenge": "visual_layout",
+      "source_note": "Physical PDF p.4, Figure 3."
+    },
+    {
+      "query_id": "q_v2_073",
+      "query": "Find the page-wide visual arranged as many image-and-dialogue example cards rather than an architecture schematic.",
+      "intent": "visual_layout",
+      "document_id": "blip2",
+      "expected_evidence": [
+        {
+          "document_id": "blip2",
+          "page_number": 5,
+          "figure_id": "fig_blip2_zero_shot_examples"
+        }
+      ],
+      "difficulty": "medium",
+      "retrieval_challenge": "visual_layout",
+      "source_note": "Physical PDF p.5, Figure 4."
+    },
+    {
+      "query_id": "q_v2_074",
+      "query": "Using the overview figure and text, explain BLIP-2's two-stage strategy for bridging frozen image and language models.",
+      "intent": "hybrid",
+      "document_id": "blip2",
+      "expected_evidence": [
+        {
+          "document_id": "blip2",
+          "page_number": 1,
+          "figure_id": "fig_blip2_overview"
+        },
+        {
+          "document_id": "blip2",
+          "page_number": 2,
+          "figure_id": null
+        }
+      ],
+      "difficulty": "medium",
+      "retrieval_challenge": "multi_evidence",
+      "source_note": "Physical PDF pp.1-2, Figure 1 + method overview."
+    },
+    {
+      "query_id": "q_v2_075",
+      "query": "How does the Q-Former diagram support the claim that learned queries form an information bottleneck for language-relevant visual features?",
+      "intent": "hybrid",
+      "document_id": "blip2",
+      "expected_evidence": [
+        {
+          "document_id": "blip2",
+          "page_number": 3,
+          "figure_id": "fig_blip2_qformer"
+        },
+        {
+          "document_id": "blip2",
+          "page_number": 3,
+          "figure_id": null
+        }
+      ],
+      "difficulty": "hard",
+      "retrieval_challenge": "cross_modal",
+      "source_note": "Physical PDF p.3, Figure 2 + Sec. 3.1."
+    },
+    {
+      "query_id": "q_v2_076",
+      "query": "Using Figure 2 and the method description, explain why BLIP-2 uses different attention masks for ITC, ITG, and ITM.",
+      "intent": "hybrid",
+      "document_id": "blip2",
+      "expected_evidence": [
+        {
+          "document_id": "blip2",
+          "page_number": 3,
+          "figure_id": "fig_blip2_qformer"
+        },
+        {
+          "document_id": "blip2",
+          "page_number": 3,
+          "figure_id": null
+        }
+      ],
+      "difficulty": "hard",
+      "retrieval_challenge": "multi_evidence",
+      "source_note": "Physical PDF p.3, Figure 2 + Sec. 3.2."
+    },
+    {
+      "query_id": "q_v2_077",
+      "query": "How does the second-stage figure show the difference between conditioning an OPT-style decoder and a FlanT5-style encoder-decoder?",
+      "intent": "hybrid",
+      "document_id": "blip2",
+      "expected_evidence": [
+        {
+          "document_id": "blip2",
+          "page_number": 4,
+          "figure_id": "fig_blip2_second_stage"
+        },
+        {
+          "document_id": "blip2",
+          "page_number": 4,
+          "figure_id": null
+        }
+      ],
+      "difficulty": "hard",
+      "retrieval_challenge": "cross_modal",
+      "source_note": "Physical PDF p.4, Figure 3 + Sec. 3.3."
+    },
+    {
+      "query_id": "q_v2_078",
+      "query": "What capabilities are demonstrated by the grid of instructed zero-shot examples, and how does the surrounding text characterize them?",
+      "intent": "hybrid",
+      "document_id": "blip2",
+      "expected_evidence": [
+        {
+          "document_id": "blip2",
+          "page_number": 5,
+          "figure_id": "fig_blip2_zero_shot_examples"
+        },
+        {
+          "document_id": "blip2",
+          "page_number": 6,
+          "figure_id": null
+        }
+      ],
+      "difficulty": "medium",
+      "retrieval_challenge": "cross_modal",
+      "source_note": "Physical PDF p.5, Figure 4; discussion on p.6."
+    },
+    {
+      "query_id": "q_v2_079",
+      "query": "Find the BLIP-2 visual showing the overall two-stage framework rather than the detailed Q-Former internals.",
+      "intent": "hard_visual",
+      "document_id": "blip2",
+      "expected_evidence": [
+        {
+          "document_id": "blip2",
+          "page_number": 1,
+          "figure_id": "fig_blip2_overview"
+        }
+      ],
+      "difficulty": "hard",
+      "retrieval_challenge": "same_paper_distractor",
+      "source_note": "Physical PDF p.1, Figure 1; distractor Figure 2."
+    },
+    {
+      "query_id": "q_v2_080",
+      "query": "Which BLIP-2 visual compares two types of frozen LLM interfaces rather than showing first-stage attention masks?",
+      "intent": "hard_visual",
+      "document_id": "blip2",
+      "expected_evidence": [
+        {
+          "document_id": "blip2",
+          "page_number": 4,
+          "figure_id": "fig_blip2_second_stage"
+        }
+      ],
+      "difficulty": "hard",
+      "retrieval_challenge": "same_paper_distractor",
+      "source_note": "Physical PDF p.4, Figure 3; distractor Figure 2."
+    },
+    {
+      "query_id": "q_v2_081",
+      "query": "How does LLaVA create multimodal instruction-following data using language-only GPT-4?",
+      "intent": "text",
+      "document_id": "llava",
+      "expected_evidence": [
+        {
+          "document_id": "llava",
+          "page_number": 3,
+          "figure_id": null
+        }
+      ],
+      "difficulty": "medium",
+      "retrieval_challenge": "semantic_text",
+      "source_note": "Physical PDF p.3, Sec. 3."
+    },
+    {
+      "query_id": "q_v2_082",
+      "query": "What visual and language models are connected in LLaVA, and what trainable component maps between their representation spaces?",
+      "intent": "text",
+      "document_id": "llava",
+      "expected_evidence": [
+        {
+          "document_id": "llava",
+          "page_number": 4,
+          "figure_id": null
+        }
+      ],
+      "difficulty": "medium",
+      "retrieval_challenge": "semantic_text",
+      "source_note": "Physical PDF p.4, Sec. 4.1."
+    },
+    {
+      "query_id": "q_v2_083",
+      "query": "What is trained and what remains frozen during LLaVA's first feature-alignment stage?",
+      "intent": "text",
+      "document_id": "llava",
+      "expected_evidence": [
+        {
+          "document_id": "llava",
+          "page_number": 5,
+          "figure_id": null
+        }
+      ],
+      "difficulty": "medium",
+      "retrieval_challenge": "semantic_text",
+      "source_note": "Physical PDF p.5, Stage 1."
+    },
+    {
+      "query_id": "q_v2_084",
+      "query": "How does the second LLaVA training stage differ from feature alignment in terms of trainable parameters and data?",
+      "intent": "text",
+      "document_id": "llava",
+      "expected_evidence": [
+        {
+          "document_id": "llava",
+          "page_number": 5,
+          "figure_id": null
+        }
+      ],
+      "difficulty": "medium",
+      "retrieval_challenge": "semantic_text",
+      "source_note": "Physical PDF p.5, Stage 2."
+    },
+    {
+      "query_id": "q_v2_085",
+      "query": "What do the LLaVA-Bench results indicate about the effect of visual instruction tuning on conversation, detailed description, and complex reasoning?",
+      "intent": "text",
+      "document_id": "llava",
+      "expected_evidence": [
+        {
+          "document_id": "llava",
+          "page_number": 7,
+          "figure_id": null
+        }
+      ],
+      "difficulty": "hard",
+      "retrieval_challenge": "semantic_text",
+      "source_note": "Physical PDF p.7, Tables 4-5 discussion."
+    },
+    {
+      "query_id": "q_v2_086",
+      "query": "Which figure shows the LLaVA network architecture connecting a CLIP vision encoder to a language model through projection W?",
+      "intent": "visual_caption",
+      "document_id": "llava",
+      "expected_evidence": [
+        {
+          "document_id": "llava",
+          "page_number": 4,
+          "figure_id": "fig_llava_architecture"
+        }
+      ],
+      "difficulty": "easy",
+      "retrieval_challenge": "caption_semantics",
+      "source_note": "Physical PDF p.4, Figure 1."
+    },
+    {
+      "query_id": "q_v2_087",
+      "query": "Which figure shows LLaVA generating HTML/JavaScript for an interactive website from a user's sketch?",
+      "intent": "visual_caption",
+      "document_id": "llava",
+      "expected_evidence": [
+        {
+          "document_id": "llava",
+          "page_number": 16,
+          "figure_id": "fig_llava_website"
+        }
+      ],
+      "difficulty": "medium",
+      "retrieval_challenge": "caption_semantics",
+      "source_note": "Physical PDF p.16, Figure 2."
+    },
+    {
+      "query_id": "q_v2_088",
+      "query": "Which figure demonstrates LLaVA following user intent on visual content with follow-up requests about a refrigerator and a travel scene?",
+      "intent": "visual_caption",
+      "document_id": "llava",
+      "expected_evidence": [
+        {
+          "document_id": "llava",
+          "page_number": 17,
+          "figure_id": "fig_llava_followup"
+        }
+      ],
+      "difficulty": "medium",
+      "retrieval_challenge": "caption_semantics",
+      "source_note": "Physical PDF p.17, Figure 3."
+    },
+    {
+      "query_id": "q_v2_089",
+      "query": "Which figure compares noun-phrase frequency coverage before and after filtering CC3M?",
+      "intent": "visual_caption",
+      "document_id": "llava",
+      "expected_evidence": [
+        {
+          "document_id": "llava",
+          "page_number": 21,
+          "figure_id": "fig_llava_cc3m_filtering"
+        }
+      ],
+      "difficulty": "medium",
+      "retrieval_challenge": "caption_semantics",
+      "source_note": "Physical PDF p.21, Figure 7."
+    },
+    {
+      "query_id": "q_v2_090",
+      "query": "Find the simple architecture diagram where image features pass through a small projection block before entering the language model.",
+      "intent": "visual_layout",
+      "document_id": "llava",
+      "expected_evidence": [
+        {
+          "document_id": "llava",
+          "page_number": 4,
+          "figure_id": "fig_llava_architecture"
+        }
+      ],
+      "difficulty": "medium",
+      "retrieval_challenge": "visual_layout",
+      "source_note": "Physical PDF p.4, Figure 1."
+    },
+    {
+      "query_id": "q_v2_091",
+      "query": "Find the visual containing a hand-drawn webpage mock-up, generated code, and rendered website outputs.",
+      "intent": "visual_layout",
+      "document_id": "llava",
+      "expected_evidence": [
+        {
+          "document_id": "llava",
+          "page_number": 16,
+          "figure_id": "fig_llava_website"
+        }
+      ],
+      "difficulty": "hard",
+      "retrieval_challenge": "visual_layout",
+      "source_note": "Physical PDF p.16, Figure 2."
+    },
+    {
+      "query_id": "q_v2_092",
+      "query": "Which page-wide visual contains multiple long user/model exchanges tied to different photographs rather than a model architecture?",
+      "intent": "visual_layout",
+      "document_id": "llava",
+      "expected_evidence": [
+        {
+          "document_id": "llava",
+          "page_number": 17,
+          "figure_id": "fig_llava_followup"
+        }
+      ],
+      "difficulty": "hard",
+      "retrieval_challenge": "visual_layout",
+      "source_note": "Physical PDF p.17, Figure 3."
+    },
+    {
+      "query_id": "q_v2_093",
+      "query": "Find the single log-scale frequency plot comparing an original caption corpus with a filtered subset.",
+      "intent": "visual_layout",
+      "document_id": "llava",
+      "expected_evidence": [
+        {
+          "document_id": "llava",
+          "page_number": 21,
+          "figure_id": "fig_llava_cc3m_filtering"
+        }
+      ],
+      "difficulty": "hard",
+      "retrieval_challenge": "visual_layout",
+      "source_note": "Physical PDF p.21, Figure 7."
+    },
+    {
+      "query_id": "q_v2_094",
+      "query": "Using the LLaVA architecture diagram and equation, explain how CLIP visual features are transformed into language-model embedding tokens.",
+      "intent": "hybrid",
+      "document_id": "llava",
+      "expected_evidence": [
+        {
+          "document_id": "llava",
+          "page_number": 4,
+          "figure_id": "fig_llava_architecture"
+        },
+        {
+          "document_id": "llava",
+          "page_number": 4,
+          "figure_id": null
+        }
+      ],
+      "difficulty": "medium",
+      "retrieval_challenge": "multi_evidence",
+      "source_note": "Physical PDF p.4, Figure 1 + Eq. 1."
+    },
+    {
+      "query_id": "q_v2_095",
+      "query": "How does the architecture figure support LLaVA's choice of a lightweight projection compared with more complex vision-language connectors?",
+      "intent": "hybrid",
+      "document_id": "llava",
+      "expected_evidence": [
+        {
+          "document_id": "llava",
+          "page_number": 4,
+          "figure_id": "fig_llava_architecture"
+        },
+        {
+          "document_id": "llava",
+          "page_number": 4,
+          "figure_id": null
+        }
+      ],
+      "difficulty": "hard",
+      "retrieval_challenge": "cross_modal",
+      "source_note": "Physical PDF p.4, Figure 1 + Sec. 4.1."
+    },
+    {
+      "query_id": "q_v2_096",
+      "query": "What does the interactive-website example show about LLaVA's ability to translate visual instructions into executable output?",
+      "intent": "hybrid",
+      "document_id": "llava",
+      "expected_evidence": [
+        {
+          "document_id": "llava",
+          "page_number": 16,
+          "figure_id": "fig_llava_website"
+        },
+        {
+          "document_id": "llava",
+          "page_number": 16,
+          "figure_id": null
+        }
+      ],
+      "difficulty": "hard",
+      "retrieval_challenge": "cross_modal",
+      "source_note": "Physical PDF p.16, Figure 2 + caption."
+    },
+    {
+      "query_id": "q_v2_097",
+      "query": "How do the follow-up interaction examples support the claim that LLaVA can respond according to user intent rather than merely captioning an image?",
+      "intent": "hybrid",
+      "document_id": "llava",
+      "expected_evidence": [
+        {
+          "document_id": "llava",
+          "page_number": 17,
+          "figure_id": "fig_llava_followup"
+        },
+        {
+          "document_id": "llava",
+          "page_number": 17,
+          "figure_id": null
+        }
+      ],
+      "difficulty": "hard",
+      "retrieval_challenge": "cross_modal",
+      "source_note": "Physical PDF p.17, Figure 3 + caption."
+    },
+    {
+      "query_id": "q_v2_098",
+      "query": "How does the CC3M noun-phrase plot support the paper's filtering strategy for constructing the feature-alignment dataset?",
+      "intent": "hybrid",
+      "document_id": "llava",
+      "expected_evidence": [
+        {
+          "document_id": "llava",
+          "page_number": 21,
+          "figure_id": "fig_llava_cc3m_filtering"
+        },
+        {
+          "document_id": "llava",
+          "page_number": 21,
+          "figure_id": null
+        }
+      ],
+      "difficulty": "hard",
+      "retrieval_challenge": "cross_modal",
+      "source_note": "Physical PDF p.21, Figure 7 + appendix data description."
+    },
+    {
+      "query_id": "q_v2_099",
+      "query": "Find the LLaVA visual that shows the model's vision-to-language architecture rather than a qualitative interaction example.",
+      "intent": "hard_visual",
+      "document_id": "llava",
+      "expected_evidence": [
+        {
+          "document_id": "llava",
+          "page_number": 4,
+          "figure_id": "fig_llava_architecture"
+        }
+      ],
+      "difficulty": "hard",
+      "retrieval_challenge": "same_paper_distractor",
+      "source_note": "Physical PDF p.4, Figure 1; distractors Figures 2-3."
+    },
+    {
+      "query_id": "q_v2_100",
+      "query": "Which visual shows dataset filtering statistics rather than model architecture or multimodal conversation examples?",
+      "intent": "hard_visual",
+      "document_id": "llava",
+      "expected_evidence": [
+        {
+          "document_id": "llava",
+          "page_number": 21,
+          "figure_id": "fig_llava_cc3m_filtering"
+        }
+      ],
+      "difficulty": "hard",
+      "retrieval_challenge": "same_paper_distractor",
+      "source_note": "Physical PDF p.21, Figure 7."
+    }
+  ]
+}

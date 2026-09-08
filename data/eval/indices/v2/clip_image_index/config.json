@@ -1,0 +1,9 @@
+{
+  "model": "openai/clip-vit-base-patch32",
+  "embedding_dimension": 512,
+  "normalization": "L2",
+  "similarity": "inner_product/cosine",
+  "index_type": "IndexFlatIP",
+  "image_bytes_persisted": false,
+  "n_records": 37
+}
