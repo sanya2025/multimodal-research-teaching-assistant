@@ -1,5 +1,6 @@
 {
   "status": "measured",
+  "benchmark": "v1",
   "dataset_version": "v1.0.0",
   "corpus_version": "v1.0.0",
   "retrieval_system": "VectorStore (text-only FAISS, nomic-embed-text)",
@@ -11,6 +12,13 @@
       "mrr": 0.5167,
       "ndcg_at_5": 0.4567,
       "hit_at_5": 0.55
+    },
+    "hybrid": {
+      "sample_count": 6,
+      "recall_at_5": 0.3889,
+      "mrr": 0.6667,
+      "ndcg_at_5": 0.439,
+      "hit_at_5": 0.6667
     },
     "text": {
       "sample_count": 8,
@@ -25,13 +33,6 @@
       "mrr": 0.0,
       "ndcg_at_5": 0.0,
       "hit_at_5": 0.0
-    },
-    "hybrid": {
-      "sample_count": 6,
-      "recall_at_5": 0.3889,
-      "mrr": 0.6667,
-      "ndcg_at_5": 0.439,
-      "hit_at_5": 0.6667
     }
   }
 }

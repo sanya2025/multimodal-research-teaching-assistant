@@ -1,0 +1,390 @@
+{
+  "corpus_version": "v2.0.0",
+  "page_numbering_convention": "1-indexed physical PDF page (identical to MRTA ingestion page field; same convention as v1)",
+  "grounding_policy": "Figure targets bound to real extract_figures() output where the extracted raster crop genuinely represents the figure. Where the figure is vector-drawn (chart, box-and-arrow diagram, pseudocode) or extraction only captured a decorative photo embedded next to the diagram, a full-page render (mrta.ingestion.page_renderer) is used instead, tagged extraction_type='page_render_fallback' with figure_index=0. See scripts/build_v2_manifest.py module docstring for the exact heuristic and manual verification notes.",
+  "documents": [
+    {
+      "document_id": "attention_is_all_you_need",
+      "filename": "attention_is_all_you_need.pdf",
+      "title": null,
+      "sha256": "bdfaa68d8984f0dc02beaca527b76f207d99b666d31d1da728ee0728182df697",
+      "pages": 15,
+      "source_note": "Pinned for MRTA v2 evaluation benchmark.",
+      "figures": [
+        {
+          "figure_id": "fig_anaphora_attention",
+          "page_number": 14,
+          "figure_index": 0,
+          "extraction_type": "page_render_fallback",
+          "image_path": "data/eval/corpus/v2/page_renders/attention_is_all_you_need_p14_page_render.png",
+          "width": null,
+          "height": null
+        },
+        {
+          "figure_id": "fig_attention_mechanisms",
+          "page_number": 4,
+          "figure_index": 1,
+          "extraction_type": "raster_crop",
+          "image_path": "data/eval/corpus/v2/images/attention_is_all_you_need_p4_f1.png",
+          "width": 445,
+          "height": 884
+        },
+        {
+          "figure_id": "fig_attention_mechanisms",
+          "page_number": 4,
+          "figure_index": 2,
+          "extraction_type": "raster_crop",
+          "image_path": "data/eval/corpus/v2/images/attention_is_all_you_need_p4_f2.png",
+          "width": 835,
+          "height": 1282
+        },
+        {
+          "figure_id": "fig_long_distance_attention",
+          "page_number": 13,
+          "figure_index": 0,
+          "extraction_type": "page_render_fallback",
+          "image_path": "data/eval/corpus/v2/page_renders/attention_is_all_you_need_p13_page_render.png",
+          "width": null,
+          "height": null
+        },
+        {
+          "figure_id": "fig_transformer_arch",
+          "page_number": 3,
+          "figure_index": 1,
+          "extraction_type": "raster_crop",
+          "image_path": "data/eval/corpus/v2/images/attention_is_all_you_need_p3_f1.png",
+          "width": 1520,
+          "height": 2239
+        }
+      ]
+    },
+    {
+      "document_id": "clip",
+      "filename": "clip.pdf",
+      "title": null,
+      "sha256": "6478b6e571a7d6fcd846d8ef77bfd60c285f1986abb8f475eedc43de403074f5",
+      "pages": 48,
+      "source_note": "Pinned for MRTA v2 evaluation benchmark.",
+      "figures": [
+        {
+          "figure_id": "fig_clip_approach",
+          "page_number": 2,
+          "figure_index": 0,
+          "extraction_type": "page_render_fallback",
+          "image_path": "data/eval/corpus/v2/page_renders/clip_p2_page_render.png",
+          "width": null,
+          "height": null
+        },
+        {
+          "figure_id": "fig_clip_compute_scaling",
+          "page_number": 11,
+          "figure_index": 0,
+          "extraction_type": "page_render_fallback",
+          "image_path": "data/eval/corpus/v2/page_renders/clip_p11_page_render.png",
+          "width": null,
+          "height": null
+        },
+        {
+          "figure_id": "fig_clip_efficiency",
+          "page_number": 3,
+          "figure_index": 0,
+          "extraction_type": "page_render_fallback",
+          "image_path": "data/eval/corpus/v2/page_renders/clip_p3_page_render.png",
+          "width": null,
+          "height": null
+        },
+        {
+          "figure_id": "fig_clip_prompt_engineering",
+          "page_number": 7,
+          "figure_index": 0,
+          "extraction_type": "page_render_fallback",
+          "image_path": "data/eval/corpus/v2/page_renders/clip_p7_page_render.png",
+          "width": null,
+          "height": null
+        },
+        {
+          "figure_id": "fig_clip_pseudocode",
+          "page_number": 5,
+          "figure_index": 0,
+          "extraction_type": "page_render_fallback",
+          "image_path": "data/eval/corpus/v2/page_renders/clip_p5_page_render.png",
+          "width": null,
+          "height": null
+        }
+      ]
+    },
+    {
+      "document_id": "siglip",
+      "filename": "siglip.pdf",
+      "title": null,
+      "sha256": "2efade8de3baeffe9eba759aab9f510ea8f8ac3c365f02f0da75d9baf9ffa2db",
+      "pages": 17,
+      "source_note": "Pinned for MRTA v2 evaluation benchmark.",
+      "figures": [
+        {
+          "figure_id": "fig_siglip_batch_size",
+          "page_number": 4,
+          "figure_index": 0,
+          "extraction_type": "page_render_fallback",
+          "image_path": "data/eval/corpus/v2/page_renders/siglip_p4_page_render.png",
+          "width": null,
+          "height": null
+        },
+        {
+          "figure_id": "fig_siglip_chunked_loss",
+          "page_number": 3,
+          "figure_index": 0,
+          "extraction_type": "page_render_fallback",
+          "image_path": "data/eval/corpus/v2/page_renders/siglip_p3_page_render.png",
+          "width": null,
+          "height": null
+        },
+        {
+          "figure_id": "fig_siglip_training_duration",
+          "page_number": 5,
+          "figure_index": 0,
+          "extraction_type": "page_render_fallback",
+          "image_path": "data/eval/corpus/v2/page_renders/siglip_p5_page_render.png",
+          "width": null,
+          "height": null
+        },
+        {
+          "figure_id": "fig_siglip_weight_decay",
+          "page_number": 6,
+          "figure_index": 0,
+          "extraction_type": "page_render_fallback",
+          "image_path": "data/eval/corpus/v2/page_renders/siglip_p6_page_render.png",
+          "width": null,
+          "height": null
+        }
+      ]
+    },
+    {
+      "document_id": "blip2",
+      "filename": "blip2.pdf",
+      "title": null,
+      "sha256": "6bc5d399d6127a64ace5167a2f0c00112a49725d2475d80322dbf0083f139e80",
+      "pages": 13,
+      "source_note": "Pinned for MRTA v2 evaluation benchmark.",
+      "figures": [
+        {
+          "figure_id": "fig_blip2_overview",
+          "page_number": 1,
+          "figure_index": 0,
+          "extraction_type": "page_render_fallback",
+          "image_path": "data/eval/corpus/v2/page_renders/blip2_p1_page_render.png",
+          "width": null,
+          "height": null
+        },
+        {
+          "figure_id": "fig_blip2_qformer",
+          "page_number": 3,
+          "figure_index": 0,
+          "extraction_type": "page_render_fallback",
+          "image_path": "data/eval/corpus/v2/page_renders/blip2_p3_page_render.png",
+          "width": null,
+          "height": null
+        },
+        {
+          "figure_id": "fig_blip2_second_stage",
+          "page_number": 4,
+          "figure_index": 0,
+          "extraction_type": "page_render_fallback",
+          "image_path": "data/eval/corpus/v2/page_renders/blip2_p4_page_render.png",
+          "width": null,
+          "height": null
+        },
+        {
+          "figure_id": "fig_blip2_zero_shot_examples",
+          "page_number": 5,
+          "figure_index": 1,
+          "extraction_type": "raster_crop",
+          "image_path": "data/eval/corpus/v2/images/blip2_p5_f1.png",
+          "width": 1024,
+          "height": 682
+        },
+        {
+          "figure_id": "fig_blip2_zero_shot_examples",
+          "page_number": 5,
+          "figure_index": 2,
+          "extraction_type": "raster_crop",
+          "image_path": "data/eval/corpus/v2/images/blip2_p5_f2.png",
+          "width": 480,
+          "height": 360
+        },
+        {
+          "figure_id": "fig_blip2_zero_shot_examples",
+          "page_number": 5,
+          "figure_index": 3,
+          "extraction_type": "raster_crop",
+          "image_path": "data/eval/corpus/v2/images/blip2_p5_f3.png",
+          "width": 1500,
+          "height": 880
+        },
+        {
+          "figure_id": "fig_blip2_zero_shot_examples",
+          "page_number": 5,
+          "figure_index": 4,
+          "extraction_type": "raster_crop",
+          "image_path": "data/eval/corpus/v2/images/blip2_p5_f4.png",
+          "width": 1920,
+          "height": 1271
+        },
+        {
+          "figure_id": "fig_blip2_zero_shot_examples",
+          "page_number": 5,
+          "figure_index": 5,
+          "extraction_type": "raster_crop",
+          "image_path": "data/eval/corpus/v2/images/blip2_p5_f5.png",
+          "width": 225,
+          "height": 225
+        },
+        {
+          "figure_id": "fig_blip2_zero_shot_examples",
+          "page_number": 5,
+          "figure_index": 6,
+          "extraction_type": "raster_crop",
+          "image_path": "data/eval/corpus/v2/images/blip2_p5_f6.png",
+          "width": 260,
+          "height": 280
+        },
+        {
+          "figure_id": "fig_blip2_zero_shot_examples",
+          "page_number": 5,
+          "figure_index": 7,
+          "extraction_type": "raster_crop",
+          "image_path": "data/eval/corpus/v2/images/blip2_p5_f7.png",
+          "width": 224,
+          "height": 224
+        },
+        {
+          "figure_id": "fig_blip2_zero_shot_examples",
+          "page_number": 5,
+          "figure_index": 8,
+          "extraction_type": "raster_crop",
+          "image_path": "data/eval/corpus/v2/images/blip2_p5_f8.png",
+          "width": 720,
+          "height": 500
+        },
+        {
+          "figure_id": "fig_blip2_zero_shot_examples",
+          "page_number": 5,
+          "figure_index": 9,
+          "extraction_type": "raster_crop",
+          "image_path": "data/eval/corpus/v2/images/blip2_p5_f9.png",
+          "width": 225,
+          "height": 225
+        },
+        {
+          "figure_id": "fig_blip2_zero_shot_examples",
+          "page_number": 5,
+          "figure_index": 10,
+          "extraction_type": "raster_crop",
+          "image_path": "data/eval/corpus/v2/images/blip2_p5_f10.png",
+          "width": 1500,
+          "height": 1000
+        },
+        {
+          "figure_id": "fig_blip2_zero_shot_examples",
+          "page_number": 5,
+          "figure_index": 11,
+          "extraction_type": "raster_crop",
+          "image_path": "data/eval/corpus/v2/images/blip2_p5_f11.png",
+          "width": 242,
+          "height": 208
+        },
+        {
+          "figure_id": "fig_blip2_zero_shot_examples",
+          "page_number": 5,
+          "figure_index": 12,
+          "extraction_type": "raster_crop",
+          "image_path": "data/eval/corpus/v2/images/blip2_p5_f12.png",
+          "width": 224,
+          "height": 224
+        },
+        {
+          "figure_id": "fig_blip2_zero_shot_examples",
+          "page_number": 5,
+          "figure_index": 13,
+          "extraction_type": "raster_crop",
+          "image_path": "data/eval/corpus/v2/images/blip2_p5_f13.png",
+          "width": 275,
+          "height": 183
+        }
+      ]
+    },
+    {
+      "document_id": "llava",
+      "filename": "llava.pdf",
+      "title": null,
+      "sha256": "dc8bace378a282ea78caa9b5959306202fbfa3b8cedaf8a66541a9af18f4d3bf",
+      "pages": 25,
+      "source_note": "Pinned for MRTA v2 evaluation benchmark.",
+      "figures": [
+        {
+          "figure_id": "fig_llava_architecture",
+          "page_number": 4,
+          "figure_index": 0,
+          "extraction_type": "page_render_fallback",
+          "image_path": "data/eval/corpus/v2/page_renders/llava_p4_page_render.png",
+          "width": null,
+          "height": null
+        },
+        {
+          "figure_id": "fig_llava_cc3m_filtering",
+          "page_number": 21,
+          "figure_index": 0,
+          "extraction_type": "page_render_fallback",
+          "image_path": "data/eval/corpus/v2/page_renders/llava_p21_page_render.png",
+          "width": null,
+          "height": null
+        },
+        {
+          "figure_id": "fig_llava_followup",
+          "page_number": 17,
+          "figure_index": 1,
+          "extraction_type": "raster_crop",
+          "image_path": "data/eval/corpus/v2/images/llava_p17_f1.png",
+          "width": 547,
+          "height": 400
+        },
+        {
+          "figure_id": "fig_llava_followup",
+          "page_number": 17,
+          "figure_index": 6,
+          "extraction_type": "raster_crop",
+          "image_path": "data/eval/corpus/v2/images/llava_p17_f6.png",
+          "width": 599,
+          "height": 400
+        },
+        {
+          "figure_id": "fig_llava_website",
+          "page_number": 16,
+          "figure_index": 1,
+          "extraction_type": "raster_crop",
+          "image_path": "data/eval/corpus/v2/images/llava_p16_f1.png",
+          "width": 514,
+          "height": 514
+        },
+        {
+          "figure_id": "fig_llava_website",
+          "page_number": 16,
+          "figure_index": 2,
+          "extraction_type": "raster_crop",
+          "image_path": "data/eval/corpus/v2/images/llava_p16_f2.png",
+          "width": 782,
+          "height": 446
+        },
+        {
+          "figure_id": "fig_llava_website",
+          "page_number": 16,
+          "figure_index": 3,
+          "extraction_type": "raster_crop",
+          "image_path": "data/eval/corpus/v2/images/llava_p16_f3.png",
+          "width": 782,
+          "height": 446
+        }
+      ]
+    }
+  ]
+}

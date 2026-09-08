@@ -1,15 +1,18 @@
 """Baseline evaluation driver for PR1 — text-only VectorStore retrieval.
 
-Loads the pinned evaluation corpus (data/eval/), runs all 20 benchmark queries
-against the existing MRTA text retrieval system, computes Recall@5, Hit@5,
-MRR, and nDCG@5, and writes results to results/.
+Loads a pinned evaluation corpus (data/eval/) and runs all benchmark queries
+against the existing MRTA text retrieval system, computing Recall@5, Hit@5,
+MRR, and nDCG@5, writing results to results/ (v1) or results/v2/ (v2).
 
 Usage:
-    python scripts/run_eval_baseline.py
+    python scripts/run_eval_baseline.py                  # v1 (default, unchanged)
+    python scripts/run_eval_baseline.py --benchmark v2    # v2 (5 papers, 100 queries)
 
 Requirements:
     - Ollama running with nomic-embed-text available (used for query embedding)
-    - data/vector_store/aiayn/ exists (pre-built FAISS index for the corpus)
+    - The benchmark's text vector store already built:
+        v1: data/vector_store/aiayn/           (pre-built)
+        v2: data/vector_store/v2_corpus/  (build with build_text_index.py --benchmark v2)
 
 If Ollama is not available, the script exits with a clear error rather than
 producing fabricated results.
@@ -17,6 +20,7 @@ producing fabricated results.
 
 from __future__ import annotations
 
+import argparse
 import json
 import sys
 from pathlib import Path
@@ -25,10 +29,28 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO_ROOT / "src"))
 
 K = 5
-VECTOR_STORE_PATH = REPO_ROOT / "data" / "vector_store" / "aiayn"
-MANIFEST_PATH = REPO_ROOT / "data" / "eval" / "corpus" / "v1" / "manifest.json"
-QUERIES_PATH = REPO_ROOT / "data" / "eval" / "queries_v1.json"
-RESULTS_DIR = REPO_ROOT / "results"
+
+# Benchmark registry — v1 paths are byte-identical to the pre-generalization
+# script; v2 adds a second, independent set of paths. Nothing about v1's
+# behavior changes when --benchmark is omitted (default "v1").
+BENCHMARKS = {
+    "v1": {
+        "vector_store": REPO_ROOT / "data" / "vector_store" / "aiayn",
+        "manifest": REPO_ROOT / "data" / "eval" / "corpus" / "v1" / "manifest.json",
+        "queries": REPO_ROOT / "data" / "eval" / "queries_v1.json",
+        "results_dir": REPO_ROOT / "results",
+        "metrics_filename": "baseline_metrics.json",
+        "per_query_filename": "baseline_per_query.json",
+    },
+    "v2": {
+        "vector_store": REPO_ROOT / "data" / "vector_store" / "v2_corpus",
+        "manifest": REPO_ROOT / "data" / "eval" / "corpus" / "v2" / "manifest.json",
+        "queries": REPO_ROOT / "data" / "eval" / "queries_v2.json",
+        "results_dir": REPO_ROOT / "results" / "v2",
+        "metrics_filename": "pr1_baseline_metrics.json",
+        "per_query_filename": "pr1_per_query.json",
+    },
+}
 
 
 # ---------------------------------------------------------------------------
@@ -40,20 +62,30 @@ def _load_json(path: Path) -> dict | list:
     return json.loads(path.read_text(encoding="utf-8"))
 
 
+def _evidence_list(query: dict) -> list[dict]:
+    """v1 uses 'target_evidence'; v2 uses 'expected_evidence'. Support both."""
+    return query.get("target_evidence", query.get("expected_evidence", []))
+
+
 def _validate_dataset(dataset: dict) -> None:
+    """Validate query count and intent distribution against the file's own
+    declared counts — this generalizes across v1's 3 intents and v2's 5
+    without hardcoding either taxonomy into the script."""
     queries = dataset.get("queries", [])
-    if len(queries) != 20:
-        raise ValueError(f"Expected 20 queries, got {len(queries)}")
+    expected_count = dataset.get("query_count", len(queries))
+    if len(queries) != expected_count:
+        raise ValueError(f"Expected {expected_count} queries, got {len(queries)}")
+
     counts: dict[str, int] = {}
     for q in queries:
-        if "query_id" not in q or "intent" not in q or "target_evidence" not in q:
-            raise ValueError(f"Malformed query: {q.get('query_id')}")
-        if not q["target_evidence"]:
-            raise ValueError(f"Empty target_evidence for {q['query_id']}")
+        if "query_id" not in q or "intent" not in q or not _evidence_list(q):
+            raise ValueError(f"Malformed or empty-evidence query: {q.get('query_id')}")
         counts[q["intent"]] = counts.get(q["intent"], 0) + 1
-    expected = {"text": 8, "visual": 6, "hybrid": 6}
-    if counts != expected:
-        raise ValueError(f"Intent counts {counts} != expected {expected}")
+
+    expected_counts = dataset.get("counts_by_intent")
+    if expected_counts is not None and counts != expected_counts:
+        raise ValueError(f"Intent counts {counts} != declared {expected_counts}")
+
     ids = [q["query_id"] for q in queries]
     if len(ids) != len(set(ids)):
         raise ValueError("Duplicate query_id values")
@@ -72,22 +104,19 @@ def _parse_targets(target_list: list[dict]) -> list:
     ]
 
 
-def _build_store() -> object:
+def _build_store(vector_store_path: Path) -> object:
     from mrta.retrieval.embedder import Embedder
     from mrta.retrieval.vector_store import VectorStore
 
-    if not VECTOR_STORE_PATH.exists():
-        print(f"ERROR: vector store not found at {VECTOR_STORE_PATH}")
-        print(
-            "Build it first: python scripts/ingest.py "
-            "data/eval/corpus/v1/papers/attention_is_all_you_need.pdf"
-        )
+    if not vector_store_path.exists():
+        print(f"ERROR: vector store not found at {vector_store_path}")
+        print("Build it first, e.g.: python scripts/build_text_index.py --benchmark v2")
         sys.exit(1)
 
-    print("Loading FAISS index from data/vector_store/aiayn/ ...")
+    print(f"Loading FAISS index from {vector_store_path} ...")
     embedder = Embedder("nomic-embed-text")
     try:
-        store = VectorStore.load(VECTOR_STORE_PATH, embedder)
+        store = VectorStore.load(vector_store_path, embedder)
     except Exception as e:
         print(f"ERROR loading vector store: {e}")
         sys.exit(1)
@@ -133,6 +162,13 @@ def _aggregate(per_query: list[dict], intent_filter: str | None = None) -> dict:
     }
 
 
+def _row(label: str, m: dict) -> str:
+    return (
+        f"  {label:20s}  {m['recall_at_5']:8.4f}  {m['mrr']:6.4f}"
+        f"  {m['ndcg_at_5']:7.4f}  {m['hit_at_5']:6.4f}  (n={m['sample_count']})"
+    )
+
+
 # ---------------------------------------------------------------------------
 # Main
 # ---------------------------------------------------------------------------
@@ -147,18 +183,31 @@ def main() -> None:
         recall_at_k,
     )
 
-    print("=== PR1 Baseline Evaluation ===")
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument(
+        "--benchmark",
+        choices=sorted(BENCHMARKS),
+        default="v1",
+        help="Which benchmark version to evaluate (default: v1, unchanged behavior)",
+    )
+    args = parser.parse_args()
+    cfg = BENCHMARKS[args.benchmark]
+
+    print(f"=== PR1 Baseline Evaluation ({args.benchmark}) ===")
     print()
 
     _probe_ollama()
-    store = _build_store()
+    store = _build_store(cfg["vector_store"])
 
-    manifest = _load_json(MANIFEST_PATH)
-    dataset = _load_json(QUERIES_PATH)
+    manifest = _load_json(cfg["manifest"])
+    dataset = _load_json(cfg["queries"])
     _validate_dataset(dataset)
 
     adapter = EvalAdapter(manifest)
     queries = dataset["queries"]
+    intents = sorted(dataset.get("counts_by_intent", {}).keys()) or sorted(
+        {q["intent"] for q in queries}
+    )
 
     print(f"Running {len(queries)} queries at k={K} ...")
     print()
@@ -169,7 +218,7 @@ def main() -> None:
         qid = q["query_id"]
         query_text = q["query"]
         intent = q["intent"]
-        targets = _parse_targets(q["target_evidence"])
+        targets = _parse_targets(_evidence_list(q))
 
         try:
             raw_results = store.search_with_scores(query_text, k=K)
@@ -189,8 +238,8 @@ def main() -> None:
 
         hit_symbol = "✓" if h5 > 0 else "✗"
         print(
-            f"  {qid} [{intent:6s}] {hit_symbol}  Recall={r5:.2f}  MRR={mrr:.2f}"
-            f"  nDCG={nd5:.2f}  | {query_text[:60]!r}"
+            f"  {qid} [{intent:16s}] {hit_symbol}  Recall={r5:.2f}  MRR={mrr:.2f}"
+            f"  nDCG={nd5:.2f}  | {query_text[:50]!r}"
         )
 
         retrieved_ev = [
@@ -212,6 +261,7 @@ def main() -> None:
                 "query_id": qid,
                 "query": query_text,
                 "intent": intent,
+                "document_id": q.get("document_id"),
                 "recall_at_5": round(r5, 4),
                 "hit_at_5": round(h5, 4),
                 "mrr": round(mrr, 4),
@@ -225,26 +275,17 @@ def main() -> None:
     print("=== Aggregated results ===")
 
     overall = _aggregate(per_query_results)
-    text_agg = _aggregate(per_query_results, "text")
-    visual_agg = _aggregate(per_query_results, "visual")
-    hybrid_agg = _aggregate(per_query_results, "hybrid")
+    by_intent = {intent: _aggregate(per_query_results, intent) for intent in intents}
 
-    header = f"  {'':8s}  {'Recall@5':>8}  {'MRR':>6}  {'nDCG@5':>7}  {'Hit@5':>6}"
+    header = f"  {'':20s}  {'Recall@5':>8}  {'MRR':>6}  {'nDCG@5':>7}  {'Hit@5':>6}"
     print(header)
-
-    def _row(label: str, m: dict) -> str:
-        return (
-            f"  {label:8s}  {m['recall_at_5']:8.4f}  {m['mrr']:6.4f}"
-            f"  {m['ndcg_at_5']:7.4f}  {m['hit_at_5']:6.4f}  (n={m['sample_count']})"
-        )
-
     print(_row("Overall", overall))
-    print(_row("Text", text_agg))
-    print(_row("Visual", visual_agg))
-    print(_row("Hybrid", hybrid_agg))
+    for intent in intents:
+        print(_row(intent, by_intent[intent]))
 
     baseline_metrics = {
         "status": "measured",
+        "benchmark": args.benchmark,
         "dataset_version": dataset["dataset_version"],
         "corpus_version": dataset["corpus_version"],
         "retrieval_system": "VectorStore (text-only FAISS, nomic-embed-text)",
@@ -252,15 +293,13 @@ def main() -> None:
         "sample_count": len(per_query_results),
         "metrics": {
             "overall": {k: v for k, v in overall.items() if k != "sample_count"},
-            "text": text_agg,
-            "visual": visual_agg,
-            "hybrid": hybrid_agg,
+            **{intent: by_intent[intent] for intent in intents},
         },
     }
 
-    RESULTS_DIR.mkdir(exist_ok=True)
-    metrics_path = RESULTS_DIR / "baseline_metrics.json"
-    per_query_path = RESULTS_DIR / "baseline_per_query.json"
+    cfg["results_dir"].mkdir(parents=True, exist_ok=True)
+    metrics_path = cfg["results_dir"] / cfg["metrics_filename"]
+    per_query_path = cfg["results_dir"] / cfg["per_query_filename"]
 
     metrics_path.write_text(json.dumps(baseline_metrics, indent=2), encoding="utf-8")
     per_query_path.write_text(json.dumps(per_query_results, indent=2), encoding="utf-8")

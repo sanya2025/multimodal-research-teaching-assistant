@@ -1,0 +1,311 @@
+{
+  "built_at": "2026-09-08T17:48:11.813654+00:00",
+  "model": "openai/clip-vit-base-patch32",
+  "embedding_dimension": 512,
+  "normalization": "L2",
+  "similarity": "inner_product/cosine",
+  "index_type": "IndexFlatIP",
+  "embedding_source": "direct_clip_image_embedding",
+  "captions_used": false,
+  "image_bytes_persisted": false,
+  "n_records": 37,
+  "records": [
+    {
+      "record_id": "attention_is_all_you_need_p14_f0",
+      "document_id": "attention_is_all_you_need",
+      "page": 14,
+      "figure_id": "fig_anaphora_attention",
+      "figure_index": 0,
+      "image_path": "data/eval/corpus/v2/page_renders/attention_is_all_you_need_p14_page_render.png"
+    },
+    {
+      "record_id": "attention_is_all_you_need_p4_f1",
+      "document_id": "attention_is_all_you_need",
+      "page": 4,
+      "figure_id": "fig_attention_mechanisms",
+      "figure_index": 1,
+      "image_path": "data/eval/corpus/v2/images/attention_is_all_you_need_p4_f1.png"
+    },
+    {
+      "record_id": "attention_is_all_you_need_p4_f2",
+      "document_id": "attention_is_all_you_need",
+      "page": 4,
+      "figure_id": "fig_attention_mechanisms",
+      "figure_index": 2,
+      "image_path": "data/eval/corpus/v2/images/attention_is_all_you_need_p4_f2.png"
+    },
+    {
+      "record_id": "attention_is_all_you_need_p13_f0",
+      "document_id": "attention_is_all_you_need",
+      "page": 13,
+      "figure_id": "fig_long_distance_attention",
+      "figure_index": 0,
+      "image_path": "data/eval/corpus/v2/page_renders/attention_is_all_you_need_p13_page_render.png"
+    },
+    {
+      "record_id": "attention_is_all_you_need_p3_f1",
+      "document_id": "attention_is_all_you_need",
+      "page": 3,
+      "figure_id": "fig_transformer_arch",
+      "figure_index": 1,
+      "image_path": "data/eval/corpus/v2/images/attention_is_all_you_need_p3_f1.png"
+    },
+    {
+      "record_id": "clip_p2_f0",
+      "document_id": "clip",
+      "page": 2,
+      "figure_id": "fig_clip_approach",
+      "figure_index": 0,
+      "image_path": "data/eval/corpus/v2/page_renders/clip_p2_page_render.png"
+    },
+    {
+      "record_id": "clip_p11_f0",
+      "document_id": "clip",
+      "page": 11,
+      "figure_id": "fig_clip_compute_scaling",
+      "figure_index": 0,
+      "image_path": "data/eval/corpus/v2/page_renders/clip_p11_page_render.png"
+    },
+    {
+      "record_id": "clip_p3_f0",
+      "document_id": "clip",
+      "page": 3,
+      "figure_id": "fig_clip_efficiency",
+      "figure_index": 0,
+      "image_path": "data/eval/corpus/v2/page_renders/clip_p3_page_render.png"
+    },
+    {
+      "record_id": "clip_p7_f0",
+      "document_id": "clip",
+      "page": 7,
+      "figure_id": "fig_clip_prompt_engineering",
+      "figure_index": 0,
+      "image_path": "data/eval/corpus/v2/page_renders/clip_p7_page_render.png"
+    },
+    {
+      "record_id": "clip_p5_f0",
+      "document_id": "clip",
+      "page": 5,
+      "figure_id": "fig_clip_pseudocode",
+      "figure_index": 0,
+      "image_path": "data/eval/corpus/v2/page_renders/clip_p5_page_render.png"
+    },
+    {
+      "record_id": "siglip_p4_f0",
+      "document_id": "siglip",
+      "page": 4,
+      "figure_id": "fig_siglip_batch_size",
+      "figure_index": 0,
+      "image_path": "data/eval/corpus/v2/page_renders/siglip_p4_page_render.png"
+    },
+    {
+      "record_id": "siglip_p3_f0",
+      "document_id": "siglip",
+      "page": 3,
+      "figure_id": "fig_siglip_chunked_loss",
+      "figure_index": 0,
+      "image_path": "data/eval/corpus/v2/page_renders/siglip_p3_page_render.png"
+    },
+    {
+      "record_id": "siglip_p5_f0",
+      "document_id": "siglip",
+      "page": 5,
+      "figure_id": "fig_siglip_training_duration",
+      "figure_index": 0,
+      "image_path": "data/eval/corpus/v2/page_renders/siglip_p5_page_render.png"
+    },
+    {
+      "record_id": "siglip_p6_f0",
+      "document_id": "siglip",
+      "page": 6,
+      "figure_id": "fig_siglip_weight_decay",
+      "figure_index": 0,
+      "image_path": "data/eval/corpus/v2/page_renders/siglip_p6_page_render.png"
+    },
+    {
+      "record_id": "blip2_p1_f0",
+      "document_id": "blip2",
+      "page": 1,
+      "figure_id": "fig_blip2_overview",
+      "figure_index": 0,
+      "image_path": "data/eval/corpus/v2/page_renders/blip2_p1_page_render.png"
+    },
+    {
+      "record_id": "blip2_p3_f0",
+      "document_id": "blip2",
+      "page": 3,
+      "figure_id": "fig_blip2_qformer",
+      "figure_index": 0,
+      "image_path": "data/eval/corpus/v2/page_renders/blip2_p3_page_render.png"
+    },
+    {
+      "record_id": "blip2_p4_f0",
+      "document_id": "blip2",
+      "page": 4,
+      "figure_id": "fig_blip2_second_stage",
+      "figure_index": 0,
+      "image_path": "data/eval/corpus/v2/page_renders/blip2_p4_page_render.png"
+    },
+    {
+      "record_id": "blip2_p5_f1",
+      "document_id": "blip2",
+      "page": 5,
+      "figure_id": "fig_blip2_zero_shot_examples",
+      "figure_index": 1,
+      "image_path": "data/eval/corpus/v2/images/blip2_p5_f1.png"
+    },
+    {
+      "record_id": "blip2_p5_f2",
+      "document_id": "blip2",
+      "page": 5,
+      "figure_id": "fig_blip2_zero_shot_examples",
+      "figure_index": 2,
+      "image_path": "data/eval/corpus/v2/images/blip2_p5_f2.png"
+    },
+    {
+      "record_id": "blip2_p5_f3",
+      "document_id": "blip2",
+      "page": 5,
+      "figure_id": "fig_blip2_zero_shot_examples",
+      "figure_index": 3,
+      "image_path": "data/eval/corpus/v2/images/blip2_p5_f3.png"
+    },
+    {
+      "record_id": "blip2_p5_f4",
+      "document_id": "blip2",
+      "page": 5,
+      "figure_id": "fig_blip2_zero_shot_examples",
+      "figure_index": 4,
+      "image_path": "data/eval/corpus/v2/images/blip2_p5_f4.png"
+    },
+    {
+      "record_id": "blip2_p5_f5",
+      "document_id": "blip2",
+      "page": 5,
+      "figure_id": "fig_blip2_zero_shot_examples",
+      "figure_index": 5,
+      "image_path": "data/eval/corpus/v2/images/blip2_p5_f5.png"
+    },
+    {
+      "record_id": "blip2_p5_f6",
+      "document_id": "blip2",
+      "page": 5,
+      "figure_id": "fig_blip2_zero_shot_examples",
+      "figure_index": 6,
+      "image_path": "data/eval/corpus/v2/images/blip2_p5_f6.png"
+    },
+    {
+      "record_id": "blip2_p5_f7",
+      "document_id": "blip2",
+      "page": 5,
+      "figure_id": "fig_blip2_zero_shot_examples",
+      "figure_index": 7,
+      "image_path": "data/eval/corpus/v2/images/blip2_p5_f7.png"
+    },
+    {
+      "record_id": "blip2_p5_f8",
+      "document_id": "blip2",
+      "page": 5,
+      "figure_id": "fig_blip2_zero_shot_examples",
+      "figure_index": 8,
+      "image_path": "data/eval/corpus/v2/images/blip2_p5_f8.png"
+    },
+    {
+      "record_id": "blip2_p5_f9",
+      "document_id": "blip2",
+      "page": 5,
+      "figure_id": "fig_blip2_zero_shot_examples",
+      "figure_index": 9,
+      "image_path": "data/eval/corpus/v2/images/blip2_p5_f9.png"
+    },
+    {
+      "record_id": "blip2_p5_f10",
+      "document_id": "blip2",
+      "page": 5,
+      "figure_id": "fig_blip2_zero_shot_examples",
+      "figure_index": 10,
+      "image_path": "data/eval/corpus/v2/images/blip2_p5_f10.png"
+    },
+    {
+      "record_id": "blip2_p5_f11",
+      "document_id": "blip2",
+      "page": 5,
+      "figure_id": "fig_blip2_zero_shot_examples",
+      "figure_index": 11,
+      "image_path": "data/eval/corpus/v2/images/blip2_p5_f11.png"
+    },
+    {
+      "record_id": "blip2_p5_f12",
+      "document_id": "blip2",
+      "page": 5,
+      "figure_id": "fig_blip2_zero_shot_examples",
+      "figure_index": 12,
+      "image_path": "data/eval/corpus/v2/images/blip2_p5_f12.png"
+    },
+    {
+      "record_id": "blip2_p5_f13",
+      "document_id": "blip2",
+      "page": 5,
+      "figure_id": "fig_blip2_zero_shot_examples",
+      "figure_index": 13,
+      "image_path": "data/eval/corpus/v2/images/blip2_p5_f13.png"
+    },
+    {
+      "record_id": "llava_p4_f0",
+      "document_id": "llava",
+      "page": 4,
+      "figure_id": "fig_llava_architecture",
+      "figure_index": 0,
+      "image_path": "data/eval/corpus/v2/page_renders/llava_p4_page_render.png"
+    },
+    {
+      "record_id": "llava_p21_f0",
+      "document_id": "llava",
+      "page": 21,
+      "figure_id": "fig_llava_cc3m_filtering",
+      "figure_index": 0,
+      "image_path": "data/eval/corpus/v2/page_renders/llava_p21_page_render.png"
+    },
+    {
+      "record_id": "llava_p17_f1",
+      "document_id": "llava",
+      "page": 17,
+      "figure_id": "fig_llava_followup",
+      "figure_index": 1,
+      "image_path": "data/eval/corpus/v2/images/llava_p17_f1.png"
+    },
+    {
+      "record_id": "llava_p17_f6",
+      "document_id": "llava",
+      "page": 17,
+      "figure_id": "fig_llava_followup",
+      "figure_index": 6,
+      "image_path": "data/eval/corpus/v2/images/llava_p17_f6.png"
+    },
+    {
+      "record_id": "llava_p16_f1",
+      "document_id": "llava",
+      "page": 16,
+      "figure_id": "fig_llava_website",
+      "figure_index": 1,
+      "image_path": "data/eval/corpus/v2/images/llava_p16_f1.png"
+    },
+    {
+      "record_id": "llava_p16_f2",
+      "document_id": "llava",
+      "page": 16,
+      "figure_id": "fig_llava_website",
+      "figure_index": 2,
+      "image_path": "data/eval/corpus/v2/images/llava_p16_f2.png"
+    },
+    {
+      "record_id": "llava_p16_f3",
+      "document_id": "llava",
+      "page": 16,
+      "figure_id": "fig_llava_website",
+      "figure_index": 3,
+      "image_path": "data/eval/corpus/v2/images/llava_p16_f3.png"
+    }
+  ],
+  "manifest": "data/eval/corpus/v2/manifest.json"
+}

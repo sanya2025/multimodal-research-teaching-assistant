@@ -1,0 +1,325 @@
+{
+  "status": "measured",
+  "benchmark": "v2",
+  "model": "openai/clip-vit-base-patch32",
+  "embedding_dimension": 512,
+  "normalization": "L2",
+  "similarity": "inner_product/cosine",
+  "k": 5,
+  "dataset_version": "v2.0.0",
+  "corpus_version": "v2.0.0",
+  "index_size": 37,
+  "candidate_pool_note": "k=5, N_visual=37 (ratio 7.40x). N > k: Recall@5 is not structurally saturated on this benchmark.",
+  "score_pooling": "NOT PERFORMED. CLIP (512-D CLIP space) and nomic-embed-text scores are uncalibrated with respect to each other; pooling raw cosines would be meaningless. Cross-stream combination is deferred to PR4 (RRF).",
+  "pr1_baseline_source": "results/v2/pr1_baseline_metrics.json",
+  "clip_only": {
+    "overall": {
+      "sample_count": 100,
+      "recall_at_5": 0.29,
+      "figure_recall_at_5": 0.48,
+      "mrr": 0.1983,
+      "ndcg_at_5": 0.2047,
+      "hit_at_5": 0.36,
+      "hit_at_1": 0.12
+    },
+    "hard_visual": {
+      "sample_count": 10,
+      "recall_at_5": 0.3,
+      "figure_recall_at_5": 0.3,
+      "mrr": 0.17,
+      "ndcg_at_5": 0.2018,
+      "hit_at_5": 0.3,
+      "hit_at_1": 0.1
+    },
+    "hybrid": {
+      "sample_count": 25,
+      "recall_at_5": 0.28,
+      "figure_recall_at_5": 0.56,
+      "mrr": 0.2747,
+      "ndcg_at_5": 0.2119,
+      "hit_at_5": 0.56,
+      "hit_at_1": 0.12
+    },
+    "text": {
+      "sample_count": 25,
+      "recall_at_5": 0.0,
+      "figure_recall_at_5": null,
+      "mrr": 0.0,
+      "ndcg_at_5": 0.0,
+      "hit_at_5": 0.0,
+      "hit_at_1": 0.0
+    },
+    "visual_caption": {
+      "sample_count": 20,
+      "recall_at_5": 0.5,
+      "figure_recall_at_5": 0.5,
+      "mrr": 0.2783,
+      "ndcg_at_5": 0.3318,
+      "hit_at_5": 0.5,
+      "hit_at_1": 0.2
+    },
+    "visual_layout": {
+      "sample_count": 20,
+      "recall_at_5": 0.45,
+      "figure_recall_at_5": 0.45,
+      "mrr": 0.285,
+      "ndcg_at_5": 0.3259,
+      "hit_at_5": 0.45,
+      "hit_at_1": 0.2
+    }
+  },
+  "caption_only": {
+    "overall": {
+      "sample_count": 100,
+      "recall_at_5": 0.33,
+      "figure_recall_at_5": 0.5467,
+      "mrr": 0.2835,
+      "ndcg_at_5": 0.2644,
+      "hit_at_5": 0.41,
+      "hit_at_1": 0.22
+    },
+    "hard_visual": {
+      "sample_count": 10,
+      "recall_at_5": 0.4,
+      "figure_recall_at_5": 0.4,
+      "mrr": 0.2583,
+      "ndcg_at_5": 0.2931,
+      "hit_at_5": 0.4,
+      "hit_at_1": 0.2
+    },
+    "hybrid": {
+      "sample_count": 25,
+      "recall_at_5": 0.32,
+      "figure_recall_at_5": 0.64,
+      "mrr": 0.4813,
+      "ndcg_at_5": 0.3191,
+      "hit_at_5": 0.64,
+      "hit_at_1": 0.4
+    },
+    "text": {
+      "sample_count": 25,
+      "recall_at_5": 0.0,
+      "figure_recall_at_5": null,
+      "mrr": 0.0,
+      "ndcg_at_5": 0.0,
+      "hit_at_5": 0.0,
+      "hit_at_1": 0.0
+    },
+    "visual_caption": {
+      "sample_count": 20,
+      "recall_at_5": 0.5,
+      "figure_recall_at_5": 0.5,
+      "mrr": 0.3833,
+      "ndcg_at_5": 0.4131,
+      "hit_at_5": 0.5,
+      "hit_at_1": 0.3
+    },
+    "visual_layout": {
+      "sample_count": 20,
+      "recall_at_5": 0.55,
+      "figure_recall_at_5": 0.55,
+      "mrr": 0.3033,
+      "ndcg_at_5": 0.3633,
+      "hit_at_5": 0.55,
+      "hit_at_1": 0.2
+    }
+  },
+  "complementarity": {
+    "status": "measured",
+    "n_figure_queries": 75,
+    "both_found": [
+      "q_v2_006",
+      "q_v2_007",
+      "q_v2_011",
+      "q_v2_014",
+      "q_v2_015",
+      "q_v2_016",
+      "q_v2_019",
+      "q_v2_020",
+      "q_v2_028",
+      "q_v2_036",
+      "q_v2_038",
+      "q_v2_047",
+      "q_v2_050",
+      "q_v2_051",
+      "q_v2_054",
+      "q_v2_055",
+      "q_v2_056",
+      "q_v2_059",
+      "q_v2_074",
+      "q_v2_088",
+      "q_v2_091",
+      "q_v2_093"
+    ],
+    "caption_only": [
+      "q_v2_010",
+      "q_v2_032",
+      "q_v2_033",
+      "q_v2_035",
+      "q_v2_046",
+      "q_v2_048",
+      "q_v2_052",
+      "q_v2_057",
+      "q_v2_066",
+      "q_v2_067",
+      "q_v2_068",
+      "q_v2_070",
+      "q_v2_071",
+      "q_v2_075",
+      "q_v2_076",
+      "q_v2_077",
+      "q_v2_079",
+      "q_v2_094",
+      "q_v2_096"
+    ],
+    "clip_only": [
+      "q_v2_008",
+      "q_v2_009",
+      "q_v2_012",
+      "q_v2_013",
+      "q_v2_017",
+      "q_v2_018",
+      "q_v2_030",
+      "q_v2_034",
+      "q_v2_037",
+      "q_v2_049",
+      "q_v2_053",
+      "q_v2_058",
+      "q_v2_069",
+      "q_v2_089"
+    ],
+    "neither": [
+      "q_v2_026",
+      "q_v2_027",
+      "q_v2_029",
+      "q_v2_031",
+      "q_v2_039",
+      "q_v2_040",
+      "q_v2_060",
+      "q_v2_072",
+      "q_v2_073",
+      "q_v2_078",
+      "q_v2_080",
+      "q_v2_086",
+      "q_v2_087",
+      "q_v2_090",
+      "q_v2_092",
+      "q_v2_095",
+      "q_v2_097",
+      "q_v2_098",
+      "q_v2_099",
+      "q_v2_100"
+    ],
+    "caption_ranked_higher": [
+      {
+        "query_id": "q_v2_006",
+        "caption_rank": 1,
+        "clip_rank": 4
+      },
+      {
+        "query_id": "q_v2_011",
+        "caption_rank": 1,
+        "clip_rank": 2
+      },
+      {
+        "query_id": "q_v2_014",
+        "caption_rank": 1,
+        "clip_rank": 5
+      },
+      {
+        "query_id": "q_v2_016",
+        "caption_rank": 1,
+        "clip_rank": 4
+      },
+      {
+        "query_id": "q_v2_028",
+        "caption_rank": 3,
+        "clip_rank": 5
+      },
+      {
+        "query_id": "q_v2_038",
+        "caption_rank": 1,
+        "clip_rank": 3
+      },
+      {
+        "query_id": "q_v2_055",
+        "caption_rank": 1,
+        "clip_rank": 3
+      },
+      {
+        "query_id": "q_v2_059",
+        "caption_rank": 1,
+        "clip_rank": 5
+      },
+      {
+        "query_id": "q_v2_088",
+        "caption_rank": 1,
+        "clip_rank": 3
+      },
+      {
+        "query_id": "q_v2_091",
+        "caption_rank": 2,
+        "clip_rank": 3
+      }
+    ],
+    "clip_ranked_higher": [
+      {
+        "query_id": "q_v2_007",
+        "caption_rank": 3,
+        "clip_rank": 1
+      },
+      {
+        "query_id": "q_v2_019",
+        "caption_rank": 3,
+        "clip_rank": 2
+      },
+      {
+        "query_id": "q_v2_050",
+        "caption_rank": 3,
+        "clip_rank": 1
+      },
+      {
+        "query_id": "q_v2_093",
+        "caption_rank": 5,
+        "clip_rank": 3
+      }
+    ],
+    "tied": [
+      {
+        "query_id": "q_v2_015",
+        "rank": 1
+      },
+      {
+        "query_id": "q_v2_020",
+        "rank": 1
+      },
+      {
+        "query_id": "q_v2_036",
+        "rank": 1
+      },
+      {
+        "query_id": "q_v2_047",
+        "rank": 1
+      },
+      {
+        "query_id": "q_v2_051",
+        "rank": 1
+      },
+      {
+        "query_id": "q_v2_054",
+        "rank": 1
+      },
+      {
+        "query_id": "q_v2_056",
+        "rank": 2
+      },
+      {
+        "query_id": "q_v2_074",
+        "rank": 2
+      }
+    ],
+    "caption_hit_at_1": 0.2933,
+    "clip_hit_at_1": 0.16,
+    "mean_figure_id_jaccard": 0.1849
+  }
+}
