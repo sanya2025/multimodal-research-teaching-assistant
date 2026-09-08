@@ -295,7 +295,9 @@ class TestDuplicateCandidates:
     def test_duplicate_page_one_target_not_overcounted(self) -> None:
         # 3 candidates on page 3, 2 on page 4; only 1 target (page 3)
         candidates = [
-            cand(3, rank=1, score=0.9), cand(3, rank=2, score=0.8), cand(4, rank=3, score=0.7)
+            cand(3, rank=1, score=0.9),
+            cand(3, rank=2, score=0.8),
+            cand(4, rank=3, score=0.7),
         ]
         targets = [ev(3)]
         assert recall_at_k(candidates, targets, k=5) == pytest.approx(1.0)

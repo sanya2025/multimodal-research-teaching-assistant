@@ -96,9 +96,9 @@ def test_valid_document_ids(queries: list[dict], manifest: dict) -> None:
     valid_doc_ids = {doc["document_id"] for doc in manifest["documents"]}
     for q in queries:
         for t in q["target_evidence"]:
-            assert t["document_id"] in valid_doc_ids, (
-                f"{q['query_id']}: unknown document_id {t['document_id']!r}"
-            )
+            assert (
+                t["document_id"] in valid_doc_ids
+            ), f"{q['query_id']}: unknown document_id {t['document_id']!r}"
 
 
 # ---------------------------------------------------------------------------
@@ -115,9 +115,7 @@ def test_valid_figure_ids(queries: list[dict], manifest: dict) -> None:
     for q in queries:
         for t in q["target_evidence"]:
             fid = t.get("figure_id")
-            assert fid in valid_figure_ids, (
-                f"{q['query_id']}: unknown figure_id {fid!r}"
-            )
+            assert fid in valid_figure_ids, f"{q['query_id']}: unknown figure_id {fid!r}"
 
 
 # ---------------------------------------------------------------------------
@@ -160,9 +158,9 @@ def test_page_numbers_within_bounds(queries: list[dict], manifest: dict) -> None
             doc_id = t["document_id"]
             page = t["page_number"]
             max_pages = doc_pages.get(doc_id, 0)
-            assert 1 <= page <= max_pages, (
-                f"{q['query_id']}: page_number {page} out of range [1, {max_pages}] for {doc_id}"
-            )
+            assert (
+                1 <= page <= max_pages
+            ), f"{q['query_id']}: page_number {page} out of range [1, {max_pages}] for {doc_id}"
 
 
 # ---------------------------------------------------------------------------

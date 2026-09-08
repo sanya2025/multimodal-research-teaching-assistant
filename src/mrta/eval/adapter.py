@@ -26,8 +26,7 @@ class EvalAdapter:
 
     def __init__(self, manifest: dict) -> None:
         self._source_to_docid: dict[str, str] = {
-            doc["filename"]: doc["document_id"]
-            for doc in manifest["documents"]
+            doc["filename"]: doc["document_id"] for doc in manifest["documents"]
         }
         # (source, page_number, figure_index) → figure_id
         self._figure_map: dict[tuple[str, int, int], str] = {}
