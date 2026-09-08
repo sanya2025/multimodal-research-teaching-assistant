@@ -14,10 +14,10 @@ component end-to-end, from PDF ingestion to evaluation.
 
 - Upload a PDF and build a searchable FAISS index
 - Ask questions and receive answers with page citations
-- Five teaching modes: beginner, graduate, interview prep, quiz generation, and figure explanation
-- Optional figure captioning with a vision-language model
-- Multimodal visual evidence pipeline — structured VLM descriptions, page rendering, and a
-  modality-aware `EvidenceRecord` schema (Stage 1; branch `feature/mmrag-visual-evidence`)
+- Five teaching modes: Explain, Socratic, Quiz, Compare, and Visual evidence
+- Full multimodal RAG pipeline — text + CLIP visual retrieval fused with Reciprocal Rank
+  Fusion, VLM generation, and structured `[T#]`/`[V#]` citation schema
+- Multimodal evaluation — Figure Recall@k, Multimodal Recall@k, and citation correctness metrics
 - Source-scoped retrieval — Explain figure mode constrains search to the selected document
 - Duplicate upload detection — re-uploading the same PDF returns a cached response instantly
 - OpenTelemetry tracing — per-request spans with retrieval scores, token counts, and latency
@@ -107,11 +107,16 @@ from mrta import Embedder, VectorStore
 
 # Requires mrta-rag[multimodal]:
 from mrta import (
-    EvidenceRecord,    # modality-aware schema: text | image | page
-    render_page,       # render a single PDF page → EvidenceRecord(modality="page")
-    render_pages,      # render all or selected pages
-    VisualAnalyzer,    # VLM-based structured figure description
-    VisualDescription, # Pydantic schema + to_retrieval_text() for embedding
+    EvidenceRecord,        # modality-aware schema: text | image | page
+    MultimodalCitation,    # structured [T#]/[V#] citation with source + page
+    MultimodalAnswer,      # answer + typed text/visual citation lists
+    render_page,           # render a single PDF page → EvidenceRecord(modality="page")
+    render_pages,          # render all or selected pages
+    VisualAnalyzer,        # VLM-based structured figure description
+    VisualDescription,     # Pydantic schema + to_retrieval_text() for embedding
+    MultimodalRetriever,   # text + caption + CLIP visual retrieval with RRF fusion
+    MultimodalRAG,         # full multimodal RAG: retrieve → fuse → VLM → cited answer
+    VLMClient,             # Ollama vision-language model client
 )
 ```
 
@@ -196,9 +201,11 @@ Two parallel versions of the 10-part series:
 | 4 | RAG | End-to-end pipeline with citations |
 | 5 | Backend | FastAPI endpoints and Pydantic schemas |
 | 6 | Frontend | Streamlit upload, ask, cite |
-| 7 | Multimodal | Figure extraction, CLIP, VLM captioning |
-| 8 | Teaching modes | Prompt templates for different audiences |
-| 9 | Evaluation | DeepEval metrics, structured logs, Docker |
+| 7 | Multimodal | Figure extraction, CLIP embeddings, VLM captioning |
+| 7b | Multimodal retrieval | Caption store, visual store, RRF fusion |
+| 7c | Multimodal RAG | MultimodalRAG, teaching modes, [T#]/[V#] citations |
+| 8 | Teaching modes | Explain, Socratic, Quiz, Compare, Visual evidence prompts |
+| 9 | Evaluation | Figure Recall@k, multimodal metrics, OTEL spans, Docker |
 
 ### Architecture and design decisions
 
