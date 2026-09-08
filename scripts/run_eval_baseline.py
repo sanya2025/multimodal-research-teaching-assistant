@@ -78,8 +78,10 @@ def _build_store() -> object:
 
     if not VECTOR_STORE_PATH.exists():
         print(f"ERROR: vector store not found at {VECTOR_STORE_PATH}")
-        print("Build it first: python scripts/ingest.py "
-              "data/eval/corpus/v1/papers/attention_is_all_you_need.pdf")
+        print(
+            "Build it first: python scripts/ingest.py "
+            "data/eval/corpus/v1/papers/attention_is_all_you_need.pdf"
+        )
         sys.exit(1)
 
     print("Loading FAISS index from data/vector_store/aiayn/ ...")
@@ -114,8 +116,13 @@ def _aggregate(per_query: list[dict], intent_filter: str | None = None) -> dict:
     else:
         subset = [q for q in per_query if q["intent"] == intent_filter]
     if not subset:
-        return {"sample_count": 0, "recall_at_5": 0.0, "mrr": 0.0, "ndcg_at_5": 0.0,
-                "hit_at_5": 0.0}
+        return {
+            "sample_count": 0,
+            "recall_at_5": 0.0,
+            "mrr": 0.0,
+            "ndcg_at_5": 0.0,
+            "hit_at_5": 0.0,
+        }
     n = len(subset)
     return {
         "sample_count": n,
@@ -200,17 +207,19 @@ def main() -> None:
             for t in targets
         ]
 
-        per_query_results.append({
-            "query_id": qid,
-            "query": query_text,
-            "intent": intent,
-            "recall_at_5": round(r5, 4),
-            "hit_at_5": round(h5, 4),
-            "mrr": round(mrr, 4),
-            "ndcg_at_5": round(nd5, 4),
-            "retrieved_canonical_evidence": retrieved_ev,
-            "expected_canonical_evidence": expected_ev,
-        })
+        per_query_results.append(
+            {
+                "query_id": qid,
+                "query": query_text,
+                "intent": intent,
+                "recall_at_5": round(r5, 4),
+                "hit_at_5": round(h5, 4),
+                "mrr": round(mrr, 4),
+                "ndcg_at_5": round(nd5, 4),
+                "retrieved_canonical_evidence": retrieved_ev,
+                "expected_canonical_evidence": expected_ev,
+            }
+        )
 
     print()
     print("=== Aggregated results ===")
@@ -222,6 +231,7 @@ def main() -> None:
 
     header = f"  {'':8s}  {'Recall@5':>8}  {'MRR':>6}  {'nDCG@5':>7}  {'Hit@5':>6}"
     print(header)
+
     def _row(label: str, m: dict) -> str:
         return (
             f"  {label:8s}  {m['recall_at_5']:8.4f}  {m['mrr']:6.4f}"

@@ -1,0 +1,57 @@
+{
+  "built_at": "2026-09-08T06:04:26.916581+00:00",
+  "corpus_pdf": "data/eval/corpus/v1/papers/attention_is_all_you_need.pdf",
+  "vlm_model": "qwen2.5vl:latest",
+  "embed_model": "nomic-embed-text",
+  "description_source": "vlm_generated",
+  "retrieval_text_field": "EvidenceRecord.retrieval_text() = caption or detailed_description or nearby_text",
+  "image_bytes_persisted": false,
+  "n_records": 3,
+  "records": [
+    {
+      "evidence_id": "attention_is_all_you_need_a639448e61_p3_f1",
+      "doc_id": "attention_is_all_you_need_a639448e61",
+      "source": "attention_is_all_you_need.pdf",
+      "page": 3,
+      "figure_index": 1,
+      "image_path": "data/eval/indices/caption_index/images/attention_is_all_you_need_a639448e61_p3_f1.png",
+      "vlm_model": "qwen2.5vl:latest",
+      "embed_model": "nomic-embed-text",
+      "description_source": "vlm_generated",
+      "caption": null,
+      "detailed_description": null,
+      "visual_type": null,
+      "retrieval_text_chars": 400
+    },
+    {
+      "evidence_id": "attention_is_all_you_need_a639448e61_p4_f1",
+      "doc_id": "attention_is_all_you_need_a639448e61",
+      "source": "attention_is_all_you_need.pdf",
+      "page": 4,
+      "figure_index": 1,
+      "image_path": "data/eval/indices/caption_index/images/attention_is_all_you_need_a639448e61_p4_f1.png",
+      "vlm_model": "qwen2.5vl:latest",
+      "embed_model": "nomic-embed-text",
+      "description_source": "vlm_generated",
+      "caption": null,
+      "detailed_description": null,
+      "visual_type": null,
+      "retrieval_text_chars": 400
+    },
+    {
+      "evidence_id": "attention_is_all_you_need_a639448e61_p4_f2",
+      "doc_id": "attention_is_all_you_need_a639448e61",
+      "source": "attention_is_all_you_need.pdf",
+      "page": 4,
+      "figure_index": 2,
+      "image_path": "data/eval/indices/caption_index/images/attention_is_all_you_need_a639448e61_p4_f2.png",
+      "vlm_model": "qwen2.5vl:latest",
+      "embed_model": "nomic-embed-text",
+      "description_source": "vlm_generated",
+      "caption": "A diagram of a scaled dot-product attention mechanism in a Transformer model.",
+      "detailed_description": "The diagram illustrates the flow of information through a scaled dot-product attention mechanism in Transformer model, showing how queries (Q), keys (K), and values (V) are linearly transformed and then concatenated before being passed through a linear layer.",
+      "visual_type": "architecture_diagram",
+      "retrieval_text_chars": 77
+    }
+  ]
+}

@@ -1,0 +1,85 @@
+{
+  "status": "measured",
+  "dataset_version": "v1.0.0",
+  "corpus_version": "v1.0.0",
+  "retrieval_system": {
+    "caption": "CaptionVectorStore (EvidenceRecord.retrieval_text, nomic-embed-text)",
+    "text": "VectorStore (text-only FAISS, nomic-embed-text)",
+    "pooling": "naive_raw_score_pooling"
+  },
+  "k": 5,
+  "score_pooling_validity": "CONFIRMED: both stores use the same embedder (nomic-embed-text), IndexFlatIP, and L2-normalized vectors. Cosine scores are directly comparable. Pooling is a diagnostic baseline; RRF deferred to PR4.",
+  "pr1_baseline": {
+    "overall_recall_at_5": 0.4667,
+    "text_recall_at_5": 0.875,
+    "visual_recall_at_5": 0.0,
+    "hybrid_recall_at_5": 0.3889,
+    "text_mrr": 0.7917
+  },
+  "caption_only": {
+    "overall": {
+      "recall_at_5": 0.4167,
+      "figure_recall_at_5": 1.0,
+      "mrr": 0.6,
+      "ndcg_at_5": 0.4552,
+      "hit_at_5": 0.6
+    },
+    "text": {
+      "sample_count": 8,
+      "recall_at_5": 0.0,
+      "figure_recall_at_5": null,
+      "mrr": 0.0,
+      "ndcg_at_5": 0.0,
+      "hit_at_5": 0.0
+    },
+    "visual": {
+      "sample_count": 6,
+      "recall_at_5": 1.0,
+      "figure_recall_at_5": 1.0,
+      "mrr": 1.0,
+      "ndcg_at_5": 1.0,
+      "hit_at_5": 1.0
+    },
+    "hybrid": {
+      "sample_count": 6,
+      "recall_at_5": 0.3889,
+      "figure_recall_at_5": 1.0,
+      "mrr": 1.0,
+      "ndcg_at_5": 0.5172,
+      "hit_at_5": 1.0
+    }
+  },
+  "naive_raw_score_pooling": {
+    "overall": {
+      "recall_at_5": 0.8833,
+      "figure_recall_at_5": 1.0,
+      "mrr": 0.81,
+      "ndcg_at_5": 0.7892,
+      "hit_at_5": 0.95
+    },
+    "text": {
+      "sample_count": 8,
+      "recall_at_5": 0.875,
+      "figure_recall_at_5": null,
+      "mrr": 0.525,
+      "ndcg_at_5": 0.6138,
+      "hit_at_5": 0.875
+    },
+    "visual": {
+      "sample_count": 6,
+      "recall_at_5": 1.0,
+      "figure_recall_at_5": 1.0,
+      "mrr": 1.0,
+      "ndcg_at_5": 1.0,
+      "hit_at_5": 1.0
+    },
+    "hybrid": {
+      "sample_count": 6,
+      "recall_at_5": 0.7778,
+      "figure_recall_at_5": 1.0,
+      "mrr": 1.0,
+      "ndcg_at_5": 0.8123,
+      "hit_at_5": 1.0
+    }
+  }
+}

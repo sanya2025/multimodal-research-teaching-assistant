@@ -95,6 +95,11 @@ class EvidenceRecord(BaseModel):
     nearby_text: str | None = None
     visual_type: str | None = None
 
+    # Stable filesystem path to the original image — set by ingestion/index-build scripts.
+    # Allows the caption index to omit image_bytes at persistence time while still
+    # supporting lazy image loading for downstream multimodal generation.
+    image_path: str | None = None
+
     # Retrieval score — set during search; not a persistent field
     retrieval_score: float | None = Field(default=None, exclude=True)
 

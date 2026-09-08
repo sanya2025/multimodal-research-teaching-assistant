@@ -8,10 +8,16 @@ level, not here.
 
 This store is intentionally separate from VectorStore because EvidenceRecord carries
 modality metadata (image, page) that Chunk does not and the return type differs.
+
+Persistence: save() strips image_bytes before writing metadata.jsonl — the caption
+index is a text-retrieval artifact; image_path on each record provides a stable
+reference for lazy loading by downstream multimodal generation.
 """
 
 from __future__ import annotations
 
+import json
+from pathlib import Path
 from typing import TYPE_CHECKING
 
 from mrta.core.schemas import EvidenceRecord
@@ -87,3 +93,46 @@ class CaptionVectorStore:
             if len(results) == k:
                 break
         return results
+
+    def save(self, path: Path | str) -> None:
+        """Write index.faiss + metadata.jsonl + config.json to path.
+
+        image_bytes is stripped before serialization — the caption index stores
+        text for retrieval only; image_path on each record provides the reference
+        for lazy image loading.
+        """
+        import faiss
+
+        p = Path(path)
+        p.mkdir(parents=True, exist_ok=True)
+        faiss.write_index(self._ensure_index(), str(p / "index.faiss"))
+        lines = []
+        for r in self._records:
+            stripped = r.model_copy(update={"image_bytes": None})
+            lines.append(stripped.model_dump_json())
+        (p / "metadata.jsonl").write_text("\n".join(lines), encoding="utf-8")
+        (p / "config.json").write_text(
+            json.dumps({"dim": self._embedder.dim, "model": self._embedder.model_name}),
+            encoding="utf-8",
+        )
+
+    @classmethod
+    def load(cls, path: Path | str, embedder: Embedder) -> CaptionVectorStore:
+        """Reload a persisted store. embedder must match the one used at save time.
+
+        Loaded records have image_bytes=None. Use image_path to load the original
+        image lazily when needed by downstream multimodal generation.
+        """
+        import faiss
+
+        from mrta.core.exceptions import RetrievalError
+
+        p = Path(path)
+        store = cls(embedder)
+        try:
+            store._index = faiss.read_index(str(p / "index.faiss"))
+        except Exception as e:
+            raise RetrievalError(f"Cannot load FAISS index from {p}: {e}") from e
+        lines = (p / "metadata.jsonl").read_text(encoding="utf-8").splitlines()
+        store._records = [EvidenceRecord.model_validate_json(line) for line in lines if line]
+        return store
