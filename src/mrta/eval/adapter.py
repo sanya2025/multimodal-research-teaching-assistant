@@ -55,6 +55,19 @@ class EvalAdapter:
             rank=rank,
         )
 
+    def from_caption_record(
+        self,
+        record: EvidenceRecord,
+        score: float,
+        rank: int,
+    ) -> RetrievedCandidate:
+        """Map a CaptionVectorStore result to a RetrievedCandidate.
+
+        Named alias for evidence_record_to_candidate — makes caption-retrieval
+        call sites self-documenting. Uses identical canonical evidence semantics.
+        """
+        return self.evidence_record_to_candidate(record, score, rank)
+
     def evidence_record_to_candidate(
         self,
         record: EvidenceRecord,

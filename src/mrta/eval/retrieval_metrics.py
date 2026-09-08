@@ -89,6 +89,22 @@ def mean_reciprocal_rank(
     return 0.0
 
 
+def figure_recall_at_k(
+    candidates: Sequence[RetrievedCandidate],
+    targets: Sequence[CanonicalEvidence],
+    k: int,
+) -> float:
+    """Recall@k restricted to ground-truth evidence that has a figure_id set.
+
+    Answers: "Did caption retrieval recover the required figures?"
+
+    If no targets have a figure_id, returns 1.0 (nothing figure-specific to recall).
+    Uses the same deduplication and matching logic as recall_at_k.
+    """
+    figure_targets = [t for t in targets if t.figure_id is not None]
+    return recall_at_k(candidates, figure_targets, k)
+
+
 def ndcg_at_k(
     candidates: Sequence[RetrievedCandidate],
     targets: Sequence[CanonicalEvidence],

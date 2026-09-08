@@ -9,6 +9,7 @@ from __future__ import annotations
 import pytest
 
 from mrta.eval.retrieval_metrics import (
+    figure_recall_at_k,
     hit_rate_at_k,
     is_hit,
     mean_reciprocal_rank,
@@ -354,6 +355,53 @@ class TestEmptyTargets:
 
     def test_ndcg_empty_targets(self) -> None:
         assert ndcg_at_k(ranked(3), [], k=5) == 1.0
+
+
+# ---------------------------------------------------------------------------
+# figure_recall_at_k
+# ---------------------------------------------------------------------------
+
+
+class TestFigureRecallAtK:
+    def test_figure_target_found(self) -> None:
+        candidates = ranked(3, figure_id="fig_transformer_arch")
+        targets = [ev(3, "fig_transformer_arch")]
+        assert figure_recall_at_k(candidates, targets, k=5) == pytest.approx(1.0)
+
+    def test_figure_target_not_found(self) -> None:
+        candidates = ranked(3)  # text chunk, figure_id=None
+        targets = [ev(3, "fig_transformer_arch")]
+        assert figure_recall_at_k(candidates, targets, k=5) == pytest.approx(0.0)
+
+    def test_no_figure_targets_returns_one(self) -> None:
+        # All targets are text (figure_id=None): nothing figure-specific to recall.
+        # The metric returns 1.0 — callers should treat this as N/A in reporting
+        # rather than inferring perfect figure retrieval.
+        candidates = ranked(3, 4)
+        targets = [ev(3), ev(4)]
+        assert figure_recall_at_k(candidates, targets, k=5) == pytest.approx(1.0)
+
+    def test_mixed_targets_only_counts_figure_targets(self) -> None:
+        # One figure target + one text target; only the figure target is evaluated.
+        fig_cand = cand(3, "fig_transformer_arch", rank=1)
+        text_cand = cand(3, None, rank=2)
+        candidates = [fig_cand, text_cand]
+        targets = [ev(3, "fig_transformer_arch"), ev(3)]
+        # figure_recall_at_k filters to [ev(3, "fig_transformer_arch")] → found at rank 1
+        assert figure_recall_at_k(candidates, targets, k=5) == pytest.approx(1.0)
+
+    def test_mixed_targets_figure_missing(self) -> None:
+        text_cand = cand(3, None, rank=1)
+        candidates = [text_cand]
+        targets = [ev(3, "fig_transformer_arch"), ev(3)]
+        # figure target not retrieved → figure_recall = 0
+        assert figure_recall_at_k(candidates, targets, k=5) == pytest.approx(0.0)
+
+    def test_k_cutoff_respected(self) -> None:
+        candidates = ranked(99, 99, 3, figure_id="fig_transformer_arch")
+        targets = [ev(3, "fig_transformer_arch")]
+        assert figure_recall_at_k(candidates, targets, k=2) == pytest.approx(0.0)
+        assert figure_recall_at_k(candidates, targets, k=3) == pytest.approx(1.0)
 
 
 # ---------------------------------------------------------------------------

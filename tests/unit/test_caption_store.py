@@ -6,12 +6,15 @@ cleanly if the [retrieval] extra is not installed.
 
 from __future__ import annotations
 
+import json
 from unittest.mock import MagicMock
 
 import numpy as np
 import pytest
 
 from mrta.core.schemas import EvidenceRecord
+from mrta.eval.adapter import EvalAdapter
+from mrta.eval.types import CanonicalEvidence
 from mrta.retrieval.caption_store import CaptionVectorStore
 
 # ---------------------------------------------------------------------------
@@ -24,6 +27,7 @@ DIM = 4
 def make_embedder(dim: int = DIM) -> MagicMock:
     embedder = MagicMock()
     embedder.dim = dim
+    embedder.model_name = "mock-embed"
     return embedder
 
 
@@ -213,3 +217,159 @@ class TestCaptionVectorStoreSearch:
         results = store.search("page render", k=1)
         assert results[0].modality == "page"
         assert results[0].evidence_id == "r_page"
+
+
+# ---------------------------------------------------------------------------
+# TestCaptionVectorStorePersistence
+# ---------------------------------------------------------------------------
+
+
+class TestCaptionVectorStorePersistence:
+    def _saved_store(
+        self, tmp_path, image_bytes: bytes | None = b"\x89PNG\r\n"
+    ) -> tuple[CaptionVectorStore, EvidenceRecord]:
+        """Build a one-record store and save it to tmp_path."""
+        pytest.importorskip("faiss")
+        embedder = make_embedder()
+        store = CaptionVectorStore(embedder)
+        img_path = str(tmp_path / "fig1.png")
+        rec = EvidenceRecord(
+            evidence_id="doc1_p3_f1",
+            doc_id="doc_attention_2017",
+            source="attention_is_all_you_need.pdf",
+            page=3,
+            modality="image",
+            figure_index=1,
+            caption="The Transformer architecture with encoder and decoder stacks.",
+            image_bytes=image_bytes,
+            image_path=img_path,
+        )
+        embedder.embed.return_value = unit_vec(DIM, 0)
+        store.add([rec])
+        store.save(tmp_path / "caption_index")
+        return store, rec
+
+    def test_image_bytes_not_serialized(self, tmp_path) -> None:
+        """image_bytes must be absent from persisted metadata."""
+        self._saved_store(tmp_path)
+        lines = (tmp_path / "caption_index" / "metadata.jsonl").read_text().splitlines()
+        record_dict = json.loads(lines[0])
+        assert record_dict.get("image_bytes") is None
+
+    def test_metadata_survives_save_load(self, tmp_path) -> None:
+        """doc_id, page, figure_index, caption, image_path survive round-trip."""
+        _, original = self._saved_store(tmp_path)
+        embedder = make_embedder()
+        loaded = CaptionVectorStore.load(tmp_path / "caption_index", embedder)
+        r = loaded._records[0]
+        assert r.evidence_id == original.evidence_id
+        assert r.doc_id == original.doc_id
+        assert r.page == original.page
+        assert r.figure_index == original.figure_index
+        assert r.caption == original.caption
+        assert r.image_path == original.image_path
+
+    def test_image_bytes_none_after_load(self, tmp_path) -> None:
+        """Loaded records must have image_bytes=None."""
+        self._saved_store(tmp_path)
+        embedder = make_embedder()
+        loaded = CaptionVectorStore.load(tmp_path / "caption_index", embedder)
+        assert loaded._records[0].image_bytes is None
+
+    def test_image_path_available_after_load(self, tmp_path) -> None:
+        """image_path reference survives round-trip for lazy loading."""
+        _, original = self._saved_store(tmp_path)
+        embedder = make_embedder()
+        loaded = CaptionVectorStore.load(tmp_path / "caption_index", embedder)
+        assert loaded._records[0].image_path == original.image_path
+
+    def test_retrieval_unchanged_after_reload(self, tmp_path) -> None:
+        """Top-1 result and score are identical before and after save/load."""
+        pytest.importorskip("faiss")
+        _, _ = self._saved_store(tmp_path)
+        embedder = make_embedder()
+        loaded = CaptionVectorStore.load(tmp_path / "caption_index", embedder)
+        embedder.embed.return_value = unit_vec(DIM, 0)
+        pairs = loaded.search_with_scores("transformer architecture", k=1)
+        assert len(pairs) == 1
+        record, score = pairs[0]
+        assert record.evidence_id == "doc1_p3_f1"
+        assert score == pytest.approx(1.0)
+
+    def test_index_files_written(self, tmp_path) -> None:
+        self._saved_store(tmp_path)
+        index_dir = tmp_path / "caption_index"
+        assert (index_dir / "index.faiss").exists()
+        assert (index_dir / "metadata.jsonl").exists()
+        assert (index_dir / "config.json").exists()
+
+
+# ---------------------------------------------------------------------------
+# TestEvalAdapterCaptionRecord
+# ---------------------------------------------------------------------------
+
+_MANIFEST = {
+    "documents": [
+        {
+            "document_id": "doc_attention_2017",
+            "filename": "attention_is_all_you_need.pdf",
+            "figures": [
+                {"figure_id": "fig_transformer_arch", "page_number": 3, "figure_index": 1},
+                {"figure_id": "fig_attention_mechanisms", "page_number": 4, "figure_index": 1},
+                {"figure_id": "fig_attention_mechanisms", "page_number": 4, "figure_index": 2},
+            ],
+        }
+    ]
+}
+
+
+def _caption_record(page: int, figure_index: int, figure_id_hint: str = "") -> EvidenceRecord:
+    return EvidenceRecord(
+        evidence_id=f"doc_attention_2017_p{page}_f{figure_index}",
+        doc_id="doc_attention_2017",
+        source="attention_is_all_you_need.pdf",
+        page=page,
+        modality="image",
+        figure_index=figure_index,
+        caption=f"Figure {figure_index} on page {page}. {figure_id_hint}",
+    )
+
+
+class TestEvalAdapterCaptionRecord:
+    def test_from_caption_record_resolves_figure_id(self) -> None:
+        adapter = EvalAdapter(_MANIFEST)
+        rec = _caption_record(3, 1)
+        cand = adapter.from_caption_record(rec, score=0.9, rank=1)
+        assert cand.evidence.figure_id == "fig_transformer_arch"
+        assert cand.evidence.page_number == 3
+        assert cand.evidence.document_id == "doc_attention_2017"
+
+    def test_from_caption_record_matches_correct_target(self) -> None:
+        adapter = EvalAdapter(_MANIFEST)
+        rec = _caption_record(3, 1)
+        cand = adapter.from_caption_record(rec, score=0.9, rank=1)
+        target = CanonicalEvidence(
+            document_id="doc_attention_2017",
+            page_number=3,
+            figure_id="fig_transformer_arch",
+        )
+        assert target.matches(cand.evidence)
+
+    def test_from_caption_record_wrong_figure_no_match(self) -> None:
+        """A record on the correct page with the wrong figure_index must not match."""
+        adapter = EvalAdapter(_MANIFEST)
+        rec_wrong = _caption_record(3, 99)  # figure_index 99 not in manifest
+        cand = adapter.from_caption_record(rec_wrong, score=0.8, rank=2)
+        target = CanonicalEvidence(
+            document_id="doc_attention_2017",
+            page_number=3,
+            figure_id="fig_transformer_arch",
+        )
+        assert not target.matches(cand.evidence)
+
+    def test_from_caption_record_score_and_rank_preserved(self) -> None:
+        adapter = EvalAdapter(_MANIFEST)
+        rec = _caption_record(4, 1)
+        cand = adapter.from_caption_record(rec, score=0.75, rank=3)
+        assert cand.score == pytest.approx(0.75)
+        assert cand.rank == 3

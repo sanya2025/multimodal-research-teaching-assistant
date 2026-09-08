@@ -5,6 +5,131 @@ Each entry maps tutorial notebook cells → `src/mrta/` modules → production n
 
 ---
 
+## [feat/retrieval-caption-index] — PR2: Dedicated Figure Caption Index — 2026-09-07
+
+**Tests:** 462 passing (446 → +16 new)
+
+Implements a standalone FAISS caption index over VLM-generated figure descriptions
+so figures can be retrieved through text queries. Measures how much caption-based
+retrieval improves on the PR1 visual baseline (0.0000) and diagnoses the ranking
+cost of naive score pooling.
+
+### New files
+
+| File | Purpose |
+|---|---|
+| `src/mrta/retrieval/caption_store.py` | Added `save()` / `load()` — strips `image_bytes`, writes `index.faiss + metadata.jsonl + config.json`; `image_path` preserved for lazy loading |
+| `scripts/build_caption_index.py` | Extracts figures → `VisualAnalyzer` (Qwen VLM) → `CaptionVectorStore` → `data/eval/indices/caption_index/`; writes `provenance.json` |
+| `scripts/run_eval_pr2.py` | Experiment A (caption-only) + Experiment B (naive pooled); writes `results/pr2_*` |
+| `data/eval/indices/caption_index/` | Persisted caption index (3 records for AIAYN figures) |
+| `results/pr2_caption_metrics.json` | Measured aggregate PR2 results |
+| `results/pr2_per_query.json` | Per-query diagnostics (caption + pooled retrieved evidence) |
+
+### Modified files
+
+| File | Change |
+|---|---|
+| `src/mrta/core/schemas.py` | Added `image_path: str \| None` to `EvidenceRecord` for lazy image loading after index round-trip |
+| `src/mrta/eval/retrieval_metrics.py` | Added `figure_recall_at_k()` — recall restricted to `figure_id != None` targets |
+| `src/mrta/eval/adapter.py` | Added `from_caption_record()` alias for `evidence_record_to_candidate()` |
+| `tests/unit/test_caption_store.py` | Added `TestCaptionVectorStorePersistence` (6 tests) + `TestEvalAdapterCaptionRecord` (4 tests); fixed `model_name` in mock embedder |
+| `tests/unit/test_eval_metrics.py` | Added `TestFigureRecallAtK` (6 tests); documents `N/A` reporting convention for text-only slices |
+| `scripts/run_eval_baseline.py` | Black reformatted (no logic change) |
+
+### Caption provenance
+
+Retrieval text = `EvidenceRecord.retrieval_text()` = `caption or detailed_description or nearby_text`,
+populated by `VisualAnalyzer.analyze_evidence()` using the configured VLM (`qwen2.5vl:latest`).
+No manually authored captions — all descriptions are production VLM output.
+`image_bytes` is not persisted; `image_path` records the relative path to the saved PNG.
+
+### Measured results (caption-only, k=5)
+
+|          | Recall@5 | FigRecall@5 | MRR    | nDCG@5 | Hit@5  |
+|---|---|---|---|---|---|
+| Overall  | 0.4167   | 1.0000      | 0.6000 | 0.4552 | 0.6000 |
+| Text     | 0.0000   | N/A         | 0.0000 | 0.0000 | 0.0000 |
+| Visual   | 1.0000   | 1.0000      | 1.0000 | 1.0000 | 1.0000 |
+| Hybrid   | 0.3889   | 1.0000      | 1.0000 | 0.5172 | 1.0000 |
+
+Visual Recall@5: **0.0000 → 1.0000**. All 3 figures retrieved at rank 1 for every visual query.
+
+### PR1 → PR2 comparison
+
+|                        | PR1    | PR2 cap | PR2 pool |
+|---|---|---|---|
+| Text Recall@5          | 0.8750 | 0.0000  | 0.8750   |
+| Visual Recall@5        | 0.0000 | 1.0000  | 1.0000   |
+| Hybrid Recall@5        | 0.3889 | 0.3889  | 0.7778   |
+| Figure Recall@5        | 0.0000 | 1.0000  | 1.0000   |
+| Text MRR               | 0.7917 | 0.0000  | 0.5250   |
+
+**Key design decisions:**
+
+- `Figure Recall@5` is reported as `N/A` for slices with no figure targets
+  (text-only queries have no `figure_id`). Averaging 1.0 over those queries would
+  imply perfect figure retrieval where none was attempted. Fix is in the reporting
+  layer only — the metric function is unchanged.
+- Both stores use the same embedder, `IndexFlatIP`, and L2-normalized vectors.
+  Raw cosine scores are comparable; pooling is labelled `naive_raw_score_pooling`
+  to be explicit that this is diagnostic, not principled fusion.
+- Naive pooling preserves Text Recall@5 (0.8750) but drops Text MRR from 0.7917
+  to 0.5250 (Δ = −0.2667) because caption candidates displace text results from
+  top positions. This motivates proper rank fusion (RRF) in PR4.
+
+---
+
+## [feature/eval-pr1] — PR1: Versioned Evaluation Harness + Text-Only Baseline — 2026-09-07
+
+**Tests:** 446 passing (381 → +65 new)
+
+Establishes a reproducible, version-pinned evaluation harness and measures the
+text-only FAISS baseline before any multimodal retrieval improvements land.
+
+### New files
+
+| File | Purpose |
+|---|---|
+| `data/eval/corpus/v1/papers/attention_is_all_you_need.pdf` | Pinned corpus PDF (SHA-256 verified, 15 pages) |
+| `data/eval/corpus/v1/manifest.json` | Document + figure manifest; 1-indexed physical page convention documented |
+| `data/eval/queries_v1.json` | 20-query benchmark: 8 text, 6 visual, 6 hybrid; all targets verified against PDF |
+| `src/mrta/eval/__init__.py` | New `mrta.eval` module |
+| `src/mrta/eval/types.py` | `CanonicalEvidence` (stable semantic identity), `RetrievedCandidate` |
+| `src/mrta/eval/retrieval_metrics.py` | `recall_at_k`, `hit_rate_at_k`, `mean_reciprocal_rank`, `ndcg_at_k`, `is_hit` |
+| `src/mrta/eval/adapter.py` | `EvalAdapter` — maps `Chunk`/`EvidenceRecord` → `RetrievedCandidate` via manifest |
+| `scripts/run_eval_baseline.py` | End-to-end evaluation driver (loads FAISS index, runs 20 queries, writes results) |
+| `tests/unit/test_eval_metrics.py` | 65 unit tests for all five metrics across 15 behavioural cases |
+| `tests/evaluation/test_benchmark_validation.py` | 17 benchmark integrity tests (counts, IDs, page bounds, corpus PDF presence) |
+| `results/baseline_metrics.json` | Measured aggregate baseline results |
+| `results/baseline_per_query.json` | Per-query diagnostic data (retrieved + expected canonical evidence) |
+
+### Measured baseline (text-only VectorStore, nomic-embed-text, k=5)
+
+|              | Recall@5 | MRR    | nDCG@5 | Hit@5  | n  |
+|---|---|---|---|---|---|
+| Overall      | 0.4667   | 0.5167 | 0.4567 | 0.5500 | 20 |
+| Text         | 0.8750   | 0.7917 | 0.8125 | 0.8750 | 8  |
+| Visual       | 0.0000   | 0.0000 | 0.0000 | 0.0000 | 6  |
+| Hybrid       | 0.3889   | 0.6667 | 0.4390 | 0.6667 | 6  |
+
+**Key design decisions:**
+
+- `CanonicalEvidence` identity survives chunk-size changes and UUID regeneration;
+  matching rule: if either side has `figure_id` set, all three fields must match
+- nDCG uses dual tracking (`seen_keys` + `matched_target_indices`) to guarantee
+  nDCG ≤ 1.0 when many chunks map to the same page
+- Visual recall = 0.0 is the expected baseline — VectorStore has no image
+  retrieval; this is the number PR2+ must improve
+- Figure 2 renders as two PDF images (figure_index 1 and 2, page 4); both share
+  `figure_id = "fig_attention_mechanisms"` so either counts as a hit
+
+**Known retrieval failures (not evaluator bugs):**
+
+- q_007 (positional encoding): vocabulary mismatch — query phrasing not in page 6 chunk
+- q_017/q_020 (multi-head attention): "extend" not in paper; retrieves unrelated pages
+
+---
+
 ## [feature/mmrag-evaluation] — Stage 7 + 8: Evaluation, Tracing & Production Polish — 2026-08-26
 
 **Tests:** 381 passing (381 → baseline for this stage)
