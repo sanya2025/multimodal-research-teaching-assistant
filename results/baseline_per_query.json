@@ -1,0 +1,1012 @@
+[
+  {
+    "query_id": "q_001",
+    "query": "What problem does the Transformer architecture aim to solve compared with recurrent and convolutional sequence models?",
+    "intent": "text",
+    "recall_at_5": 1.0,
+    "hit_at_5": 1.0,
+    "mrr": 1.0,
+    "ndcg_at_5": 1.0,
+    "retrieved_canonical_evidence": [
+      {
+        "document_id": "doc_attention_2017",
+        "page_number": 2,
+        "figure_id": null,
+        "score": 0.6963
+      },
+      {
+        "document_id": "doc_attention_2017",
+        "page_number": 6,
+        "figure_id": null,
+        "score": 0.6944
+      },
+      {
+        "document_id": "doc_attention_2017",
+        "page_number": 2,
+        "figure_id": null,
+        "score": 0.6898
+      },
+      {
+        "document_id": "doc_attention_2017",
+        "page_number": 10,
+        "figure_id": null,
+        "score": 0.6728
+      },
+      {
+        "document_id": "doc_attention_2017",
+        "page_number": 12,
+        "figure_id": null,
+        "score": 0.671
+      }
+    ],
+    "expected_canonical_evidence": [
+      {
+        "document_id": "doc_attention_2017",
+        "page_number": 2,
+        "figure_id": null
+      }
+    ]
+  },
+  {
+    "query_id": "q_002",
+    "query": "Why can Transformer models be trained with more parallelization than recurrent neural networks?",
+    "intent": "text",
+    "recall_at_5": 1.0,
+    "hit_at_5": 1.0,
+    "mrr": 1.0,
+    "ndcg_at_5": 1.0,
+    "retrieved_canonical_evidence": [
+      {
+        "document_id": "doc_attention_2017",
+        "page_number": 2,
+        "figure_id": null,
+        "score": 0.7678
+      },
+      {
+        "document_id": "doc_attention_2017",
+        "page_number": 2,
+        "figure_id": null,
+        "score": 0.7208
+      },
+      {
+        "document_id": "doc_attention_2017",
+        "page_number": 11,
+        "figure_id": null,
+        "score": 0.7197
+      },
+      {
+        "document_id": "doc_attention_2017",
+        "page_number": 12,
+        "figure_id": null,
+        "score": 0.7096
+      },
+      {
+        "document_id": "doc_attention_2017",
+        "page_number": 10,
+        "figure_id": null,
+        "score": 0.6937
+      }
+    ],
+    "expected_canonical_evidence": [
+      {
+        "document_id": "doc_attention_2017",
+        "page_number": 2,
+        "figure_id": null
+      }
+    ]
+  },
+  {
+    "query_id": "q_003",
+    "query": "What are the main components of the Transformer encoder?",
+    "intent": "text",
+    "recall_at_5": 1.0,
+    "hit_at_5": 1.0,
+    "mrr": 1.0,
+    "ndcg_at_5": 1.0,
+    "retrieved_canonical_evidence": [
+      {
+        "document_id": "doc_attention_2017",
+        "page_number": 3,
+        "figure_id": null,
+        "score": 0.6644
+      },
+      {
+        "document_id": "doc_attention_2017",
+        "page_number": 15,
+        "figure_id": null,
+        "score": 0.6191
+      },
+      {
+        "document_id": "doc_attention_2017",
+        "page_number": 10,
+        "figure_id": null,
+        "score": 0.6081
+      },
+      {
+        "document_id": "doc_attention_2017",
+        "page_number": 13,
+        "figure_id": null,
+        "score": 0.5889
+      },
+      {
+        "document_id": "doc_attention_2017",
+        "page_number": 9,
+        "figure_id": null,
+        "score": 0.5665
+      }
+    ],
+    "expected_canonical_evidence": [
+      {
+        "document_id": "doc_attention_2017",
+        "page_number": 3,
+        "figure_id": null
+      }
+    ]
+  },
+  {
+    "query_id": "q_004",
+    "query": "What are the main components of the Transformer decoder?",
+    "intent": "text",
+    "recall_at_5": 1.0,
+    "hit_at_5": 1.0,
+    "mrr": 1.0,
+    "ndcg_at_5": 1.0,
+    "retrieved_canonical_evidence": [
+      {
+        "document_id": "doc_attention_2017",
+        "page_number": 3,
+        "figure_id": null,
+        "score": 0.6175
+      },
+      {
+        "document_id": "doc_attention_2017",
+        "page_number": 10,
+        "figure_id": null,
+        "score": 0.6053
+      },
+      {
+        "document_id": "doc_attention_2017",
+        "page_number": 15,
+        "figure_id": null,
+        "score": 0.5759
+      },
+      {
+        "document_id": "doc_attention_2017",
+        "page_number": 13,
+        "figure_id": null,
+        "score": 0.5713
+      },
+      {
+        "document_id": "doc_attention_2017",
+        "page_number": 9,
+        "figure_id": null,
+        "score": 0.5701
+      }
+    ],
+    "expected_canonical_evidence": [
+      {
+        "document_id": "doc_attention_2017",
+        "page_number": 3,
+        "figure_id": null
+      }
+    ]
+  },
+  {
+    "query_id": "q_005",
+    "query": "How is Scaled Dot-Product Attention mathematically defined?",
+    "intent": "text",
+    "recall_at_5": 1.0,
+    "hit_at_5": 1.0,
+    "mrr": 0.3333,
+    "ndcg_at_5": 0.5,
+    "retrieved_canonical_evidence": [
+      {
+        "document_id": "doc_attention_2017",
+        "page_number": 1,
+        "figure_id": null,
+        "score": 0.5449
+      },
+      {
+        "document_id": "doc_attention_2017",
+        "page_number": 13,
+        "figure_id": null,
+        "score": 0.5067
+      },
+      {
+        "document_id": "doc_attention_2017",
+        "page_number": 4,
+        "figure_id": null,
+        "score": 0.5026
+      },
+      {
+        "document_id": "doc_attention_2017",
+        "page_number": 14,
+        "figure_id": null,
+        "score": 0.4979
+      },
+      {
+        "document_id": "doc_attention_2017",
+        "page_number": 10,
+        "figure_id": null,
+        "score": 0.4899
+      }
+    ],
+    "expected_canonical_evidence": [
+      {
+        "document_id": "doc_attention_2017",
+        "page_number": 4,
+        "figure_id": null
+      }
+    ]
+  },
+  {
+    "query_id": "q_006",
+    "query": "Why is the dot product scaled by the square root of the key dimension?",
+    "intent": "text",
+    "recall_at_5": 1.0,
+    "hit_at_5": 1.0,
+    "mrr": 1.0,
+    "ndcg_at_5": 1.0,
+    "retrieved_canonical_evidence": [
+      {
+        "document_id": "doc_attention_2017",
+        "page_number": 4,
+        "figure_id": null,
+        "score": 0.6611
+      },
+      {
+        "document_id": "doc_attention_2017",
+        "page_number": 5,
+        "figure_id": null,
+        "score": 0.5728
+      },
+      {
+        "document_id": "doc_attention_2017",
+        "page_number": 6,
+        "figure_id": null,
+        "score": 0.544
+      },
+      {
+        "document_id": "doc_attention_2017",
+        "page_number": 9,
+        "figure_id": null,
+        "score": 0.533
+      },
+      {
+        "document_id": "doc_attention_2017",
+        "page_number": 13,
+        "figure_id": null,
+        "score": 0.5278
+      }
+    ],
+    "expected_canonical_evidence": [
+      {
+        "document_id": "doc_attention_2017",
+        "page_number": 4,
+        "figure_id": null
+      }
+    ]
+  },
+  {
+    "query_id": "q_007",
+    "query": "What is the purpose of positional encoding in the Transformer?",
+    "intent": "text",
+    "recall_at_5": 0.0,
+    "hit_at_5": 0.0,
+    "mrr": 0.0,
+    "ndcg_at_5": 0.0,
+    "retrieved_canonical_evidence": [
+      {
+        "document_id": "doc_attention_2017",
+        "page_number": 9,
+        "figure_id": null,
+        "score": 0.6193
+      },
+      {
+        "document_id": "doc_attention_2017",
+        "page_number": 15,
+        "figure_id": null,
+        "score": 0.6093
+      },
+      {
+        "document_id": "doc_attention_2017",
+        "page_number": 10,
+        "figure_id": null,
+        "score": 0.6043
+      },
+      {
+        "document_id": "doc_attention_2017",
+        "page_number": 14,
+        "figure_id": null,
+        "score": 0.5976
+      },
+      {
+        "document_id": "doc_attention_2017",
+        "page_number": 13,
+        "figure_id": null,
+        "score": 0.5955
+      }
+    ],
+    "expected_canonical_evidence": [
+      {
+        "document_id": "doc_attention_2017",
+        "page_number": 6,
+        "figure_id": null
+      }
+    ]
+  },
+  {
+    "query_id": "q_008",
+    "query": "What optimization strategy and learning-rate schedule are used to train the Transformer?",
+    "intent": "text",
+    "recall_at_5": 1.0,
+    "hit_at_5": 1.0,
+    "mrr": 1.0,
+    "ndcg_at_5": 1.0,
+    "retrieved_canonical_evidence": [
+      {
+        "document_id": "doc_attention_2017",
+        "page_number": 7,
+        "figure_id": null,
+        "score": 0.6966
+      },
+      {
+        "document_id": "doc_attention_2017",
+        "page_number": 11,
+        "figure_id": null,
+        "score": 0.6856
+      },
+      {
+        "document_id": "doc_attention_2017",
+        "page_number": 8,
+        "figure_id": null,
+        "score": 0.6107
+      },
+      {
+        "document_id": "doc_attention_2017",
+        "page_number": 15,
+        "figure_id": null,
+        "score": 0.5976
+      },
+      {
+        "document_id": "doc_attention_2017",
+        "page_number": 10,
+        "figure_id": null,
+        "score": 0.5895
+      }
+    ],
+    "expected_canonical_evidence": [
+      {
+        "document_id": "doc_attention_2017",
+        "page_number": 7,
+        "figure_id": null
+      }
+    ]
+  },
+  {
+    "query_id": "q_009",
+    "query": "Show the overall Transformer architectural diagram with encoder and decoder blocks.",
+    "intent": "visual",
+    "recall_at_5": 0.0,
+    "hit_at_5": 0.0,
+    "mrr": 0.0,
+    "ndcg_at_5": 0.0,
+    "retrieved_canonical_evidence": [
+      {
+        "document_id": "doc_attention_2017",
+        "page_number": 3,
+        "figure_id": null,
+        "score": 0.6958
+      },
+      {
+        "document_id": "doc_attention_2017",
+        "page_number": 9,
+        "figure_id": null,
+        "score": 0.6021
+      },
+      {
+        "document_id": "doc_attention_2017",
+        "page_number": 10,
+        "figure_id": null,
+        "score": 0.5987
+      },
+      {
+        "document_id": "doc_attention_2017",
+        "page_number": 6,
+        "figure_id": null,
+        "score": 0.5879
+      },
+      {
+        "document_id": "doc_attention_2017",
+        "page_number": 12,
+        "figure_id": null,
+        "score": 0.5749
+      }
+    ],
+    "expected_canonical_evidence": [
+      {
+        "document_id": "doc_attention_2017",
+        "page_number": 3,
+        "figure_id": "fig_transformer_arch"
+      }
+    ]
+  },
+  {
+    "query_id": "q_010",
+    "query": "Which figure shows the complete encoder-decoder Transformer architecture?",
+    "intent": "visual",
+    "recall_at_5": 0.0,
+    "hit_at_5": 0.0,
+    "mrr": 0.0,
+    "ndcg_at_5": 0.0,
+    "retrieved_canonical_evidence": [
+      {
+        "document_id": "doc_attention_2017",
+        "page_number": 3,
+        "figure_id": null,
+        "score": 0.7373
+      },
+      {
+        "document_id": "doc_attention_2017",
+        "page_number": 10,
+        "figure_id": null,
+        "score": 0.6123
+      },
+      {
+        "document_id": "doc_attention_2017",
+        "page_number": 9,
+        "figure_id": null,
+        "score": 0.6108
+      },
+      {
+        "document_id": "doc_attention_2017",
+        "page_number": 2,
+        "figure_id": null,
+        "score": 0.6058
+      },
+      {
+        "document_id": "doc_attention_2017",
+        "page_number": 5,
+        "figure_id": null,
+        "score": 0.6021
+      }
+    ],
+    "expected_canonical_evidence": [
+      {
+        "document_id": "doc_attention_2017",
+        "page_number": 3,
+        "figure_id": "fig_transformer_arch"
+      }
+    ]
+  },
+  {
+    "query_id": "q_011",
+    "query": "Find the diagram that shows repeated encoder and decoder layers connected through attention.",
+    "intent": "visual",
+    "recall_at_5": 0.0,
+    "hit_at_5": 0.0,
+    "mrr": 0.0,
+    "ndcg_at_5": 0.0,
+    "retrieved_canonical_evidence": [
+      {
+        "document_id": "doc_attention_2017",
+        "page_number": 3,
+        "figure_id": null,
+        "score": 0.7654
+      },
+      {
+        "document_id": "doc_attention_2017",
+        "page_number": 2,
+        "figure_id": null,
+        "score": 0.7146
+      },
+      {
+        "document_id": "doc_attention_2017",
+        "page_number": 5,
+        "figure_id": null,
+        "score": 0.713
+      },
+      {
+        "document_id": "doc_attention_2017",
+        "page_number": 6,
+        "figure_id": null,
+        "score": 0.7052
+      },
+      {
+        "document_id": "doc_attention_2017",
+        "page_number": 6,
+        "figure_id": null,
+        "score": 0.7042
+      }
+    ],
+    "expected_canonical_evidence": [
+      {
+        "document_id": "doc_attention_2017",
+        "page_number": 3,
+        "figure_id": "fig_transformer_arch"
+      }
+    ]
+  },
+  {
+    "query_id": "q_012",
+    "query": "Show the diagram of Scaled Dot-Product Attention.",
+    "intent": "visual",
+    "recall_at_5": 0.0,
+    "hit_at_5": 0.0,
+    "mrr": 0.0,
+    "ndcg_at_5": 0.0,
+    "retrieved_canonical_evidence": [
+      {
+        "document_id": "doc_attention_2017",
+        "page_number": 13,
+        "figure_id": null,
+        "score": 0.5799
+      },
+      {
+        "document_id": "doc_attention_2017",
+        "page_number": 3,
+        "figure_id": null,
+        "score": 0.5553
+      },
+      {
+        "document_id": "doc_attention_2017",
+        "page_number": 10,
+        "figure_id": null,
+        "score": 0.5513
+      },
+      {
+        "document_id": "doc_attention_2017",
+        "page_number": 6,
+        "figure_id": null,
+        "score": 0.5505
+      },
+      {
+        "document_id": "doc_attention_2017",
+        "page_number": 6,
+        "figure_id": null,
+        "score": 0.5393
+      }
+    ],
+    "expected_canonical_evidence": [
+      {
+        "document_id": "doc_attention_2017",
+        "page_number": 4,
+        "figure_id": "fig_attention_mechanisms"
+      }
+    ]
+  },
+  {
+    "query_id": "q_013",
+    "query": "Which figure illustrates both Scaled Dot-Product Attention and Multi-Head Attention?",
+    "intent": "visual",
+    "recall_at_5": 0.0,
+    "hit_at_5": 0.0,
+    "mrr": 0.0,
+    "ndcg_at_5": 0.0,
+    "retrieved_canonical_evidence": [
+      {
+        "document_id": "doc_attention_2017",
+        "page_number": 13,
+        "figure_id": null,
+        "score": 0.5977
+      },
+      {
+        "document_id": "doc_attention_2017",
+        "page_number": 10,
+        "figure_id": null,
+        "score": 0.5475
+      },
+      {
+        "document_id": "doc_attention_2017",
+        "page_number": 4,
+        "figure_id": null,
+        "score": 0.545
+      },
+      {
+        "document_id": "doc_attention_2017",
+        "page_number": 8,
+        "figure_id": null,
+        "score": 0.5423
+      },
+      {
+        "document_id": "doc_attention_2017",
+        "page_number": 1,
+        "figure_id": null,
+        "score": 0.5417
+      }
+    ],
+    "expected_canonical_evidence": [
+      {
+        "document_id": "doc_attention_2017",
+        "page_number": 4,
+        "figure_id": "fig_attention_mechanisms"
+      }
+    ]
+  },
+  {
+    "query_id": "q_014",
+    "query": "Find the visual showing how multiple attention heads are concatenated.",
+    "intent": "visual",
+    "recall_at_5": 0.0,
+    "hit_at_5": 0.0,
+    "mrr": 0.0,
+    "ndcg_at_5": 0.0,
+    "retrieved_canonical_evidence": [
+      {
+        "document_id": "doc_attention_2017",
+        "page_number": 5,
+        "figure_id": null,
+        "score": 0.7196
+      },
+      {
+        "document_id": "doc_attention_2017",
+        "page_number": 13,
+        "figure_id": null,
+        "score": 0.7161
+      },
+      {
+        "document_id": "doc_attention_2017",
+        "page_number": 15,
+        "figure_id": null,
+        "score": 0.6889
+      },
+      {
+        "document_id": "doc_attention_2017",
+        "page_number": 10,
+        "figure_id": null,
+        "score": 0.6751
+      },
+      {
+        "document_id": "doc_attention_2017",
+        "page_number": 14,
+        "figure_id": null,
+        "score": 0.6627
+      }
+    ],
+    "expected_canonical_evidence": [
+      {
+        "document_id": "doc_attention_2017",
+        "page_number": 4,
+        "figure_id": "fig_attention_mechanisms"
+      }
+    ]
+  },
+  {
+    "query_id": "q_015",
+    "query": "How does the Transformer architecture shown in the paper separate encoder and decoder processing?",
+    "intent": "hybrid",
+    "recall_at_5": 0.5,
+    "hit_at_5": 1.0,
+    "mrr": 1.0,
+    "ndcg_at_5": 0.6131,
+    "retrieved_canonical_evidence": [
+      {
+        "document_id": "doc_attention_2017",
+        "page_number": 3,
+        "figure_id": null,
+        "score": 0.7263
+      },
+      {
+        "document_id": "doc_attention_2017",
+        "page_number": 10,
+        "figure_id": null,
+        "score": 0.6498
+      },
+      {
+        "document_id": "doc_attention_2017",
+        "page_number": 9,
+        "figure_id": null,
+        "score": 0.6461
+      },
+      {
+        "document_id": "doc_attention_2017",
+        "page_number": 2,
+        "figure_id": null,
+        "score": 0.6253
+      },
+      {
+        "document_id": "doc_attention_2017",
+        "page_number": 12,
+        "figure_id": null,
+        "score": 0.6225
+      }
+    ],
+    "expected_canonical_evidence": [
+      {
+        "document_id": "doc_attention_2017",
+        "page_number": 3,
+        "figure_id": "fig_transformer_arch"
+      },
+      {
+        "document_id": "doc_attention_2017",
+        "page_number": 3,
+        "figure_id": null
+      }
+    ]
+  },
+  {
+    "query_id": "q_016",
+    "query": "How does Scaled Dot-Product Attention compute attention weights from Q, K, and V matrices?",
+    "intent": "hybrid",
+    "recall_at_5": 0.5,
+    "hit_at_5": 1.0,
+    "mrr": 1.0,
+    "ndcg_at_5": 0.6131,
+    "retrieved_canonical_evidence": [
+      {
+        "document_id": "doc_attention_2017",
+        "page_number": 4,
+        "figure_id": null,
+        "score": 0.7671
+      },
+      {
+        "document_id": "doc_attention_2017",
+        "page_number": 5,
+        "figure_id": null,
+        "score": 0.6867
+      },
+      {
+        "document_id": "doc_attention_2017",
+        "page_number": 11,
+        "figure_id": null,
+        "score": 0.6576
+      },
+      {
+        "document_id": "doc_attention_2017",
+        "page_number": 10,
+        "figure_id": null,
+        "score": 0.6543
+      },
+      {
+        "document_id": "doc_attention_2017",
+        "page_number": 1,
+        "figure_id": null,
+        "score": 0.6375
+      }
+    ],
+    "expected_canonical_evidence": [
+      {
+        "document_id": "doc_attention_2017",
+        "page_number": 4,
+        "figure_id": "fig_attention_mechanisms"
+      },
+      {
+        "document_id": "doc_attention_2017",
+        "page_number": 4,
+        "figure_id": null
+      }
+    ]
+  },
+  {
+    "query_id": "q_017",
+    "query": "How does Multi-Head Attention extend Scaled Dot-Product Attention?",
+    "intent": "hybrid",
+    "recall_at_5": 0.0,
+    "hit_at_5": 0.0,
+    "mrr": 0.0,
+    "ndcg_at_5": 0.0,
+    "retrieved_canonical_evidence": [
+      {
+        "document_id": "doc_attention_2017",
+        "page_number": 10,
+        "figure_id": null,
+        "score": 0.5486
+      },
+      {
+        "document_id": "doc_attention_2017",
+        "page_number": 13,
+        "figure_id": null,
+        "score": 0.5468
+      },
+      {
+        "document_id": "doc_attention_2017",
+        "page_number": 1,
+        "figure_id": null,
+        "score": 0.5257
+      },
+      {
+        "document_id": "doc_attention_2017",
+        "page_number": 6,
+        "figure_id": null,
+        "score": 0.5108
+      },
+      {
+        "document_id": "doc_attention_2017",
+        "page_number": 14,
+        "figure_id": null,
+        "score": 0.5089
+      }
+    ],
+    "expected_canonical_evidence": [
+      {
+        "document_id": "doc_attention_2017",
+        "page_number": 4,
+        "figure_id": "fig_attention_mechanisms"
+      },
+      {
+        "document_id": "doc_attention_2017",
+        "page_number": 4,
+        "figure_id": null
+      },
+      {
+        "document_id": "doc_attention_2017",
+        "page_number": 5,
+        "figure_id": null
+      }
+    ]
+  },
+  {
+    "query_id": "q_018",
+    "query": "Using the architecture diagram and surrounding text, explain where self-attention appears in the encoder and decoder.",
+    "intent": "hybrid",
+    "recall_at_5": 0.6667,
+    "hit_at_5": 1.0,
+    "mrr": 1.0,
+    "ndcg_at_5": 0.7039,
+    "retrieved_canonical_evidence": [
+      {
+        "document_id": "doc_attention_2017",
+        "page_number": 3,
+        "figure_id": null,
+        "score": 0.7566
+      },
+      {
+        "document_id": "doc_attention_2017",
+        "page_number": 15,
+        "figure_id": null,
+        "score": 0.6969
+      },
+      {
+        "document_id": "doc_attention_2017",
+        "page_number": 5,
+        "figure_id": null,
+        "score": 0.6791
+      },
+      {
+        "document_id": "doc_attention_2017",
+        "page_number": 2,
+        "figure_id": null,
+        "score": 0.679
+      },
+      {
+        "document_id": "doc_attention_2017",
+        "page_number": 13,
+        "figure_id": null,
+        "score": 0.6608
+      }
+    ],
+    "expected_canonical_evidence": [
+      {
+        "document_id": "doc_attention_2017",
+        "page_number": 3,
+        "figure_id": "fig_transformer_arch"
+      },
+      {
+        "document_id": "doc_attention_2017",
+        "page_number": 3,
+        "figure_id": null
+      },
+      {
+        "document_id": "doc_attention_2017",
+        "page_number": 5,
+        "figure_id": null
+      }
+    ]
+  },
+  {
+    "query_id": "q_019",
+    "query": "What visual and textual evidence explains how encoder-decoder attention connects the two sides of the Transformer?",
+    "intent": "hybrid",
+    "recall_at_5": 0.6667,
+    "hit_at_5": 1.0,
+    "mrr": 1.0,
+    "ndcg_at_5": 0.7039,
+    "retrieved_canonical_evidence": [
+      {
+        "document_id": "doc_attention_2017",
+        "page_number": 3,
+        "figure_id": null,
+        "score": 0.7155
+      },
+      {
+        "document_id": "doc_attention_2017",
+        "page_number": 15,
+        "figure_id": null,
+        "score": 0.7092
+      },
+      {
+        "document_id": "doc_attention_2017",
+        "page_number": 5,
+        "figure_id": null,
+        "score": 0.7071
+      },
+      {
+        "document_id": "doc_attention_2017",
+        "page_number": 13,
+        "figure_id": null,
+        "score": 0.7052
+      },
+      {
+        "document_id": "doc_attention_2017",
+        "page_number": 10,
+        "figure_id": null,
+        "score": 0.6971
+      }
+    ],
+    "expected_canonical_evidence": [
+      {
+        "document_id": "doc_attention_2017",
+        "page_number": 3,
+        "figure_id": "fig_transformer_arch"
+      },
+      {
+        "document_id": "doc_attention_2017",
+        "page_number": 3,
+        "figure_id": null
+      },
+      {
+        "document_id": "doc_attention_2017",
+        "page_number": 5,
+        "figure_id": null
+      }
+    ]
+  },
+  {
+    "query_id": "q_020",
+    "query": "Explain the difference between single Scaled Dot-Product Attention and Multi-Head Attention using both the diagram and the paper's description.",
+    "intent": "hybrid",
+    "recall_at_5": 0.0,
+    "hit_at_5": 0.0,
+    "mrr": 0.0,
+    "ndcg_at_5": 0.0,
+    "retrieved_canonical_evidence": [
+      {
+        "document_id": "doc_attention_2017",
+        "page_number": 10,
+        "figure_id": null,
+        "score": 0.5882
+      },
+      {
+        "document_id": "doc_attention_2017",
+        "page_number": 13,
+        "figure_id": null,
+        "score": 0.581
+      },
+      {
+        "document_id": "doc_attention_2017",
+        "page_number": 9,
+        "figure_id": null,
+        "score": 0.5658
+      },
+      {
+        "document_id": "doc_attention_2017",
+        "page_number": 8,
+        "figure_id": null,
+        "score": 0.5629
+      },
+      {
+        "document_id": "doc_attention_2017",
+        "page_number": 6,
+        "figure_id": null,
+        "score": 0.5624
+      }
+    ],
+    "expected_canonical_evidence": [
+      {
+        "document_id": "doc_attention_2017",
+        "page_number": 4,
+        "figure_id": "fig_attention_mechanisms"
+      },
+      {
+        "document_id": "doc_attention_2017",
+        "page_number": 4,
+        "figure_id": null
+      },
+      {
+        "document_id": "doc_attention_2017",
+        "page_number": 5,
+        "figure_id": null
+      }
+    ]
+  }
+]

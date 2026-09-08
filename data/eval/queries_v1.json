@@ -1,0 +1,179 @@
+{
+  "dataset_version": "v1.0.0",
+  "corpus_version": "v1.0.0",
+  "page_numbering_convention": "1-indexed physical PDF page",
+  "query_count": 20,
+  "counts_by_intent": {"text": 8, "visual": 6, "hybrid": 6},
+  "queries": [
+    {
+      "query_id": "q_001",
+      "query": "What problem does the Transformer architecture aim to solve compared with recurrent and convolutional sequence models?",
+      "intent": "text",
+      "target_evidence": [
+        {"document_id": "doc_attention_2017", "page_number": 2, "figure_id": null}
+      ]
+    },
+    {
+      "query_id": "q_002",
+      "query": "Why can Transformer models be trained with more parallelization than recurrent neural networks?",
+      "intent": "text",
+      "target_evidence": [
+        {"document_id": "doc_attention_2017", "page_number": 2, "figure_id": null}
+      ]
+    },
+    {
+      "query_id": "q_003",
+      "query": "What are the main components of the Transformer encoder?",
+      "intent": "text",
+      "target_evidence": [
+        {"document_id": "doc_attention_2017", "page_number": 3, "figure_id": null}
+      ]
+    },
+    {
+      "query_id": "q_004",
+      "query": "What are the main components of the Transformer decoder?",
+      "intent": "text",
+      "target_evidence": [
+        {"document_id": "doc_attention_2017", "page_number": 3, "figure_id": null}
+      ]
+    },
+    {
+      "query_id": "q_005",
+      "query": "How is Scaled Dot-Product Attention mathematically defined?",
+      "intent": "text",
+      "target_evidence": [
+        {"document_id": "doc_attention_2017", "page_number": 4, "figure_id": null}
+      ]
+    },
+    {
+      "query_id": "q_006",
+      "query": "Why is the dot product scaled by the square root of the key dimension?",
+      "intent": "text",
+      "target_evidence": [
+        {"document_id": "doc_attention_2017", "page_number": 4, "figure_id": null}
+      ]
+    },
+    {
+      "query_id": "q_007",
+      "query": "What is the purpose of positional encoding in the Transformer?",
+      "intent": "text",
+      "target_evidence": [
+        {"document_id": "doc_attention_2017", "page_number": 6, "figure_id": null}
+      ]
+    },
+    {
+      "query_id": "q_008",
+      "query": "What optimization strategy and learning-rate schedule are used to train the Transformer?",
+      "intent": "text",
+      "target_evidence": [
+        {"document_id": "doc_attention_2017", "page_number": 7, "figure_id": null}
+      ]
+    },
+    {
+      "query_id": "q_009",
+      "query": "Show the overall Transformer architectural diagram with encoder and decoder blocks.",
+      "intent": "visual",
+      "target_evidence": [
+        {"document_id": "doc_attention_2017", "page_number": 3, "figure_id": "fig_transformer_arch"}
+      ]
+    },
+    {
+      "query_id": "q_010",
+      "query": "Which figure shows the complete encoder-decoder Transformer architecture?",
+      "intent": "visual",
+      "target_evidence": [
+        {"document_id": "doc_attention_2017", "page_number": 3, "figure_id": "fig_transformer_arch"}
+      ]
+    },
+    {
+      "query_id": "q_011",
+      "query": "Find the diagram that shows repeated encoder and decoder layers connected through attention.",
+      "intent": "visual",
+      "target_evidence": [
+        {"document_id": "doc_attention_2017", "page_number": 3, "figure_id": "fig_transformer_arch"}
+      ]
+    },
+    {
+      "query_id": "q_012",
+      "query": "Show the diagram of Scaled Dot-Product Attention.",
+      "intent": "visual",
+      "target_evidence": [
+        {"document_id": "doc_attention_2017", "page_number": 4, "figure_id": "fig_attention_mechanisms"}
+      ]
+    },
+    {
+      "query_id": "q_013",
+      "query": "Which figure illustrates both Scaled Dot-Product Attention and Multi-Head Attention?",
+      "intent": "visual",
+      "target_evidence": [
+        {"document_id": "doc_attention_2017", "page_number": 4, "figure_id": "fig_attention_mechanisms"}
+      ]
+    },
+    {
+      "query_id": "q_014",
+      "query": "Find the visual showing how multiple attention heads are concatenated.",
+      "intent": "visual",
+      "target_evidence": [
+        {"document_id": "doc_attention_2017", "page_number": 4, "figure_id": "fig_attention_mechanisms"}
+      ]
+    },
+    {
+      "query_id": "q_015",
+      "query": "How does the Transformer architecture shown in the paper separate encoder and decoder processing?",
+      "intent": "hybrid",
+      "target_evidence": [
+        {"document_id": "doc_attention_2017", "page_number": 3, "figure_id": "fig_transformer_arch"},
+        {"document_id": "doc_attention_2017", "page_number": 3, "figure_id": null}
+      ]
+    },
+    {
+      "query_id": "q_016",
+      "query": "How does Scaled Dot-Product Attention compute attention weights from Q, K, and V matrices?",
+      "intent": "hybrid",
+      "target_evidence": [
+        {"document_id": "doc_attention_2017", "page_number": 4, "figure_id": "fig_attention_mechanisms"},
+        {"document_id": "doc_attention_2017", "page_number": 4, "figure_id": null}
+      ]
+    },
+    {
+      "query_id": "q_017",
+      "query": "How does Multi-Head Attention extend Scaled Dot-Product Attention?",
+      "intent": "hybrid",
+      "target_evidence": [
+        {"document_id": "doc_attention_2017", "page_number": 4, "figure_id": "fig_attention_mechanisms"},
+        {"document_id": "doc_attention_2017", "page_number": 4, "figure_id": null},
+        {"document_id": "doc_attention_2017", "page_number": 5, "figure_id": null}
+      ]
+    },
+    {
+      "query_id": "q_018",
+      "query": "Using the architecture diagram and surrounding text, explain where self-attention appears in the encoder and decoder.",
+      "intent": "hybrid",
+      "target_evidence": [
+        {"document_id": "doc_attention_2017", "page_number": 3, "figure_id": "fig_transformer_arch"},
+        {"document_id": "doc_attention_2017", "page_number": 3, "figure_id": null},
+        {"document_id": "doc_attention_2017", "page_number": 5, "figure_id": null}
+      ]
+    },
+    {
+      "query_id": "q_019",
+      "query": "What visual and textual evidence explains how encoder-decoder attention connects the two sides of the Transformer?",
+      "intent": "hybrid",
+      "target_evidence": [
+        {"document_id": "doc_attention_2017", "page_number": 3, "figure_id": "fig_transformer_arch"},
+        {"document_id": "doc_attention_2017", "page_number": 3, "figure_id": null},
+        {"document_id": "doc_attention_2017", "page_number": 5, "figure_id": null}
+      ]
+    },
+    {
+      "query_id": "q_020",
+      "query": "Explain the difference between single Scaled Dot-Product Attention and Multi-Head Attention using both the diagram and the paper's description.",
+      "intent": "hybrid",
+      "target_evidence": [
+        {"document_id": "doc_attention_2017", "page_number": 4, "figure_id": "fig_attention_mechanisms"},
+        {"document_id": "doc_attention_2017", "page_number": 4, "figure_id": null},
+        {"document_id": "doc_attention_2017", "page_number": 5, "figure_id": null}
+      ]
+    }
+  ]
+}

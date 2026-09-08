@@ -1,0 +1,37 @@
+{
+  "corpus_version": "v1.0.0",
+  "page_numbering_convention": "1-indexed physical PDF page (identical to MRTA ingestion page field; page 1 = cover page)",
+  "documents": [
+    {
+      "document_id": "doc_attention_2017",
+      "filename": "attention_is_all_you_need.pdf",
+      "sha256": "bdfaa68d8984f0dc02beaca527b76f207d99b666d31d1da728ee0728182df697",
+      "mrta_doc_id": "attention_is_all_you_need_a639448e61",
+      "pages": 15,
+      "notes": "Vaswani et al. 2017. Pages 1=cover/abstract, 2=intro, 3=Figure1+Encoder/Decoder, 4=Figure2+Attention, 5=MultiHead, 6=PositionalEncoding, 7=Training, 8-10=Results, 11-12=References, 13-15=Attention visualizations.",
+      "figures": [
+        {
+          "figure_id": "fig_transformer_arch",
+          "page_number": 3,
+          "figure_index": 1,
+          "caption": "Figure 1: The Transformer - model architecture.",
+          "notes": "Single image embedded on page 3. Shows full encoder (left) and decoder (right) stacks."
+        },
+        {
+          "figure_id": "fig_attention_mechanisms",
+          "page_number": 4,
+          "figure_index": 1,
+          "caption": "Figure 2 (left): Scaled Dot-Product Attention.",
+          "notes": "Left sub-figure of Figure 2. Both figure_index 1 and 2 on page 4 are semantically part of Figure 2."
+        },
+        {
+          "figure_id": "fig_attention_mechanisms",
+          "page_number": 4,
+          "figure_index": 2,
+          "caption": "Figure 2 (right): Multi-Head Attention.",
+          "notes": "Right sub-figure of Figure 2. Same figure_id as figure_index=1 because both form one conceptual figure."
+        }
+      ]
+    }
+  ]
+}
