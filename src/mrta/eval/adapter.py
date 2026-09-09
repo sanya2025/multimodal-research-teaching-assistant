@@ -17,8 +17,16 @@ uses the raw source string as document_id so metrics can still be computed
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 from mrta.core.schemas import Chunk, EvidenceRecord, VisualRecord
 from mrta.eval.types import CanonicalEvidence, RetrievedCandidate
+
+if TYPE_CHECKING:
+    # Import guarded: mrta.retrieval.fusion imports mrta.eval.types, so a runtime
+    # import here would create an import cycle. `from __future__ import annotations`
+    # makes the annotation a string, so the guard is sufficient.
+    from mrta.retrieval.fusion import FusedCandidate
 
 
 class EvalAdapter:
@@ -88,6 +96,30 @@ class EvalAdapter:
                 figure_id=record.figure_id,
             ),
             score=score,
+            rank=rank,
+        )
+
+    def from_fused_candidate(
+        self,
+        candidate: FusedCandidate,
+        rank: int,
+    ) -> RetrievedCandidate:
+        """Map a PR4 FusedCandidate back to a RetrievedCandidate for scoring.
+
+        The fused candidate already carries resolved canonical identity — it was
+        built from per-stream RetrievedCandidates this adapter produced — so no
+        manifest lookup is needed. The RRF score is carried through as the
+        candidate score; it is a fusion score, not a similarity, and is never
+        compared against per-stream cosines.
+        """
+        return RetrievedCandidate(
+            candidate_id=candidate.canonical_id,
+            evidence=CanonicalEvidence(
+                document_id=candidate.document_id,
+                page_number=candidate.page,
+                figure_id=candidate.figure_id,
+            ),
+            score=candidate.score,
             rank=rank,
         )
 
