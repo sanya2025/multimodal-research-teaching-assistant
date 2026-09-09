@@ -5,6 +5,169 @@ Each entry maps tutorial notebook cells → `src/mrta/` modules → production n
 
 ---
 
+## [feat/retrieval-rrf-fusion-dedup] — PR4: Equal-Weight RRF Fusion & Canonical Dedup — 2026-09-08
+
+**Tests:** 592 passing, 12 skipped (549 → +43)
+
+Adds rank-based Reciprocal Rank Fusion over the text, caption and CLIP streams with
+canonical evidence deduplication, so one physical figure retrieved by two streams
+becomes a single fused candidate accumulating both contributions. Equal weights,
+fixed `k=60`, no tuning against the frozen v2 benchmark.
+
+### New files
+
+| File | Purpose |
+|---|---|
+| `scripts/run_eval_pr4.py` | All five required ablations (text / +caption / +CLIP / caption+CLIP / all three), recovery + agreement analysis, pool-saturation diagnostic |
+| `results/v2/pr4_rrf_metrics.json`, `pr4_per_query.json` | Measured PR4 artifacts |
+
+### Modified files
+
+| File | Change |
+|---|---|
+| `src/mrta/retrieval/fusion.py` | **Additive** — `FusedCandidate`, `canonical_identity()`, `reciprocal_rank_fusion_canonical()`. The Stage-4 `FusedResult`/`reciprocal_rank_fusion` used by `MultimodalRetriever` are untouched: they dedup by `evidence_id`, which cannot merge a caption record and a CLIP record for the same figure |
+| `src/mrta/eval/adapter.py` | Added `from_fused_candidate()`; `TYPE_CHECKING`-guarded import avoids an import cycle |
+| `tests/unit/test_fusion.py` | **Additive** — +36 PR4 tests (61 in file); the 25 Stage-4 tests untouched |
+
+### Canonical identity
+
+```text
+figure  ->  ("figure", document_id, "p{page}:{figure_id}")
+text    ->  ("text",   document_id, chunk_id)
+```
+
+`CanonicalEvidence.key()` alone is insufficient — two text chunks on the same page
+share the identical key `(doc, page, None)` and would wrongly merge.
+
+### Measured results (v2, n=100)
+
+| configuration | R@5 | MRR | nDCG@5 | FigR@5 |
+|---|---|---|---|---|
+| rrf_text (Control A) | 0.2950 | 0.3292 | 0.2829 | 0.0000 |
+| rrf_text_caption | 0.5150 | 0.3695 | 0.3894 | 0.4400 |
+| rrf_text_clip | 0.4700 | 0.2960 | 0.3262 | 0.3600 |
+| rrf_caption_clip | 0.3400 | 0.2658 | 0.2561 | 0.5467 |
+| rrf_text_caption_clip | 0.3400 | 0.2658 | 0.2561 | 0.5467 |
+
+**Key findings:**
+
+- **Control A passes exactly.** RRF over the text stream alone reproduces PR1's frozen
+  baseline (Text Recall@5 0.8400, Text MRR 0.7300) to four decimals — the fusion
+  implementation does not perturb a single stream.
+- **CLIP's marginal value is mixed and net-negative overall.** It improves every visual
+  slice's Figure Recall@5 (+0.04 to +0.20) but costs −0.1037 overall MRR, and text
+  collapses from 0.3400 to 0.0000 MRR.
+- **Root cause measured, not assumed:** the corpus holds only 21 canonical figures while
+  the mandated pool depth is 20, so ~65% of all figures appear in *both* visual streams
+  for any query. A dual-stream figure scores ~0.0315 versus ~0.0164 for the best possible
+  rank-1 text chunk, so agreement-backed figures outrank every text chunk unconditionally
+  — including on pure text queries.
+- **All 20 "neither" failures are ranking failures, not retrieval failures.** The correct
+  figure was inside a candidate pool in 20/20 cases; fusion promoted only 1. Fusion also
+  pushed 15 targets out of the top-5 and moved the mean target rank from 4.25 to 6.99.
+- Fusion never exceeded the best single stream on Figure Recall@5 (0.5467) — it matched it.
+
+**Bug fixed:** `mean_reciprocal_rank` takes no `k` argument and scans whatever list it is
+given. PR1–PR3 passed 5-item lists (implicitly MRR@5); the first PR4 run passed the full
+depth-20 fused list, silently producing MRR@20 and inflating Control A to 0.7420. Metrics
+now use the top-5 fused slice, matching the frozen protocol.
+
+**Recommendation for PR5:** a reranker is justified — candidate generation is not the
+bottleneck, ranking is. RRF never sees the query, so it cannot reject relevance-blind
+agreement (e.g. `q_v2_001`, a pure text query, returns five irrelevant figures that
+happen to agree across streams). Before concluding "RRF does not work for MRTA", the same
+ablation should be re-run on a corpus whose figure count substantially exceeds the pool
+depth — a benchmark-scale question, not a tuning question.
+
+---
+
+## [feat/eval-benchmark-v2] — v2 Benchmark: 5 Papers, 100 Queries; Rerun PR1–PR3 — 2026-09-08
+
+**Tests:** 549 passing, 12 skipped (519 → +30)
+
+Builds a versioned, larger evaluation benchmark (attention/clip/siglip/blip2/llava,
+100 queries) to remove v1's structural saturation — v1's 3-figure candidate pool made
+Recall@5 and Figure Recall@5 hit 1.0 by construction, regardless of retrieval quality.
+Reruns PR1 (text), PR2 (caption), and PR3 (CLIP) against v2 for an apples-to-apples
+comparison. v1 corpus, queries, and result files are untouched (verified byte-identical
+where scripts were generalized rather than duplicated).
+
+### New files
+
+| File | Purpose |
+|---|---|
+| `data/eval/corpus/v2/manifest.json` | 5 documents, 37 figure records, 21 canonical figure IDs — grounded from real `extract_figures()` output or page-render fallback |
+| `data/eval/corpus/v2/papers/*.pdf` | 5 pinned PDFs staged from `data/raw/` |
+| `data/eval/corpus/v2/page_renders/`, `.../images/` | 16 page-render fallback PNGs + 21 raster-crop PNGs |
+| `data/eval/queries_v2.json` | 100 queries (text/visual_caption/visual_layout/hybrid/hard_visual), v1-schema-compatible wrapper around `data/queries_v2_grounded.json` |
+| `scripts/build_v2_manifest.py` | Grounds proposed figure IDs to real extraction; documents the icon-exclusion heuristic and manual verification |
+| `scripts/build_text_index.py` | New — builds a multi-document text `VectorStore` (v1's store was hand-built in a notebook; v2 needed a real builder) |
+| `tests/evaluation/test_benchmark_validation_v2.py` | 30 tests: document/query/figure/hybrid validation, all against real PDFs |
+| `data/eval/indices/v2/caption_index/`, `.../clip_image_index/` | v2 caption and CLIP indices (37 records each) + provenance |
+| `data/vector_store/v2_corpus/` | v2 text index, 704 chunks (gitignored, rebuildable) |
+| `results/v2/pr{1,2,3}_*.json` | Measured v2 results for all three PRs |
+
+### Modified files
+
+| File | Change |
+|---|---|
+| `scripts/run_eval_baseline.py`, `build_caption_index.py`, `build_clip_image_index.py`, `run_eval_pr2.py`, `run_eval_pr3.py` | Added `--benchmark {v1,v2}` (default `v1`); dynamic intent aggregation from the dataset's own `counts_by_intent` instead of hardcoded text/visual/hybrid; PR1 comparison baseline loaded from its result file instead of hardcoded numbers. v1 output verified byte-identical after generalization. |
+
+### Two correctness bugs found and fixed
+
+- `EvidenceRecord.source` must be the PDF **filename**, not `document_id` — `EvalAdapter`
+  resolves `document_id` and `figure_id` via manifest lookups keyed by filename. Using
+  `document_id` would have silently broken figure_id resolution for every v2 caption candidate.
+- `fig["figure_index"] or None` turns the page-render-fallback convention (`figure_index=0`)
+  into `None` in Python — would have silently disabled figure_id resolution for 16 of 21
+  v2 figures. Fixed to pass `figure_index` unconditionally.
+
+### Candidate-pool sanity
+
+```text
+N_visual = 37   k = 5   ratio = 7.4x   (v1 was N=3, k=5 — saturated)
+max figure share = 5/75 visual+hybrid queries = 6.7%  (< 20% flag threshold)
+```
+
+### Measured results (v2)
+
+|                | PR1 text | PR2 caption | PR3 CLIP |
+|---|---|---|---|
+| Figure Recall@5 | N/A | 0.5467 | 0.4800 |
+| text Recall@5 | 0.8400 | 0.0000 | 0.0000 |
+| visual_caption Recall@5 | 0.0000 | 0.5000 | 0.5000 |
+| visual_layout Recall@5 | 0.0000 | 0.5500 | 0.4500 |
+| hybrid Recall@5 | 0.3400 | 0.3200 | 0.2800 |
+| hard_visual Recall@5 | 0.0000 | 0.4000 | 0.3000 |
+
+**Caption provenance:** 17 VLM-generated, 20 nearby-text fallback (54% fallback rate —
+generalizes the v1 finding of 2/3 fallback captions to a consistent pattern at scale).
+
+**Key findings:**
+
+- Figure Recall@5 is no longer saturated (0.55 caption / 0.48 CLIP vs v1's 1.0/1.0)
+  — the larger candidate pool makes the metric discriminative for the first time.
+- Genuine caption/CLIP complementarity, absent in v1: 14 queries where CLIP alone
+  found the correct figure, 4 where CLIP ranked it higher than caption. Top-5
+  figure-ID Jaccard overlap dropped from v1's perfect 1.0 to 0.1849.
+- Per-paper breakdown exposes the real driver: CLIP **beats** caption on
+  `attention_is_all_you_need` (2/4 figures raster-bound: MRR 0.477 vs 0.383) but
+  loses badly on `siglip`/`blip2` (0/4 and 1/4 raster-bound — CLIP embeds a full
+  page render when the figure is vector-drawn, diluting its signal).
+- 20 of 75 figure-bearing queries: neither stream found the target in top-5 — real
+  headroom, not a benchmark artifact.
+- Naive pooling's text-MRR regression (v1: Δ=−0.2667) did **not** reproduce on v2
+  (Δ=0.0000) — the larger, more diverse 704-chunk text pool dilutes caption-candidate
+  interference that dominated the smaller v1 pool.
+
+**Recommendation for PR4:** include all three streams; CLIP's earlier "adds nothing"
+finding was a v1 saturation artifact. Equal-weight RRF is not obviously correct given
+the per-paper split — mandatory ablations: RRF(text,caption,CLIP) vs RRF(text,caption),
+per-paper regression check, and re-verification that fusion doesn't reproduce the
+text-MRR regression at this scale.
+
+---
+
 ## [feat/retrieval-clip-vision-index] — PR3: Direct CLIP Visual Retrieval — 2026-09-08
 
 **Tests:** 519 passing, 12 skipped (462 → +57 passing, +12 opt-in)
