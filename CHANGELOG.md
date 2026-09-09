@@ -5,6 +5,122 @@ Each entry maps tutorial notebook cells → `src/mrta/` modules → production n
 
 ---
 
+## [feat/retrieval-cross-encoder-reranker] — PR5: Cross-Encoder Candidate Reranking — 2026-09-08
+
+**Tests:** 626 passing, 12 skipped (592 → +34)
+
+Adds a query-aware cross-encoder stage after canonical RRF fusion: the depth-20 fused
+pool is re-scored by `cross-encoder/ms-marco-MiniLM-L-6-v2` and cut to top-5. RRF and
+cross-encoder scores are never blended — RRF orders the candidate set entering the
+reranker, the cross-encoder is the final ranking stage. No parameter tuned against v2.
+
+This is a **text** reranker over multimodal candidates, not a multimodal reranker: the
+model never sees image pixels, only each figure's production-derived textual
+representation.
+
+### New files
+
+| File | Purpose |
+|---|---|
+| `scripts/run_eval_pr5.py` | Four configurations (RRF T+C, RRF T+C+CLIP, each → cross-encoder), PR4 reproduction check, in-pool/push-out recovery, rank movement, provenance and latency analysis |
+| `results/v2/pr5_reranker_metrics.json`, `pr5_per_query.json` | Measured PR5 artifacts |
+
+### Modified files
+
+| File | Change |
+|---|---|
+| `src/mrta/retrieval/reranker.py` | **Additive** — `CrossEncoderReranker`, `RerankedCandidate`, `candidate_to_reranker_text()`. The Stage-4 `Reranker` used by `rag_query()` is untouched: it consumes `Chunk` and keeps no score provenance, which PR5's diagnostics require |
+| `src/mrta/core/config.py` | Added `reranker_model_name`, `rerank_top_n`, `final_top_k` |
+| `tests/unit/test_reranker.py` | **Additive** — +34 PR5 tests (42 in file); the 8 Stage-4 tests untouched |
+| `docs/adr/ADR-007-cross-encoder-reranking.md` | Added an evaluation-only PR5 extension section |
+
+### Candidate text representation
+
+`VisualRecord` (CLIP) carries no text at all, so CLIP-retrieved figures would be
+unrankable by a text model. Resolved with one `canonical_id → text` lookup built from
+the frozen PR2 caption index and shared by both visual streams:
+
+```text
+text     ->  the retrieved chunk's own text (never page-level text)
+figure   ->  "Figure caption: {VLM caption}"
+             "Description: {VLM detailed_description}"
+             "Context: {nearby-text fallback}"
+```
+
+Verified total coverage: the caption and CLIP indices span the identical 21 canonical
+figures, so no figure candidate is ever textless. Candidate text reaches the model only
+through `FusedCandidate.payload`, and only production-derived keys are ever written
+there — benchmark annotations are structurally unable to leak into model input.
+
+### Results (frozen v2, n=100)
+
+The recomputed RRF baselines reproduce PR4's frozen numbers exactly on all six checked
+metrics, confirming PR5 only appends a stage rather than perturbing fusion.
+
+| Configuration | R@5 | MRR@5 | nDCG@5 | FigR@5 |
+|---|---|---|---|---|
+| PR1 text | 0.2950 | 0.3292 | 0.2829 | N/A |
+| PR2 caption | 0.3300 | 0.2835 | 0.2644 | 0.5467 |
+| PR3 CLIP | 0.2900 | 0.1983 | 0.2047 | 0.4800 |
+| RRF T+C | 0.5150 | 0.3695 | 0.3894 | 0.4400 |
+| RRF T+C+CLIP | 0.3400 | 0.2658 | 0.2561 | 0.5467 |
+| RRF T+C → CE | 0.5250 | 0.4703 | 0.4565 | 0.3733 |
+| **RRF T+C+CLIP → CE** | **0.6050** | **0.5153** | **0.5111** | 0.4800 |
+
+- **Text ranking substantially recovered.** Three-stream RRF collapsed the text slice to
+  MRR@5 = 0.0000; reranking restores it to 0.6713 and returns text Recall@5 to PR1's 0.8400
+  exactly. Recovery is partial: it remains short of PR1's text-slice MRR@5 of 0.7300.
+- **CLIP's contribution becomes measurable once ranking is relevance-aware.** CLIP
+  contributed complementary visual candidates that equal-weight RRF could not rank
+  effectively on the frozen v2 benchmark: adding CLIP cost −0.1037 MRR in PR4. Query-aware
+  reranking converts part of that complementary signal into measurable gains — +0.0450 MRR,
+  +0.0800 R@5 and +0.1067 FigR@5. This revises PR4's conclusion about CLIP's marginal value
+  under the specific condition that fusion is followed by relevance-aware reranking.
+- **Figure preservation remains unresolved.** Overall Figure Recall@5 decreases from
+  0.5467 to 0.4800, but the aggregate hides a large representation-quality interaction:
+  figures with VLM captions improve to 0.7027, whereas nearby-text fallback figures fall
+  to 0.2632.
+
+### Caption provenance interacts strongly with reranking quality
+
+| Target figure's text | n | RRF T+C+CLIP | → CE |
+|---|---|---|---|
+| VLM caption | 37 | 0.5946 | **0.7027** |
+| nearby-text fallback | 38 | 0.5000 | **0.2632** |
+
+Reranking helps captioned figures substantially and roughly halves recall for figures
+represented only by nearby-text, which is largely page-extraction boilerplate. On the
+available evidence the limiting factor appears to be the textual representation rather
+than the reranker's ranking quality, but this rests on a single benchmark with 21
+canonical figures and is not established beyond it.
+
+The 17/20 VLM/fallback split recorded in PR2 is a **record-level** count over 37 caption
+records. Reranking operates on canonical figures, where the split is 11/10, because four
+multi-crop figures own both captioned and uncaptioned crops.
+
+### PR4 diagnostic sets
+
+- **20 in-pool ranking failures:** 17 lie inside the depth-20 rerank pool; 3 (`q_v2_026`,
+  `q_v2_092`, `q_v2_097`) sit at fused ranks 34/36/40 and are structurally unreachable at
+  the fixed depth. Of the 17 addressable, the reranker promotes 5 into top-5 and 3 into
+  top-1, against PR4's 1.
+- **15 push-outs:** 5 restored to top-5, 4 still below, 6 pushed lower.
+
+### Limitations carried forward
+
+Small visual universe (21 canonical figures vs depth-20 pool); 16/21 figures use
+page-render fallbacks; the reranker is text-only over visual evidence; 3 known failures
+are below the rerank pool at the fixed candidate depth.
+
+**Recommendation for PR6:** figure-region extraction and VLM captioning for the 10
+canonical figures that still have no caption. The provenance split indicates the reranker
+performs well where a real visual description exists, which points to the remaining loss
+being a representation gap rather than a ranking one. A multimodal reranker would be
+premature while 16/21 figures are whole-page renders, since it would be scored against the
+same degraded artifacts.
+
+---
+
 ## [feat/retrieval-rrf-fusion-dedup] — PR4: Equal-Weight RRF Fusion & Canonical Dedup — 2026-09-08
 
 **Tests:** 592 passing, 12 skipped (549 → +43)

@@ -92,6 +92,89 @@ The real model is never downloaded in CI.
 - Model download on first use (~85 MB) — not a concern for local dev but matters for cold-start
   containers. The Docker image should pre-download the model in a future image-build step.
 
+## PR5 extension — reranking multimodal fused candidates (evaluation only)
+
+**Date:** 2026-09-08 · **Status:** Accepted, additive
+
+PR5 extends this decision from text-only RAG to the multimodal retrieval evaluation
+path. The model, library and mocking convention above are unchanged; nothing in the
+production `Reranker` or `rag_query()` is modified, and PR5 adds no production
+pipeline integration.
+
+### What is added
+
+`CrossEncoderReranker` in the same module, consuming the `FusedCandidate` lists
+produced by `reciprocal_rank_fusion_canonical()` (PR4) and returning
+`RerankedCandidate`:
+
+```text
+Text ──────┐
+Caption ───┼→ canonical RRF → top-20 → CrossEncoder → top-5
+CLIP ──────┘
+```
+
+Two rerankers now live in `reranker.py` for the same reason two fusion APIs live in
+`fusion.py`: they consume different types and answer different questions. The
+production `Reranker` returns bare `Chunk` objects; PR5's diagnostics need the RRF
+score and RRF rank preserved alongside the cross-encoder score, so
+`FusedCandidate.score` is never overwritten and the candidate is never mutated.
+
+RRF and cross-encoder scores are **not blended**. RRF orders the candidate set
+entering the reranker; the cross-encoder is the final ranking stage.
+
+### Candidate text representation
+
+The model is a text cross-encoder and cannot inspect image pixels, so figure
+candidates must be represented textually. `VisualRecord` (the CLIP index record)
+carries no text at all, only an `image_path`. Figure text therefore comes from a
+single `canonical_id → text` lookup built once from the frozen PR2 caption index and
+shared by the caption and CLIP streams, so a figure's representation does not depend
+on which stream retrieved it:
+
+```text
+text     ->  the retrieved chunk's own text (never page-level text)
+figure   ->  "Figure caption: {VLM caption or extracted caption}"
+             "Description: {VLM detailed_description}"
+             "Context: {nearby-text fallback}"
+```
+
+A canonical figure owning several caption records (multi-crop) resolves
+deterministically: prefer a record with a VLM caption, then the lowest `evidence_id`.
+
+Candidate text reaches the model only through `FusedCandidate.payload`, and only
+production-derived keys are ever written there, so benchmark ground truth is
+structurally unable to enter model input.
+
+### Consequences measured on the frozen v2 benchmark
+
+**Positive:** overall MRR@5 rose 0.2658 → 0.5153 and Recall@5 0.3400 → 0.6050 against
+three-stream RRF. CLIP contributed complementary visual candidates that equal-weight RRF
+could not rank effectively on the frozen v2 benchmark, costing −0.1037 MRR under fusion
+alone. Query-aware reranking converts part of that complementary signal into measurable
+gains: +0.0450 MRR, +0.0800 Recall@5 and +0.1067 Figure Recall@5. The finding is
+conditional on reranking following fusion; it is not evidence that equal-weight RRF is
+adequate for CLIP on its own.
+
+**Negative:** figure preservation remains unresolved. Overall Figure Recall@5 decreases
+from 0.5467 to 0.4800, but the aggregate hides a large representation-quality
+interaction: figures with VLM captions improve to 0.7027, whereas nearby-text fallback
+figures fall to 0.2632. The reranker cannot compensate for a figure whose only textual
+representation is page-extraction boilerplate; on the available evidence this is a
+representation limit rather than a ranking one, and it argues for improving figure
+captioning before considering a multimodal reranker.
+
+**Latency** (local, warm model, Apple Silicon MPS): 43.9 ms mean, 37.6 ms p50, 70.5 ms
+p95 per query for 20 candidate pairs (~456 pairs/s), excluding an 11.7 s model load
+and 0.44 s first-inference warm-up. Consistent with the 30–50 ms estimate above. Not a
+production SLO claim.
+
+### Related
+
+- [ADR-008 — Multimodal RAG Architecture](ADR-008-multimodal-rag-architecture.md)
+- `results/v2/pr5_reranker_metrics.json` — measured results and limitations
+
+---
+
 ## References
 
 - [MS MARCO Passage Ranking benchmark](https://microsoft.github.io/msmarco/)
