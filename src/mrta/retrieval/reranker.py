@@ -31,7 +31,7 @@ reflect the representation rather than the reranker's ranking quality.
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, NamedTuple
 
 from mrta.core.schemas import Chunk
 from mrta.retrieval.fusion import EVIDENCE_TYPE_TEXT, FusedCandidate
@@ -190,6 +190,21 @@ def candidate_text_source(candidate: FusedCandidate) -> str:
     return _resolve_reranker_text(candidate)[1]
 
 
+class _ScoredEntry(NamedTuple):
+    """One candidate mid-rerank: its incoming RRF position plus its new score.
+
+    A typed NamedTuple rather than a plain dict — a dict literal mixing a
+    FusedCandidate, a float, an int and two strs collapses to dict[str, object]
+    under mypy, which erases every field's type at the point of use.
+    """
+
+    candidate: FusedCandidate
+    score: float
+    rrf_rank: int
+    text: str
+    text_source: str
+
+
 class CrossEncoderReranker:
     """Query-aware cross-encoder reranking over canonical fused candidates.
 
@@ -242,35 +257,29 @@ class CrossEncoderReranker:
         scores = self._model.predict(pairs)  # type: ignore[arg-type]
 
         entries = [
-            {
-                "candidate": candidate,
-                "score": float(score),
-                "rrf_rank": position + 1,
-                "text": text,
-                "text_source": text_source,
-            }
+            _ScoredEntry(
+                candidate=candidate,
+                score=float(score),
+                rrf_rank=position + 1,
+                text=text,
+                text_source=text_source,
+            )
             for position, (candidate, score, (text, text_source)) in enumerate(
                 zip(candidates, scores, resolved)
             )
         ]
 
-        entries.sort(
-            key=lambda e: (
-                -e["score"],
-                e["rrf_rank"],
-                e["candidate"].canonical_id,
-            )
-        )
+        entries.sort(key=lambda e: (-e.score, e.rrf_rank, e.candidate.canonical_id))
 
         return [
             RerankedCandidate(
-                candidate=e["candidate"],
-                reranker_score=e["score"],
+                candidate=e.candidate,
+                reranker_score=e.score,
                 reranker_rank=i + 1,
-                original_rrf_score=e["candidate"].score,
-                original_rrf_rank=e["rrf_rank"],
-                reranker_text=e["text"],
-                reranker_text_source=e["text_source"],
+                original_rrf_score=e.candidate.score,
+                original_rrf_rank=e.rrf_rank,
+                reranker_text=e.text,
+                reranker_text_source=e.text_source,
             )
             for i, e in enumerate(entries[:top_k])
         ]

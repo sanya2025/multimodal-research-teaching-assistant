@@ -133,6 +133,6 @@ class MultimodalRetriever:
             return fused
         candidates = fused[: self._reranker_top_n]
         pairs = [(query, fr.record.retrieval_text()) for fr in candidates]
-        scores = self._reranker._model.predict(pairs)  # type: ignore[union-attr]
+        scores = self._reranker._model.predict(pairs)  # type: ignore[union-attr, arg-type]
         ranked = sorted(zip(scores, candidates), key=lambda x: x[0], reverse=True)
         return [fr for _, fr in ranked]
