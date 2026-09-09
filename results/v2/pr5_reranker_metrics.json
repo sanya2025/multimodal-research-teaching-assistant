@@ -1,0 +1,1670 @@
+{
+  "status": "measured",
+  "benchmark": "v2",
+  "dataset_version": "v2.0.0",
+  "corpus_version": "v2.0.0",
+  "reranker_model": "cross-encoder/ms-marco-MiniLM-L-6-v2",
+  "reranker_model_kind": "TEXT cross-encoder. It cannot inspect image pixels. Figure candidates are reranked through their production-derived textual representation only, so this is a query-aware textual reranker over multimodal retrieval candidates \u2014 NOT an image-text multimodal reranker.",
+  "library_versions": {
+    "sentence_transformers": "5.6.0",
+    "torch": "2.12.1",
+    "python": "3.11.15"
+  },
+  "hardware": {
+    "platform": "macOS-26.6.2-arm64-arm-64bit",
+    "machine": "arm64",
+    "processor": "arm",
+    "torch_device": "mps"
+  },
+  "rrf_k": 60,
+  "candidate_pool_size": 20,
+  "rerank_top_n": 20,
+  "evaluation_k": 5,
+  "parameter_note": "No parameter was tuned against v2. candidate_pool_size, rrf_k and evaluation_k are held at the PR4 values so PR5 remains directly comparable with the frozen baselines.",
+  "score_provenance": "Retrieval cosines, RRF scores and cross-encoder scores are kept strictly separate. FusedCandidate.score remains the RRF score; the cross-encoder score is stored on RerankedCandidate. The two are never blended \u2014 the cross-encoder is the final ranking stage and RRF only orders the candidate set entering it.",
+  "candidate_representation_policy": {
+    "text": "the retrieved chunk's own text (Chunk.text), never page-level text",
+    "figure": "production-derived figure text from the frozen PR2 caption index, combined under explicit labels in priority order: 'Figure caption: {VLM caption or extracted caption}', 'Description: {VLM detailed_description}', 'Context: {nearby-text fallback}'",
+    "clip_figure": "VisualRecord carries no text, so CLIP-retrieved figures are represented by the same canonical-id lookup as caption-retrieved figures. Verified total: the caption and CLIP indices cover the identical 21 canonical figures, so no figure candidate is textless.",
+    "multi_crop_selection": "A canonical figure owning several caption records resolves deterministically: prefer a record with a VLM caption, then the lowest evidence_id.",
+    "leakage_control": "Candidate text reaches the model only via FusedCandidate.payload, and only production-derived keys are ever written there. Benchmark fields (source_note, expected_evidence, retrieval_challenge, difficulty, canonical figure names) are never written to a payload and therefore cannot enter model input."
+  },
+  "caption_provenance": {
+    "canonical_figures": 21,
+    "canonical_level": {
+      "vlm_caption": 11,
+      "nearby_text_fallback": 10
+    },
+    "record_level": {
+      "vlm_caption": 17,
+      "nearby_text_fallback": 20,
+      "total_records": 37
+    },
+    "note": "The 17/20 VLM/fallback split quoted in the PR5 spec is a RECORD-level count over 37 caption records. Reranking operates on canonical figures, where the split is different because four multi-crop figures own both captioned and uncaptioned crops."
+  },
+  "configurations": {
+    "rrf_text_caption": [
+      "text",
+      "caption"
+    ],
+    "rrf_text_caption_clip": [
+      "text",
+      "caption",
+      "clip"
+    ],
+    "rerank_text_caption": [
+      "text",
+      "caption",
+      "-> cross-encoder"
+    ],
+    "rerank_text_caption_clip": [
+      "text",
+      "caption",
+      "clip",
+      "-> cross-encoder"
+    ]
+  },
+  "metric_depth_note": "All metrics are computed on the top-5 slice, matching the PR1-PR4 protocol. mean_reciprocal_rank takes no k argument, so the reported MRR is MRR@5. The full depth-20 reranked ordering is retained only for rank diagnostics.",
+  "pr4_reproduction_check": {
+    "rrf_text_caption.recall_at_5": {
+      "frozen": 0.515,
+      "recomputed": 0.515,
+      "match": true
+    },
+    "rrf_text_caption.mrr": {
+      "frozen": 0.3695,
+      "recomputed": 0.3695,
+      "match": true
+    },
+    "rrf_text_caption.figure_recall_at_5": {
+      "frozen": 0.44,
+      "recomputed": 0.44,
+      "match": true
+    },
+    "rrf_text_caption_clip.recall_at_5": {
+      "frozen": 0.34,
+      "recomputed": 0.34,
+      "match": true
+    },
+    "rrf_text_caption_clip.mrr": {
+      "frozen": 0.2658,
+      "recomputed": 0.2658,
+      "match": true
+    },
+    "rrf_text_caption_clip.figure_recall_at_5": {
+      "frozen": 0.5467,
+      "recomputed": 0.5467,
+      "match": true
+    }
+  },
+  "overall": {
+    "rrf_text_caption": {
+      "sample_count": 100,
+      "recall_at_1": 0.17,
+      "recall_at_5": 0.515,
+      "hit_at_1": 0.22,
+      "hit_at_5": 0.57,
+      "mrr": 0.3695,
+      "ndcg_at_5": 0.3894,
+      "figure_recall_at_1": 0.2933,
+      "figure_recall_at_5": 0.44,
+      "both_target_recall_at_5": 0.36
+    },
+    "rrf_text_caption_clip": {
+      "sample_count": 100,
+      "recall_at_1": 0.145,
+      "recall_at_5": 0.34,
+      "hit_at_1": 0.19,
+      "hit_at_5": 0.41,
+      "mrr": 0.2658,
+      "ndcg_at_5": 0.2561,
+      "figure_recall_at_1": 0.2533,
+      "figure_recall_at_5": 0.5467,
+      "both_target_recall_at_5": 0.0
+    },
+    "rerank_text_caption": {
+      "sample_count": 100,
+      "recall_at_1": 0.31,
+      "recall_at_5": 0.525,
+      "hit_at_1": 0.39,
+      "hit_at_5": 0.59,
+      "mrr": 0.4703,
+      "ndcg_at_5": 0.4565,
+      "figure_recall_at_1": 0.2133,
+      "figure_recall_at_5": 0.3733,
+      "both_target_recall_at_5": 0.32
+    },
+    "rerank_text_caption_clip": {
+      "sample_count": 100,
+      "recall_at_1": 0.35,
+      "recall_at_5": 0.605,
+      "hit_at_1": 0.43,
+      "hit_at_5": 0.66,
+      "mrr": 0.5153,
+      "ndcg_at_5": 0.5111,
+      "figure_recall_at_1": 0.2533,
+      "figure_recall_at_5": 0.48,
+      "both_target_recall_at_5": 0.32
+    }
+  },
+  "by_intent": {
+    "hard_visual": {
+      "rrf_text_caption": {
+        "sample_count": 10,
+        "recall_at_1": 0.2,
+        "recall_at_5": 0.3,
+        "hit_at_1": 0.2,
+        "hit_at_5": 0.3,
+        "mrr": 0.22,
+        "ndcg_at_5": 0.2387,
+        "figure_recall_at_1": 0.2,
+        "figure_recall_at_5": 0.3,
+        "both_target_recall_at_5": null
+      },
+      "rrf_text_caption_clip": {
+        "sample_count": 10,
+        "recall_at_1": 0.2,
+        "recall_at_5": 0.4,
+        "hit_at_1": 0.2,
+        "hit_at_5": 0.4,
+        "mrr": 0.27,
+        "ndcg_at_5": 0.3018,
+        "figure_recall_at_1": 0.2,
+        "figure_recall_at_5": 0.4,
+        "both_target_recall_at_5": null
+      },
+      "rerank_text_caption": {
+        "sample_count": 10,
+        "recall_at_1": 0.1,
+        "recall_at_5": 0.3,
+        "hit_at_1": 0.1,
+        "hit_at_5": 0.3,
+        "mrr": 0.1833,
+        "ndcg_at_5": 0.2131,
+        "figure_recall_at_1": 0.1,
+        "figure_recall_at_5": 0.3,
+        "both_target_recall_at_5": null
+      },
+      "rerank_text_caption_clip": {
+        "sample_count": 10,
+        "recall_at_1": 0.1,
+        "recall_at_5": 0.5,
+        "hit_at_1": 0.1,
+        "hit_at_5": 0.5,
+        "mrr": 0.24,
+        "ndcg_at_5": 0.3036,
+        "figure_recall_at_1": 0.1,
+        "figure_recall_at_5": 0.5,
+        "both_target_recall_at_5": null
+      }
+    },
+    "hybrid": {
+      "rrf_text_caption": {
+        "sample_count": 25,
+        "recall_at_1": 0.2,
+        "recall_at_5": 0.58,
+        "hit_at_1": 0.4,
+        "hit_at_5": 0.8,
+        "mrr": 0.578,
+        "ndcg_at_5": 0.5111,
+        "figure_recall_at_1": 0.4,
+        "figure_recall_at_5": 0.52,
+        "both_target_recall_at_5": 0.36
+      },
+      "rrf_text_caption_clip": {
+        "sample_count": 25,
+        "recall_at_1": 0.18,
+        "recall_at_5": 0.28,
+        "hit_at_1": 0.36,
+        "hit_at_5": 0.56,
+        "mrr": 0.438,
+        "ndcg_at_5": 0.2872,
+        "figure_recall_at_1": 0.36,
+        "figure_recall_at_5": 0.56,
+        "both_target_recall_at_5": 0.0
+      },
+      "rerank_text_caption": {
+        "sample_count": 25,
+        "recall_at_1": 0.32,
+        "recall_at_5": 0.58,
+        "hit_at_1": 0.64,
+        "hit_at_5": 0.84,
+        "mrr": 0.72,
+        "ndcg_at_5": 0.5743,
+        "figure_recall_at_1": 0.2,
+        "figure_recall_at_5": 0.36,
+        "both_target_recall_at_5": 0.32
+      },
+      "rerank_text_caption_clip": {
+        "sample_count": 25,
+        "recall_at_1": 0.32,
+        "recall_at_5": 0.54,
+        "hit_at_1": 0.64,
+        "hit_at_5": 0.76,
+        "mrr": 0.6933,
+        "ndcg_at_5": 0.5498,
+        "figure_recall_at_1": 0.24,
+        "figure_recall_at_5": 0.4,
+        "both_target_recall_at_5": 0.32
+      }
+    },
+    "text": {
+      "rrf_text_caption": {
+        "sample_count": 25,
+        "recall_at_1": 0.0,
+        "recall_at_5": 0.68,
+        "hit_at_1": 0.0,
+        "hit_at_5": 0.68,
+        "mrr": 0.34,
+        "ndcg_at_5": 0.429,
+        "figure_recall_at_1": null,
+        "figure_recall_at_5": null,
+        "both_target_recall_at_5": null
+      },
+      "rrf_text_caption_clip": {
+        "sample_count": 25,
+        "recall_at_1": 0.0,
+        "recall_at_5": 0.0,
+        "hit_at_1": 0.0,
+        "hit_at_5": 0.0,
+        "mrr": 0.0,
+        "ndcg_at_5": 0.0,
+        "figure_recall_at_1": null,
+        "figure_recall_at_5": null,
+        "both_target_recall_at_5": null
+      },
+      "rerank_text_caption": {
+        "sample_count": 25,
+        "recall_at_1": 0.48,
+        "recall_at_5": 0.76,
+        "hit_at_1": 0.48,
+        "hit_at_5": 0.76,
+        "mrr": 0.5867,
+        "ndcg_at_5": 0.6302,
+        "figure_recall_at_1": null,
+        "figure_recall_at_5": null,
+        "both_target_recall_at_5": null
+      },
+      "rerank_text_caption_clip": {
+        "sample_count": 25,
+        "recall_at_1": 0.56,
+        "recall_at_5": 0.84,
+        "hit_at_1": 0.56,
+        "hit_at_5": 0.84,
+        "mrr": 0.6713,
+        "ndcg_at_5": 0.7136,
+        "figure_recall_at_1": null,
+        "figure_recall_at_5": null,
+        "both_target_recall_at_5": null
+      }
+    },
+    "visual_caption": {
+      "rrf_text_caption": {
+        "sample_count": 20,
+        "recall_at_1": 0.3,
+        "recall_at_5": 0.5,
+        "hit_at_1": 0.3,
+        "hit_at_5": 0.5,
+        "mrr": 0.3533,
+        "ndcg_at_5": 0.3887,
+        "figure_recall_at_1": 0.3,
+        "figure_recall_at_5": 0.5,
+        "both_target_recall_at_5": null
+      },
+      "rrf_text_caption_clip": {
+        "sample_count": 20,
+        "recall_at_1": 0.2,
+        "recall_at_5": 0.6,
+        "hit_at_1": 0.2,
+        "hit_at_5": 0.6,
+        "mrr": 0.3375,
+        "ndcg_at_5": 0.4031,
+        "figure_recall_at_1": 0.2,
+        "figure_recall_at_5": 0.6,
+        "both_target_recall_at_5": null
+      },
+      "rerank_text_caption": {
+        "sample_count": 20,
+        "recall_at_1": 0.25,
+        "recall_at_5": 0.4,
+        "hit_at_1": 0.25,
+        "hit_at_5": 0.4,
+        "mrr": 0.3167,
+        "ndcg_at_5": 0.3381,
+        "figure_recall_at_1": 0.25,
+        "figure_recall_at_5": 0.4,
+        "both_target_recall_at_5": null
+      },
+      "rerank_text_caption_clip": {
+        "sample_count": 20,
+        "recall_at_1": 0.25,
+        "recall_at_5": 0.45,
+        "hit_at_1": 0.25,
+        "hit_at_5": 0.45,
+        "mrr": 0.3267,
+        "ndcg_at_5": 0.3574,
+        "figure_recall_at_1": 0.25,
+        "figure_recall_at_5": 0.45,
+        "both_target_recall_at_5": null
+      }
+    },
+    "visual_layout": {
+      "rrf_text_caption": {
+        "sample_count": 20,
+        "recall_at_1": 0.2,
+        "recall_at_5": 0.35,
+        "hit_at_1": 0.2,
+        "hit_at_5": 0.35,
+        "mrr": 0.2367,
+        "ndcg_at_5": 0.2637,
+        "figure_recall_at_1": 0.2,
+        "figure_recall_at_5": 0.35,
+        "both_target_recall_at_5": null
+      },
+      "rrf_text_caption_clip": {
+        "sample_count": 20,
+        "recall_at_1": 0.2,
+        "recall_at_5": 0.55,
+        "hit_at_1": 0.2,
+        "hit_at_5": 0.55,
+        "mrr": 0.3092,
+        "ndcg_at_5": 0.3677,
+        "figure_recall_at_1": 0.2,
+        "figure_recall_at_5": 0.55,
+        "both_target_recall_at_5": null
+      },
+      "rerank_text_caption": {
+        "sample_count": 20,
+        "recall_at_1": 0.25,
+        "recall_at_5": 0.4,
+        "hit_at_1": 0.25,
+        "hit_at_5": 0.4,
+        "mrr": 0.31,
+        "ndcg_at_5": 0.3324,
+        "figure_recall_at_1": 0.25,
+        "figure_recall_at_5": 0.4,
+        "both_target_recall_at_5": null
+      },
+      "rerank_text_caption_clip": {
+        "sample_count": 20,
+        "recall_at_1": 0.35,
+        "recall_at_5": 0.6,
+        "hit_at_1": 0.35,
+        "hit_at_5": 0.6,
+        "mrr": 0.4242,
+        "ndcg_at_5": 0.4668,
+        "figure_recall_at_1": 0.35,
+        "figure_recall_at_5": 0.6,
+        "both_target_recall_at_5": null
+      }
+    }
+  },
+  "by_paper": {
+    "attention_is_all_you_need": {
+      "rrf_text_caption": {
+        "sample_count": 20,
+        "recall_at_1": 0.275,
+        "recall_at_5": 0.675,
+        "hit_at_1": 0.35,
+        "hit_at_5": 0.75,
+        "mrr": 0.52,
+        "ndcg_at_5": 0.5271,
+        "figure_recall_at_1": 0.4667,
+        "figure_recall_at_5": 0.6,
+        "both_target_recall_at_5": 0.2
+      },
+      "rrf_text_caption_clip": {
+        "sample_count": 20,
+        "recall_at_1": 0.325,
+        "recall_at_5": 0.375,
+        "hit_at_1": 0.4,
+        "hit_at_5": 0.45,
+        "mrr": 0.425,
+        "ndcg_at_5": 0.3735,
+        "figure_recall_at_1": 0.5333,
+        "figure_recall_at_5": 0.6,
+        "both_target_recall_at_5": 0.0
+      },
+      "rerank_text_caption": {
+        "sample_count": 20,
+        "recall_at_1": 0.475,
+        "recall_at_5": 0.725,
+        "hit_at_1": 0.6,
+        "hit_at_5": 0.8,
+        "mrr": 0.6917,
+        "ndcg_at_5": 0.6616,
+        "figure_recall_at_1": 0.3333,
+        "figure_recall_at_5": 0.6,
+        "both_target_recall_at_5": 0.4
+      },
+      "rerank_text_caption_clip": {
+        "sample_count": 20,
+        "recall_at_1": 0.55,
+        "recall_at_5": 0.725,
+        "hit_at_1": 0.65,
+        "hit_at_5": 0.8,
+        "mrr": 0.7167,
+        "ndcg_at_5": 0.6801,
+        "figure_recall_at_1": 0.4,
+        "figure_recall_at_5": 0.6667,
+        "both_target_recall_at_5": 0.2
+      }
+    },
+    "blip2": {
+      "rrf_text_caption": {
+        "sample_count": 20,
+        "recall_at_1": 0.075,
+        "recall_at_5": 0.5,
+        "hit_at_1": 0.1,
+        "hit_at_5": 0.55,
+        "mrr": 0.2933,
+        "ndcg_at_5": 0.3421,
+        "figure_recall_at_1": 0.1333,
+        "figure_recall_at_5": 0.3333,
+        "both_target_recall_at_5": 0.4
+      },
+      "rrf_text_caption_clip": {
+        "sample_count": 20,
+        "recall_at_1": 0.025,
+        "recall_at_5": 0.375,
+        "hit_at_1": 0.05,
+        "hit_at_5": 0.45,
+        "mrr": 0.1742,
+        "ndcg_at_5": 0.2019,
+        "figure_recall_at_1": 0.0667,
+        "figure_recall_at_5": 0.6,
+        "both_target_recall_at_5": 0.0
+      },
+      "rerank_text_caption": {
+        "sample_count": 20,
+        "recall_at_1": 0.35,
+        "recall_at_5": 0.625,
+        "hit_at_1": 0.4,
+        "hit_at_5": 0.65,
+        "mrr": 0.525,
+        "ndcg_at_5": 0.5446,
+        "figure_recall_at_1": 0.3333,
+        "figure_recall_at_5": 0.5333,
+        "both_target_recall_at_5": 0.6
+      },
+      "rerank_text_caption_clip": {
+        "sample_count": 20,
+        "recall_at_1": 0.375,
+        "recall_at_5": 0.675,
+        "hit_at_1": 0.45,
+        "hit_at_5": 0.7,
+        "mrr": 0.56,
+        "ndcg_at_5": 0.5753,
+        "figure_recall_at_1": 0.3333,
+        "figure_recall_at_5": 0.6,
+        "both_target_recall_at_5": 0.6
+      }
+    },
+    "clip": {
+      "rrf_text_caption": {
+        "sample_count": 20,
+        "recall_at_1": 0.05,
+        "recall_at_5": 0.375,
+        "hit_at_1": 0.1,
+        "hit_at_5": 0.4,
+        "mrr": 0.22,
+        "ndcg_at_5": 0.2452,
+        "figure_recall_at_1": 0.1333,
+        "figure_recall_at_5": 0.3333,
+        "both_target_recall_at_5": 0.4
+      },
+      "rrf_text_caption_clip": {
+        "sample_count": 20,
+        "recall_at_1": 0.05,
+        "recall_at_5": 0.225,
+        "hit_at_1": 0.1,
+        "hit_at_5": 0.3,
+        "mrr": 0.17,
+        "ndcg_at_5": 0.1509,
+        "figure_recall_at_1": 0.1333,
+        "figure_recall_at_5": 0.4,
+        "both_target_recall_at_5": 0.0
+      },
+      "rerank_text_caption": {
+        "sample_count": 20,
+        "recall_at_1": 0.225,
+        "recall_at_5": 0.4,
+        "hit_at_1": 0.3,
+        "hit_at_5": 0.45,
+        "mrr": 0.3458,
+        "ndcg_at_5": 0.3385,
+        "figure_recall_at_1": 0.1333,
+        "figure_recall_at_5": 0.2,
+        "both_target_recall_at_5": 0.4
+      },
+      "rerank_text_caption_clip": {
+        "sample_count": 20,
+        "recall_at_1": 0.275,
+        "recall_at_5": 0.525,
+        "hit_at_1": 0.35,
+        "hit_at_5": 0.55,
+        "mrr": 0.4142,
+        "ndcg_at_5": 0.4281,
+        "figure_recall_at_1": 0.2667,
+        "figure_recall_at_5": 0.3333,
+        "both_target_recall_at_5": 0.4
+      }
+    },
+    "llava": {
+      "rrf_text_caption": {
+        "sample_count": 20,
+        "recall_at_1": 0.075,
+        "recall_at_5": 0.25,
+        "hit_at_1": 0.1,
+        "hit_at_5": 0.35,
+        "mrr": 0.2167,
+        "ndcg_at_5": 0.1952,
+        "figure_recall_at_1": 0.1333,
+        "figure_recall_at_5": 0.2,
+        "both_target_recall_at_5": 0.0
+      },
+      "rrf_text_caption_clip": {
+        "sample_count": 20,
+        "recall_at_1": 0.1,
+        "recall_at_5": 0.225,
+        "hit_at_1": 0.1,
+        "hit_at_5": 0.25,
+        "mrr": 0.1517,
+        "ndcg_at_5": 0.1684,
+        "figure_recall_at_1": 0.1333,
+        "figure_recall_at_5": 0.3333,
+        "both_target_recall_at_5": 0.0
+      },
+      "rerank_text_caption": {
+        "sample_count": 20,
+        "recall_at_1": 0.175,
+        "recall_at_5": 0.225,
+        "hit_at_1": 0.25,
+        "hit_at_5": 0.3,
+        "mrr": 0.26,
+        "ndcg_at_5": 0.2113,
+        "figure_recall_at_1": 0.0,
+        "figure_recall_at_5": 0.0667,
+        "both_target_recall_at_5": 0.0
+      },
+      "rerank_text_caption_clip": {
+        "sample_count": 20,
+        "recall_at_1": 0.175,
+        "recall_at_5": 0.325,
+        "hit_at_1": 0.25,
+        "hit_at_5": 0.4,
+        "mrr": 0.2825,
+        "ndcg_at_5": 0.2522,
+        "figure_recall_at_1": 0.0,
+        "figure_recall_at_5": 0.1333,
+        "both_target_recall_at_5": 0.0
+      }
+    },
+    "siglip": {
+      "rrf_text_caption": {
+        "sample_count": 20,
+        "recall_at_1": 0.375,
+        "recall_at_5": 0.775,
+        "hit_at_1": 0.45,
+        "hit_at_5": 0.8,
+        "mrr": 0.5975,
+        "ndcg_at_5": 0.6373,
+        "figure_recall_at_1": 0.6,
+        "figure_recall_at_5": 0.7333,
+        "both_target_recall_at_5": 0.8
+      },
+      "rrf_text_caption_clip": {
+        "sample_count": 20,
+        "recall_at_1": 0.225,
+        "recall_at_5": 0.5,
+        "hit_at_1": 0.3,
+        "hit_at_5": 0.6,
+        "mrr": 0.4083,
+        "ndcg_at_5": 0.3859,
+        "figure_recall_at_1": 0.4,
+        "figure_recall_at_5": 0.8,
+        "both_target_recall_at_5": 0.0
+      },
+      "rerank_text_caption": {
+        "sample_count": 20,
+        "recall_at_1": 0.325,
+        "recall_at_5": 0.65,
+        "hit_at_1": 0.4,
+        "hit_at_5": 0.75,
+        "mrr": 0.5292,
+        "ndcg_at_5": 0.5266,
+        "figure_recall_at_1": 0.2667,
+        "figure_recall_at_5": 0.4667,
+        "both_target_recall_at_5": 0.2
+      },
+      "rerank_text_caption_clip": {
+        "sample_count": 20,
+        "recall_at_1": 0.375,
+        "recall_at_5": 0.775,
+        "hit_at_1": 0.45,
+        "hit_at_5": 0.85,
+        "mrr": 0.6033,
+        "ndcg_at_5": 0.6196,
+        "figure_recall_at_1": 0.2667,
+        "figure_recall_at_5": 0.6667,
+        "both_target_recall_at_5": 0.4
+      }
+    }
+  },
+  "by_retrieval_challenge": {
+    "caption_semantics": {
+      "rrf_text_caption": {
+        "sample_count": 20,
+        "recall_at_1": 0.3,
+        "recall_at_5": 0.5,
+        "hit_at_1": 0.3,
+        "hit_at_5": 0.5,
+        "mrr": 0.3533,
+        "ndcg_at_5": 0.3887,
+        "figure_recall_at_1": 0.3,
+        "figure_recall_at_5": 0.5,
+        "both_target_recall_at_5": null
+      },
+      "rrf_text_caption_clip": {
+        "sample_count": 20,
+        "recall_at_1": 0.2,
+        "recall_at_5": 0.6,
+        "hit_at_1": 0.2,
+        "hit_at_5": 0.6,
+        "mrr": 0.3375,
+        "ndcg_at_5": 0.4031,
+        "figure_recall_at_1": 0.2,
+        "figure_recall_at_5": 0.6,
+        "both_target_recall_at_5": null
+      },
+      "rerank_text_caption": {
+        "sample_count": 20,
+        "recall_at_1": 0.25,
+        "recall_at_5": 0.4,
+        "hit_at_1": 0.25,
+        "hit_at_5": 0.4,
+        "mrr": 0.3167,
+        "ndcg_at_5": 0.3381,
+        "figure_recall_at_1": 0.25,
+        "figure_recall_at_5": 0.4,
+        "both_target_recall_at_5": null
+      },
+      "rerank_text_caption_clip": {
+        "sample_count": 20,
+        "recall_at_1": 0.25,
+        "recall_at_5": 0.45,
+        "hit_at_1": 0.25,
+        "hit_at_5": 0.45,
+        "mrr": 0.3267,
+        "ndcg_at_5": 0.3574,
+        "figure_recall_at_1": 0.25,
+        "figure_recall_at_5": 0.45,
+        "both_target_recall_at_5": null
+      }
+    },
+    "cross_modal": {
+      "rrf_text_caption": {
+        "sample_count": 16,
+        "recall_at_1": 0.1875,
+        "recall_at_5": 0.5312,
+        "hit_at_1": 0.375,
+        "hit_at_5": 0.75,
+        "mrr": 0.5469,
+        "ndcg_at_5": 0.4712,
+        "figure_recall_at_1": 0.375,
+        "figure_recall_at_5": 0.4375,
+        "both_target_recall_at_5": 0.3125
+      },
+      "rrf_text_caption_clip": {
+        "sample_count": 16,
+        "recall_at_1": 0.0938,
+        "recall_at_5": 0.1875,
+        "hit_at_1": 0.1875,
+        "hit_at_5": 0.375,
+        "mrr": 0.2812,
+        "ndcg_at_5": 0.1875,
+        "figure_recall_at_1": 0.1875,
+        "figure_recall_at_5": 0.375,
+        "both_target_recall_at_5": 0.0
+      },
+      "rerank_text_caption": {
+        "sample_count": 16,
+        "recall_at_1": 0.3438,
+        "recall_at_5": 0.5625,
+        "hit_at_1": 0.6875,
+        "hit_at_5": 0.8125,
+        "mrr": 0.7396,
+        "ndcg_at_5": 0.5757,
+        "figure_recall_at_1": 0.1875,
+        "figure_recall_at_5": 0.375,
+        "both_target_recall_at_5": 0.3125
+      },
+      "rerank_text_caption_clip": {
+        "sample_count": 16,
+        "recall_at_1": 0.3125,
+        "recall_at_5": 0.5625,
+        "hit_at_1": 0.625,
+        "hit_at_5": 0.75,
+        "mrr": 0.6875,
+        "ndcg_at_5": 0.5666,
+        "figure_recall_at_1": 0.25,
+        "figure_recall_at_5": 0.4375,
+        "both_target_recall_at_5": 0.375
+      }
+    },
+    "multi_evidence": {
+      "rrf_text_caption": {
+        "sample_count": 9,
+        "recall_at_1": 0.2222,
+        "recall_at_5": 0.6667,
+        "hit_at_1": 0.4444,
+        "hit_at_5": 0.8889,
+        "mrr": 0.6333,
+        "ndcg_at_5": 0.5819,
+        "figure_recall_at_1": 0.4444,
+        "figure_recall_at_5": 0.6667,
+        "both_target_recall_at_5": 0.4444
+      },
+      "rrf_text_caption_clip": {
+        "sample_count": 9,
+        "recall_at_1": 0.3333,
+        "recall_at_5": 0.4444,
+        "hit_at_1": 0.6667,
+        "hit_at_5": 0.8889,
+        "mrr": 0.7167,
+        "ndcg_at_5": 0.4644,
+        "figure_recall_at_1": 0.6667,
+        "figure_recall_at_5": 0.8889,
+        "both_target_recall_at_5": 0.0
+      },
+      "rerank_text_caption": {
+        "sample_count": 9,
+        "recall_at_1": 0.2778,
+        "recall_at_5": 0.6111,
+        "hit_at_1": 0.5556,
+        "hit_at_5": 0.8889,
+        "mrr": 0.6852,
+        "ndcg_at_5": 0.5718,
+        "figure_recall_at_1": 0.2222,
+        "figure_recall_at_5": 0.3333,
+        "both_target_recall_at_5": 0.3333
+      },
+      "rerank_text_caption_clip": {
+        "sample_count": 9,
+        "recall_at_1": 0.3333,
+        "recall_at_5": 0.5,
+        "hit_at_1": 0.6667,
+        "hit_at_5": 0.7778,
+        "mrr": 0.7037,
+        "ndcg_at_5": 0.5199,
+        "figure_recall_at_1": 0.2222,
+        "figure_recall_at_5": 0.3333,
+        "both_target_recall_at_5": 0.2222
+      }
+    },
+    "same_paper_distractor": {
+      "rrf_text_caption": {
+        "sample_count": 10,
+        "recall_at_1": 0.2,
+        "recall_at_5": 0.3,
+        "hit_at_1": 0.2,
+        "hit_at_5": 0.3,
+        "mrr": 0.22,
+        "ndcg_at_5": 0.2387,
+        "figure_recall_at_1": 0.2,
+        "figure_recall_at_5": 0.3,
+        "both_target_recall_at_5": null
+      },
+      "rrf_text_caption_clip": {
+        "sample_count": 10,
+        "recall_at_1": 0.2,
+        "recall_at_5": 0.4,
+        "hit_at_1": 0.2,
+        "hit_at_5": 0.4,
+        "mrr": 0.27,
+        "ndcg_at_5": 0.3018,
+        "figure_recall_at_1": 0.2,
+        "figure_recall_at_5": 0.4,
+        "both_target_recall_at_5": null
+      },
+      "rerank_text_caption": {
+        "sample_count": 10,
+        "recall_at_1": 0.1,
+        "recall_at_5": 0.3,
+        "hit_at_1": 0.1,
+        "hit_at_5": 0.3,
+        "mrr": 0.1833,
+        "ndcg_at_5": 0.2131,
+        "figure_recall_at_1": 0.1,
+        "figure_recall_at_5": 0.3,
+        "both_target_recall_at_5": null
+      },
+      "rerank_text_caption_clip": {
+        "sample_count": 10,
+        "recall_at_1": 0.1,
+        "recall_at_5": 0.5,
+        "hit_at_1": 0.1,
+        "hit_at_5": 0.5,
+        "mrr": 0.24,
+        "ndcg_at_5": 0.3036,
+        "figure_recall_at_1": 0.1,
+        "figure_recall_at_5": 0.5,
+        "both_target_recall_at_5": null
+      }
+    },
+    "semantic_text": {
+      "rrf_text_caption": {
+        "sample_count": 25,
+        "recall_at_1": 0.0,
+        "recall_at_5": 0.68,
+        "hit_at_1": 0.0,
+        "hit_at_5": 0.68,
+        "mrr": 0.34,
+        "ndcg_at_5": 0.429,
+        "figure_recall_at_1": null,
+        "figure_recall_at_5": null,
+        "both_target_recall_at_5": null
+      },
+      "rrf_text_caption_clip": {
+        "sample_count": 25,
+        "recall_at_1": 0.0,
+        "recall_at_5": 0.0,
+        "hit_at_1": 0.0,
+        "hit_at_5": 0.0,
+        "mrr": 0.0,
+        "ndcg_at_5": 0.0,
+        "figure_recall_at_1": null,
+        "figure_recall_at_5": null,
+        "both_target_recall_at_5": null
+      },
+      "rerank_text_caption": {
+        "sample_count": 25,
+        "recall_at_1": 0.48,
+        "recall_at_5": 0.76,
+        "hit_at_1": 0.48,
+        "hit_at_5": 0.76,
+        "mrr": 0.5867,
+        "ndcg_at_5": 0.6302,
+        "figure_recall_at_1": null,
+        "figure_recall_at_5": null,
+        "both_target_recall_at_5": null
+      },
+      "rerank_text_caption_clip": {
+        "sample_count": 25,
+        "recall_at_1": 0.56,
+        "recall_at_5": 0.84,
+        "hit_at_1": 0.56,
+        "hit_at_5": 0.84,
+        "mrr": 0.6713,
+        "ndcg_at_5": 0.7136,
+        "figure_recall_at_1": null,
+        "figure_recall_at_5": null,
+        "both_target_recall_at_5": null
+      }
+    },
+    "visual_layout": {
+      "rrf_text_caption": {
+        "sample_count": 20,
+        "recall_at_1": 0.2,
+        "recall_at_5": 0.35,
+        "hit_at_1": 0.2,
+        "hit_at_5": 0.35,
+        "mrr": 0.2367,
+        "ndcg_at_5": 0.2637,
+        "figure_recall_at_1": 0.2,
+        "figure_recall_at_5": 0.35,
+        "both_target_recall_at_5": null
+      },
+      "rrf_text_caption_clip": {
+        "sample_count": 20,
+        "recall_at_1": 0.2,
+        "recall_at_5": 0.55,
+        "hit_at_1": 0.2,
+        "hit_at_5": 0.55,
+        "mrr": 0.3092,
+        "ndcg_at_5": 0.3677,
+        "figure_recall_at_1": 0.2,
+        "figure_recall_at_5": 0.55,
+        "both_target_recall_at_5": null
+      },
+      "rerank_text_caption": {
+        "sample_count": 20,
+        "recall_at_1": 0.25,
+        "recall_at_5": 0.4,
+        "hit_at_1": 0.25,
+        "hit_at_5": 0.4,
+        "mrr": 0.31,
+        "ndcg_at_5": 0.3324,
+        "figure_recall_at_1": 0.25,
+        "figure_recall_at_5": 0.4,
+        "both_target_recall_at_5": null
+      },
+      "rerank_text_caption_clip": {
+        "sample_count": 20,
+        "recall_at_1": 0.35,
+        "recall_at_5": 0.6,
+        "hit_at_1": 0.35,
+        "hit_at_5": 0.6,
+        "mrr": 0.4242,
+        "ndcg_at_5": 0.4668,
+        "figure_recall_at_1": 0.35,
+        "figure_recall_at_5": 0.6,
+        "both_target_recall_at_5": null
+      }
+    }
+  },
+  "by_target_figure_text_source": {
+    "nearby_text_fallback": {
+      "rrf_text_caption": {
+        "sample_count": 38,
+        "recall_at_1": 0.2105,
+        "recall_at_5": 0.4342,
+        "hit_at_1": 0.2632,
+        "hit_at_5": 0.5,
+        "mrr": 0.3535,
+        "ndcg_at_5": 0.3557,
+        "figure_recall_at_1": 0.2632,
+        "figure_recall_at_5": 0.3947,
+        "both_target_recall_at_5": 0.3636
+      },
+      "rrf_text_caption_clip": {
+        "sample_count": 38,
+        "recall_at_1": 0.1316,
+        "recall_at_5": 0.4211,
+        "hit_at_1": 0.1842,
+        "hit_at_5": 0.5,
+        "mrr": 0.3009,
+        "ndcg_at_5": 0.2993,
+        "figure_recall_at_1": 0.1842,
+        "figure_recall_at_5": 0.5,
+        "both_target_recall_at_5": 0.0
+      },
+      "rerank_text_caption": {
+        "sample_count": 38,
+        "recall_at_1": 0.1974,
+        "recall_at_5": 0.3158,
+        "hit_at_1": 0.2895,
+        "hit_at_5": 0.4211,
+        "mrr": 0.3465,
+        "ndcg_at_5": 0.2981,
+        "figure_recall_at_1": 0.1053,
+        "figure_recall_at_5": 0.2105,
+        "both_target_recall_at_5": 0.1818
+      },
+      "rerank_text_caption_clip": {
+        "sample_count": 38,
+        "recall_at_1": 0.1974,
+        "recall_at_5": 0.3421,
+        "hit_at_1": 0.2895,
+        "hit_at_5": 0.4211,
+        "mrr": 0.3386,
+        "ndcg_at_5": 0.3032,
+        "figure_recall_at_1": 0.1053,
+        "figure_recall_at_5": 0.2632,
+        "both_target_recall_at_5": 0.1818
+      }
+    },
+    "vlm_caption": {
+      "rrf_text_caption": {
+        "sample_count": 37,
+        "recall_at_1": 0.2432,
+        "recall_at_5": 0.4865,
+        "hit_at_1": 0.3243,
+        "hit_at_5": 0.5676,
+        "mrr": 0.4059,
+        "ndcg_at_5": 0.3972,
+        "figure_recall_at_1": 0.3243,
+        "figure_recall_at_5": 0.4865,
+        "both_target_recall_at_5": 0.3571
+      },
+      "rrf_text_caption_clip": {
+        "sample_count": 37,
+        "recall_at_1": 0.2568,
+        "recall_at_5": 0.4865,
+        "hit_at_1": 0.3243,
+        "hit_at_5": 0.5946,
+        "mrr": 0.4095,
+        "ndcg_at_5": 0.3848,
+        "figure_recall_at_1": 0.3243,
+        "figure_recall_at_5": 0.5946,
+        "both_target_recall_at_5": 0.0
+      },
+      "rerank_text_caption": {
+        "sample_count": 37,
+        "recall_at_1": 0.3108,
+        "recall_at_5": 0.5811,
+        "hit_at_1": 0.4324,
+        "hit_at_5": 0.6486,
+        "mrr": 0.5189,
+        "ndcg_at_5": 0.5019,
+        "figure_recall_at_1": 0.3243,
+        "figure_recall_at_5": 0.5405,
+        "both_target_recall_at_5": 0.4286
+      },
+      "rerank_text_caption_clip": {
+        "sample_count": 37,
+        "recall_at_1": 0.3649,
+        "recall_at_5": 0.7162,
+        "hit_at_1": 0.4865,
+        "hit_at_5": 0.7838,
+        "mrr": 0.5914,
+        "ndcg_at_5": 0.5877,
+        "figure_recall_at_1": 0.4054,
+        "figure_recall_at_5": 0.7027,
+        "both_target_recall_at_5": 0.4286
+      }
+    }
+  },
+  "frozen_baselines": {
+    "PR1 Text": {
+      "overall": {
+        "recall_at_5": 0.295,
+        "mrr": 0.3292,
+        "ndcg_at_5": 0.2829,
+        "hit_at_5": 0.38,
+        "recall_at_1": 0.235,
+        "hit_at_1": 0.3,
+        "figure_recall_at_1": 0.0
+      },
+      "hard_visual": {
+        "sample_count": 10,
+        "recall_at_5": 0.0,
+        "mrr": 0.0,
+        "ndcg_at_5": 0.0,
+        "hit_at_5": 0.0,
+        "recall_at_1": 0.0,
+        "hit_at_1": 0.0,
+        "figure_recall_at_1": 0.0
+      },
+      "hybrid": {
+        "sample_count": 25,
+        "recall_at_5": 0.34,
+        "mrr": 0.5867,
+        "ndcg_at_5": 0.3743,
+        "hit_at_5": 0.68,
+        "recall_at_1": 0.26,
+        "hit_at_1": 0.52,
+        "figure_recall_at_1": 0.0
+      },
+      "text": {
+        "sample_count": 25,
+        "recall_at_5": 0.84,
+        "mrr": 0.73,
+        "ndcg_at_5": 0.7572,
+        "hit_at_5": 0.84,
+        "recall_at_1": 0.68,
+        "hit_at_1": 0.68
+      },
+      "visual_caption": {
+        "sample_count": 20,
+        "recall_at_5": 0.0,
+        "mrr": 0.0,
+        "ndcg_at_5": 0.0,
+        "hit_at_5": 0.0,
+        "recall_at_1": 0.0,
+        "hit_at_1": 0.0,
+        "figure_recall_at_1": 0.0
+      },
+      "visual_layout": {
+        "sample_count": 20,
+        "recall_at_5": 0.0,
+        "mrr": 0.0,
+        "ndcg_at_5": 0.0,
+        "hit_at_5": 0.0,
+        "recall_at_1": 0.0,
+        "hit_at_1": 0.0,
+        "figure_recall_at_1": 0.0
+      }
+    },
+    "PR2 Caption": {
+      "overall": {
+        "recall_at_5": 0.33,
+        "figure_recall_at_5": 0.5467,
+        "mrr": 0.2835,
+        "ndcg_at_5": 0.2644,
+        "hit_at_5": 0.41,
+        "recall_at_1": 0.17,
+        "hit_at_1": 0.22,
+        "figure_recall_at_1": 0.2933
+      },
+      "hard_visual": {
+        "sample_count": 10,
+        "recall_at_5": 0.4,
+        "figure_recall_at_5": 0.4,
+        "mrr": 0.2583,
+        "ndcg_at_5": 0.2931,
+        "hit_at_5": 0.4,
+        "recall_at_1": 0.2,
+        "hit_at_1": 0.2,
+        "figure_recall_at_1": 0.2
+      },
+      "hybrid": {
+        "sample_count": 25,
+        "recall_at_5": 0.32,
+        "figure_recall_at_5": 0.64,
+        "mrr": 0.4813,
+        "ndcg_at_5": 0.3191,
+        "hit_at_5": 0.64,
+        "recall_at_1": 0.2,
+        "hit_at_1": 0.4,
+        "figure_recall_at_1": 0.4
+      },
+      "text": {
+        "sample_count": 25,
+        "recall_at_5": 0.0,
+        "figure_recall_at_5": null,
+        "mrr": 0.0,
+        "ndcg_at_5": 0.0,
+        "hit_at_5": 0.0,
+        "recall_at_1": 0.0,
+        "hit_at_1": 0.0
+      },
+      "visual_caption": {
+        "sample_count": 20,
+        "recall_at_5": 0.5,
+        "figure_recall_at_5": 0.5,
+        "mrr": 0.3833,
+        "ndcg_at_5": 0.4131,
+        "hit_at_5": 0.5,
+        "recall_at_1": 0.3,
+        "hit_at_1": 0.3,
+        "figure_recall_at_1": 0.3
+      },
+      "visual_layout": {
+        "sample_count": 20,
+        "recall_at_5": 0.55,
+        "figure_recall_at_5": 0.55,
+        "mrr": 0.3033,
+        "ndcg_at_5": 0.3633,
+        "hit_at_5": 0.55,
+        "recall_at_1": 0.2,
+        "hit_at_1": 0.2,
+        "figure_recall_at_1": 0.2
+      }
+    },
+    "PR3 CLIP": {
+      "overall": {
+        "sample_count": 100,
+        "recall_at_5": 0.29,
+        "figure_recall_at_5": 0.48,
+        "mrr": 0.1983,
+        "ndcg_at_5": 0.2047,
+        "hit_at_5": 0.36,
+        "hit_at_1": 0.12
+      },
+      "hard_visual": {
+        "sample_count": 10,
+        "recall_at_5": 0.3,
+        "figure_recall_at_5": 0.3,
+        "mrr": 0.17,
+        "ndcg_at_5": 0.2018,
+        "hit_at_5": 0.3,
+        "hit_at_1": 0.1
+      },
+      "hybrid": {
+        "sample_count": 25,
+        "recall_at_5": 0.28,
+        "figure_recall_at_5": 0.56,
+        "mrr": 0.2747,
+        "ndcg_at_5": 0.2119,
+        "hit_at_5": 0.56,
+        "hit_at_1": 0.12
+      },
+      "text": {
+        "sample_count": 25,
+        "recall_at_5": 0.0,
+        "figure_recall_at_5": null,
+        "mrr": 0.0,
+        "ndcg_at_5": 0.0,
+        "hit_at_5": 0.0,
+        "hit_at_1": 0.0
+      },
+      "visual_caption": {
+        "sample_count": 20,
+        "recall_at_5": 0.5,
+        "figure_recall_at_5": 0.5,
+        "mrr": 0.2783,
+        "ndcg_at_5": 0.3318,
+        "hit_at_5": 0.5,
+        "hit_at_1": 0.2
+      },
+      "visual_layout": {
+        "sample_count": 20,
+        "recall_at_5": 0.45,
+        "figure_recall_at_5": 0.45,
+        "mrr": 0.285,
+        "ndcg_at_5": 0.3259,
+        "hit_at_5": 0.45,
+        "hit_at_1": 0.2
+      }
+    },
+    "PR4 RRF T+C (frozen)": {
+      "overall": {
+        "sample_count": 100,
+        "recall_at_1": 0.17,
+        "recall_at_5": 0.515,
+        "hit_at_1": 0.22,
+        "hit_at_5": 0.57,
+        "mrr": 0.3695,
+        "ndcg_at_5": 0.3894,
+        "figure_recall_at_1": 0.2933,
+        "figure_recall_at_5": 0.44,
+        "both_target_recall_at_5": 0.36
+      },
+      "hard_visual": {
+        "sample_count": 10,
+        "recall_at_1": 0.2,
+        "recall_at_5": 0.3,
+        "hit_at_1": 0.2,
+        "hit_at_5": 0.3,
+        "mrr": 0.22,
+        "ndcg_at_5": 0.2387,
+        "figure_recall_at_1": 0.2,
+        "figure_recall_at_5": 0.3,
+        "both_target_recall_at_5": null
+      },
+      "hybrid": {
+        "sample_count": 25,
+        "recall_at_1": 0.2,
+        "recall_at_5": 0.58,
+        "hit_at_1": 0.4,
+        "hit_at_5": 0.8,
+        "mrr": 0.578,
+        "ndcg_at_5": 0.5111,
+        "figure_recall_at_1": 0.4,
+        "figure_recall_at_5": 0.52,
+        "both_target_recall_at_5": 0.36
+      },
+      "text": {
+        "sample_count": 25,
+        "recall_at_1": 0.0,
+        "recall_at_5": 0.68,
+        "hit_at_1": 0.0,
+        "hit_at_5": 0.68,
+        "mrr": 0.34,
+        "ndcg_at_5": 0.429,
+        "figure_recall_at_1": null,
+        "figure_recall_at_5": null,
+        "both_target_recall_at_5": null
+      },
+      "visual_caption": {
+        "sample_count": 20,
+        "recall_at_1": 0.3,
+        "recall_at_5": 0.5,
+        "hit_at_1": 0.3,
+        "hit_at_5": 0.5,
+        "mrr": 0.3533,
+        "ndcg_at_5": 0.3887,
+        "figure_recall_at_1": 0.3,
+        "figure_recall_at_5": 0.5,
+        "both_target_recall_at_5": null
+      },
+      "visual_layout": {
+        "sample_count": 20,
+        "recall_at_1": 0.2,
+        "recall_at_5": 0.35,
+        "hit_at_1": 0.2,
+        "hit_at_5": 0.35,
+        "mrr": 0.2367,
+        "ndcg_at_5": 0.2637,
+        "figure_recall_at_1": 0.2,
+        "figure_recall_at_5": 0.35,
+        "both_target_recall_at_5": null
+      }
+    },
+    "PR4 RRF T+C+CLIP (frozen)": {
+      "overall": {
+        "sample_count": 100,
+        "recall_at_1": 0.145,
+        "recall_at_5": 0.34,
+        "hit_at_1": 0.19,
+        "hit_at_5": 0.41,
+        "mrr": 0.2658,
+        "ndcg_at_5": 0.2561,
+        "figure_recall_at_1": 0.2533,
+        "figure_recall_at_5": 0.5467,
+        "both_target_recall_at_5": 0.0
+      },
+      "hard_visual": {
+        "sample_count": 10,
+        "recall_at_1": 0.2,
+        "recall_at_5": 0.4,
+        "hit_at_1": 0.2,
+        "hit_at_5": 0.4,
+        "mrr": 0.27,
+        "ndcg_at_5": 0.3018,
+        "figure_recall_at_1": 0.2,
+        "figure_recall_at_5": 0.4,
+        "both_target_recall_at_5": null
+      },
+      "hybrid": {
+        "sample_count": 25,
+        "recall_at_1": 0.18,
+        "recall_at_5": 0.28,
+        "hit_at_1": 0.36,
+        "hit_at_5": 0.56,
+        "mrr": 0.438,
+        "ndcg_at_5": 0.2872,
+        "figure_recall_at_1": 0.36,
+        "figure_recall_at_5": 0.56,
+        "both_target_recall_at_5": 0.0
+      },
+      "text": {
+        "sample_count": 25,
+        "recall_at_1": 0.0,
+        "recall_at_5": 0.0,
+        "hit_at_1": 0.0,
+        "hit_at_5": 0.0,
+        "mrr": 0.0,
+        "ndcg_at_5": 0.0,
+        "figure_recall_at_1": null,
+        "figure_recall_at_5": null,
+        "both_target_recall_at_5": null
+      },
+      "visual_caption": {
+        "sample_count": 20,
+        "recall_at_1": 0.2,
+        "recall_at_5": 0.6,
+        "hit_at_1": 0.2,
+        "hit_at_5": 0.6,
+        "mrr": 0.3375,
+        "ndcg_at_5": 0.4031,
+        "figure_recall_at_1": 0.2,
+        "figure_recall_at_5": 0.6,
+        "both_target_recall_at_5": null
+      },
+      "visual_layout": {
+        "sample_count": 20,
+        "recall_at_1": 0.2,
+        "recall_at_5": 0.55,
+        "hit_at_1": 0.2,
+        "hit_at_5": 0.55,
+        "mrr": 0.3092,
+        "ndcg_at_5": 0.3677,
+        "figure_recall_at_1": 0.2,
+        "figure_recall_at_5": 0.55,
+        "both_target_recall_at_5": null
+      }
+    }
+  },
+  "frozen_baseline_sources": {
+    "PR1 Text": "results/v2/pr1_baseline_metrics.json",
+    "PR2 Caption": "results/v2/pr2_caption_metrics.json",
+    "PR3 CLIP": "results/v2/pr3_clip_metrics.json",
+    "PR4 RRF": "results/v2/pr4_rrf_metrics.json",
+    "note": "Loaded from result files, never hardcoded. R@1/H@1/FigR@1 for PR1 and PR2 are re-read from their frozen per-query artifacts, which recorded ranked retrieval but aggregated only @5 metrics. PR3's CLIP per-query list carries no document_id, so its @1 cells that were not already recorded are reported as N/A rather than guessed."
+  },
+  "clip_marginal_value_after_reranking": {
+    "Overall MRR@5": {
+      "text_caption_ce": 0.4703,
+      "text_caption_clip_ce": 0.5153,
+      "delta": 0.045
+    },
+    "Overall Recall@5": {
+      "text_caption_ce": 0.525,
+      "text_caption_clip_ce": 0.605,
+      "delta": 0.08
+    },
+    "Overall Figure Recall@5": {
+      "text_caption_ce": 0.3733,
+      "text_caption_clip_ce": 0.48,
+      "delta": 0.1067
+    },
+    "hard_visual MRR@5": {
+      "text_caption_ce": 0.1833,
+      "text_caption_clip_ce": 0.24,
+      "delta": 0.0567
+    },
+    "hybrid MRR@5": {
+      "text_caption_ce": 0.72,
+      "text_caption_clip_ce": 0.6933,
+      "delta": -0.0267
+    },
+    "text MRR@5": {
+      "text_caption_ce": 0.5867,
+      "text_caption_clip_ce": 0.6713,
+      "delta": 0.0846
+    },
+    "visual_caption MRR@5": {
+      "text_caption_ce": 0.3167,
+      "text_caption_clip_ce": 0.3267,
+      "delta": 0.01
+    },
+    "visual_layout MRR@5": {
+      "text_caption_ce": 0.31,
+      "text_caption_clip_ce": 0.4242,
+      "delta": 0.1142
+    },
+    "hard_visual FigR@5": {
+      "text_caption_ce": 0.3,
+      "text_caption_clip_ce": 0.5,
+      "delta": 0.2
+    },
+    "hybrid FigR@5": {
+      "text_caption_ce": 0.36,
+      "text_caption_clip_ce": 0.4,
+      "delta": 0.04
+    },
+    "text FigR@5": {
+      "text_caption_ce": null,
+      "text_caption_clip_ce": null,
+      "delta": null
+    },
+    "visual_caption FigR@5": {
+      "text_caption_ce": 0.4,
+      "text_caption_clip_ce": 0.45,
+      "delta": 0.05
+    },
+    "visual_layout FigR@5": {
+      "text_caption_ce": 0.4,
+      "text_caption_clip_ce": 0.6,
+      "delta": 0.2
+    }
+  },
+  "pr4_in_pool_failure_recovery": {
+    "rerank_text_caption": {
+      "n_total": 20,
+      "n_addressable_within_depth_20": 10,
+      "n_unreachable_below_depth_20": 10,
+      "unreachable_query_ids": [
+        "q_v2_026",
+        "q_v2_029",
+        "q_v2_031",
+        "q_v2_039",
+        "q_v2_040",
+        "q_v2_060",
+        "q_v2_073",
+        "q_v2_078",
+        "q_v2_092",
+        "q_v2_097"
+      ],
+      "mean_target_rank_before": 16.1,
+      "mean_target_rank_after": 12.6,
+      "promoted_into_top5": 3,
+      "promoted_into_top5_query_ids": [
+        "q_v2_027",
+        "q_v2_072",
+        "q_v2_080"
+      ],
+      "promoted_into_top1": 2,
+      "promoted_into_top1_query_ids": [
+        "q_v2_027",
+        "q_v2_080"
+      ],
+      "pr4_recovered_into_top5": 1
+    },
+    "rerank_text_caption_clip": {
+      "n_total": 20,
+      "n_addressable_within_depth_20": 17,
+      "n_unreachable_below_depth_20": 3,
+      "unreachable_query_ids": [
+        "q_v2_026",
+        "q_v2_092",
+        "q_v2_097"
+      ],
+      "mean_target_rank_before": 9.5294,
+      "mean_target_rank_after": 11.4706,
+      "promoted_into_top5": 5,
+      "promoted_into_top5_query_ids": [
+        "q_v2_027",
+        "q_v2_031",
+        "q_v2_060",
+        "q_v2_072",
+        "q_v2_080"
+      ],
+      "promoted_into_top1": 3,
+      "promoted_into_top1_query_ids": [
+        "q_v2_027",
+        "q_v2_031",
+        "q_v2_080"
+      ],
+      "pr4_recovered_into_top5": 1
+    }
+  },
+  "pr4_push_out_recovery": {
+    "rerank_text_caption": {
+      "n_total": 15,
+      "restored_to_top5": 2,
+      "restored_query_ids": [
+        "q_v2_052",
+        "q_v2_077"
+      ],
+      "still_below_top5": 1,
+      "still_below_query_ids": [
+        "q_v2_079"
+      ],
+      "pushed_even_lower": 1,
+      "pushed_lower_query_ids": [
+        "q_v2_096"
+      ],
+      "unreachable_below_depth_20": 11
+    },
+    "rerank_text_caption_clip": {
+      "n_total": 15,
+      "restored_to_top5": 5,
+      "restored_query_ids": [
+        "q_v2_012",
+        "q_v2_052",
+        "q_v2_058",
+        "q_v2_077",
+        "q_v2_079"
+      ],
+      "still_below_top5": 4,
+      "still_below_query_ids": [
+        "q_v2_008",
+        "q_v2_017",
+        "q_v2_030",
+        "q_v2_037"
+      ],
+      "pushed_even_lower": 6,
+      "pushed_lower_query_ids": [
+        "q_v2_009",
+        "q_v2_013",
+        "q_v2_018",
+        "q_v2_034",
+        "q_v2_069",
+        "q_v2_096"
+      ],
+      "unreachable_below_depth_20": 0
+    }
+  },
+  "rank_movement": {
+    "rerank_text_caption": {
+      "text evidence": {
+        "n": 42,
+        "mean_target_rank_before": 3.9524,
+        "mean_target_rank_after": 2.0,
+        "median_rank_delta": -1.0,
+        "promoted_into_top5": 6,
+        "promoted_into_top1": 23,
+        "pushed_out_of_top5": 0
+      },
+      "figure evidence": {
+        "n": 54,
+        "mean_target_rank_before": 6.2037,
+        "mean_target_rank_after": 7.5556,
+        "median_rank_delta": 1.0,
+        "promoted_into_top5": 8,
+        "promoted_into_top1": 9,
+        "pushed_out_of_top5": 13
+      },
+      "hybrid queries": {
+        "n": 22,
+        "mean_target_rank_before": 2.7273,
+        "mean_target_rank_after": 2.1818,
+        "median_rank_delta": -0.5,
+        "promoted_into_top5": 2,
+        "promoted_into_top1": 11,
+        "pushed_out_of_top5": 1
+      }
+    },
+    "rerank_text_caption_clip": {
+      "text evidence": {
+        "n": 38,
+        "mean_target_rank_before": 15.8947,
+        "mean_target_rank_after": 1.5789,
+        "median_rank_delta": -14.0,
+        "promoted_into_top5": 38,
+        "promoted_into_top1": 24,
+        "pushed_out_of_top5": 0
+      },
+      "figure evidence": {
+        "n": 72,
+        "mean_target_rank_before": 5.75,
+        "mean_target_rank_after": 7.6528,
+        "median_rank_delta": 1.0,
+        "promoted_into_top5": 9,
+        "promoted_into_top1": 11,
+        "pushed_out_of_top5": 14
+      },
+      "hybrid queries": {
+        "n": 24,
+        "mean_target_rank_before": 5.0,
+        "mean_target_rank_after": 3.5833,
+        "median_rank_delta": 0.0,
+        "promoted_into_top5": 6,
+        "promoted_into_top1": 10,
+        "pushed_out_of_top5": 1
+      }
+    }
+  },
+  "hybrid_both_target_coverage_at_5": {
+    "PR1 Text (derived)": 0.0,
+    "rrf_text_caption": 0.36,
+    "rrf_text_caption_clip": 0.0,
+    "rerank_text_caption": 0.32,
+    "rerank_text_caption_clip": 0.32
+  },
+  "latency": {
+    "model_load_seconds": 11.6853,
+    "first_inference_warmup_seconds": 0.4427,
+    "steady_state": {
+      "rerank_text_caption": {
+        "queries": 100,
+        "candidate_pairs_reranked": 2000,
+        "total_rerank_seconds": 6.5704,
+        "mean_ms_per_query": 65.704,
+        "p50_ms": 52.598,
+        "p95_ms": 137.818,
+        "pairs_per_second": 304.39
+      },
+      "rerank_text_caption_clip": {
+        "queries": 100,
+        "candidate_pairs_reranked": 2000,
+        "total_rerank_seconds": 4.3856,
+        "mean_ms_per_query": 43.856,
+        "p50_ms": 37.56,
+        "p95_ms": 70.513,
+        "pairs_per_second": 456.04
+      }
+    },
+    "note": "Local single-process measurement on a warm model, excluding load and warm-up. Not a production SLO claim."
+  },
+  "limitations": [
+    "Small visual universe: 21 canonical figures against a depth-20 candidate pool, so visual-stream agreement is unusually dense. Carried forward from PR4; not tuned around.",
+    "16/21 canonical figures use a page-render fallback rather than a true figure crop. Figure extraction was not changed in PR5.",
+    "The cross-encoder is text-only and never sees image pixels, so failure on visually specific queries may reflect the textual representation rather than the reranker's ranking quality.",
+    "The nearby-text fallback is low-quality page-extraction boilerplate for many figures, which bounds what any text reranker can achieve on the figures that have no VLM caption.",
+    "Some PR4 in-pool failures sit below the depth-20 rerank pool and are structurally unreachable by PR5 at the fixed candidate depth."
+  ]
+}

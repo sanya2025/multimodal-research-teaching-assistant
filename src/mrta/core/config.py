@@ -79,6 +79,13 @@ class Settings(BaseSettings):
     fusion_top_k: int = 8
     rrf_k: int = 60
 
+    # --- Reranking (PR5) ---
+    # Text cross-encoder. It cannot inspect image pixels: figure candidates are
+    # reranked through their production-derived textual representation only.
+    reranker_model_name: str = "cross-encoder/ms-marco-MiniLM-L-6-v2"
+    rerank_top_n: int = 20  # RRF candidate depth entering the reranker
+    final_top_k: int = 5  # reranked cutoff, matches evaluation_k
+
     # --- Observability ---
     log_level: str = "INFO"
     log_file: Path = Field(default=Path("data/logs/runs.jsonl"))
