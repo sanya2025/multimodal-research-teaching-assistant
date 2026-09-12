@@ -6,11 +6,10 @@ from pathlib import Path
 
 from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
 
-from apps.api.deps import get_store
+from apps.api.deps import get_canonical_stack, get_store
 from apps.api.schemas import UploadResponse
 from mrta.core.config import settings
-from mrta.ingestion.chunker import chunk_pdf
-from mrta.ingestion.pdf_loader import load_pdf
+from mrta.ingestion.document_indexer import index_document
 
 router = APIRouter()
 
@@ -19,8 +18,18 @@ PDF_MAGIC = b"%PDF"
 
 
 @router.post("/upload", response_model=UploadResponse)
-async def upload(file: UploadFile = File(...), store=Depends(get_store)) -> UploadResponse:
-    """Upload a PDF, chunk it, embed it, and persist the updated store."""
+async def upload(
+    file: UploadFile = File(...),
+    store=Depends(get_store),
+    canonical=Depends(get_canonical_stack),
+) -> UploadResponse:
+    """Upload a PDF, index it into every configured retrieval stream, and persist.
+
+    Text indexing is unconditional. When a canonical stack is configured, the
+    document's figures are also captioned into the caption index and embedded
+    into the CLIP index, so the uploaded document is immediately usable by the
+    full Text + Caption + CLIP query path rather than degrading to text-only.
+    """
     filename = file.filename or ""
 
     # 1. Extension check
@@ -59,14 +68,23 @@ async def upload(file: UploadFile = File(...), store=Depends(get_store)) -> Uplo
     path = raw_dir / safe_name
     path.write_bytes(data)
 
-    # 7. Parse — IngestionError mapped to 422 by the global exception handler in main.py
-    pdf = load_pdf(path)
-    chunks = chunk_pdf(pdf, strategy="recursive")
-    store.add(chunks)
-    store.save(settings.vector_store_path / "default")
+    # 7. Index — IngestionError mapped to 422 by the global exception handler in main.py
+    stack = canonical or {}
+    result = index_document(
+        path,
+        text_store=store,
+        caption_store=stack.get("caption_store"),
+        image_store=stack.get("image_store"),
+        analyzer=stack.get("analyzer"),
+        store_root=Path(settings.vector_store_path),
+    )
     return UploadResponse(
-        doc_id=pdf.doc_id,
-        source=pdf.source,
-        n_pages=pdf.n_pages,
-        n_chunks=len(chunks),
+        doc_id=result.doc_id,
+        source=result.source,
+        n_pages=result.n_pages,
+        n_chunks=result.n_chunks,
+        n_figures=result.n_figures,
+        n_caption_records=result.n_caption_records,
+        n_visual_records=result.n_visual_records,
+        visual_retrieval_available=result.visual_retrieval_available,
     )

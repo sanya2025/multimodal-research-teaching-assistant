@@ -62,14 +62,91 @@ async def lifespan(app: FastAPI):
                 vector_store=store, visual_store=visual_store
             )
             app.state.vlm = _VLMClient()
+            app.state.canonical_stack = (
+                _build_canonical_stack(embedder, clip)
+                if settings.enable_canonical_retrieval
+                else None
+            )
         except Exception:
             app.state.retriever = None
             app.state.vlm = None
+            app.state.canonical_stack = None
     else:
         app.state.retriever = None
         app.state.vlm = None
+        app.state.canonical_stack = None
 
     yield
+
+
+def _build_canonical_stack(embedder, clip) -> dict | None:
+    """Assemble the PR4/PR5 canonical components, tolerating missing pieces.
+
+    Each component is loaded independently, because the canonical pipeline
+    degrades per-stream: a missing caption index costs the caption stream, not
+    the query.
+
+    The caption and CLIP indices are loaded from the same persisted location
+    that production ingestion writes (``mrta.ingestion.document_indexer``), so
+    a document uploaded in an earlier process is retrievable after a restart.
+    An index that does not exist yet starts empty and is populated by the next
+    upload.
+
+    The analyzer is included so ``/upload`` can caption figures with the same
+    configured VLM the rest of the stack uses.
+    """
+    from mrta.ingestion.document_indexer import CAPTION_INDEX_NAME, CLIP_INDEX_NAME
+    from mrta.retrieval.caption_store import CaptionVectorStore
+    from mrta.retrieval.image_store import ImageStore
+
+    store_root = Path(settings.vector_store_path)
+    stack: dict = {
+        "caption_store": None,
+        "image_store": None,
+        "reranker": None,
+        "analyzer": None,
+    }
+
+    caption_dir = store_root / CAPTION_INDEX_NAME
+    try:
+        stack["caption_store"] = (
+            CaptionVectorStore.load(caption_dir, embedder)
+            if (caption_dir / "index.faiss").exists()
+            else CaptionVectorStore(embedder)
+        )
+    except Exception:
+        stack["caption_store"] = None
+
+    clip_dir = store_root / CLIP_INDEX_NAME
+    try:
+        stack["image_store"] = (
+            ImageStore.load(clip_dir, clip)
+            if (clip_dir / "index.faiss").exists()
+            else ImageStore(clip)
+        )
+    except Exception:
+        stack["image_store"] = None
+
+    try:
+        from mrta.multimodal.visual_analyzer import VisualAnalyzer
+
+        stack["analyzer"] = VisualAnalyzer()
+    except Exception:
+        # Captioning unavailable: figures are still indexed and fall back to
+        # their nearby page text. No caption is fabricated.
+        stack["analyzer"] = None
+
+    if settings.enable_cross_encoder_rerank:
+        try:
+            from mrta.retrieval.reranker import CrossEncoderReranker
+
+            stack["reranker"] = CrossEncoderReranker()
+        except Exception:
+            # Cross-encoder weights unavailable (offline, or model not
+            # downloaded). The pipeline falls back to canonical RRF ordering.
+            stack["reranker"] = None
+
+    return stack
 
 
 app = FastAPI(

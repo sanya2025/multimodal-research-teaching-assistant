@@ -90,6 +90,10 @@ class VisualRecord(BaseModel):
     figure_index: int  # 1-indexed per page
     image_path: str
 
+    # How the image artifact was obtained (PR6). Optional with a default so
+    # indices persisted before this field existed still load unchanged.
+    extraction_method: str | None = None  # raster_crop | page_render_fallback
+
     # Retrieval score — set during search; not a persistent field
     retrieval_score: float | None = Field(default=None, exclude=True)
 
@@ -135,6 +139,13 @@ class EvidenceRecord(BaseModel):
     nearby_text: str | None = None
     visual_type: str | None = None
 
+    # Ingestion provenance (PR6). Recorded per record rather than only tallied,
+    # so the question "did this figure get a real VLM caption, or only nearby
+    # page text?" survives persistence — PR5 measured that distinction as the
+    # dominant factor in figure retrieval quality.
+    caption_source: str | None = None  # vlm_generated | nearby_text_fallback | empty
+    extraction_method: str | None = None  # raster_crop | page_render_fallback
+
     # Stable filesystem path to the original image — set by ingestion/index-build scripts.
     # Allows the caption index to omit image_bytes at persistence time while still
     # supporting lazy image loading for downstream multimodal generation.
@@ -171,7 +182,13 @@ class EvidenceRecord(BaseModel):
 
 
 class MultimodalCitation(BaseModel):
-    """Structured provenance for one piece of evidence in a multimodal answer."""
+    """Structured provenance for one piece of evidence in a multimodal answer.
+
+    The first six fields are the original Stage-7 contract and are always
+    populated. The fields below them are additive (PR6): they carry canonical
+    retrieval provenance for answers produced by the canonical pipeline and
+    stay None on the legacy path, so existing consumers are unaffected.
+    """
 
     label: str  # "[T1]" for text, "[V1]" for visual
     evidence_id: str
@@ -179,6 +196,19 @@ class MultimodalCitation(BaseModel):
     source: str
     page: int
     figure_index: int | None = None
+
+    # --- additive canonical provenance (PR6) ---
+    evidence_type: Literal["text", "figure"] | None = None
+    document_id: str | None = None
+    figure_id: str | None = None
+    chunk_id: str | None = None
+    image_path: str | None = None
+    caption: str | None = None
+
+    # Ranking provenance — internal diagnostics, not a public scoring contract.
+    modality_sources: list[str] = Field(default_factory=list)
+    rrf_rank: int | None = None
+    reranker_rank: int | None = None
 
 
 class MultimodalAnswer(BaseModel):

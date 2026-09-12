@@ -5,6 +5,190 @@ Each entry maps tutorial notebook cells → `src/mrta/` modules → production n
 
 ---
 
+## [feat/pipeline-multimodal-generation] — PR6: End-to-End Production Integration — 2026-09-09
+
+**Tests:** 701 passing, 12 skipped (626 → +75)
+
+Wires the PR1–PR5 retrieval stack into the production query path. Before this,
+the measured system and the shipped system were different systems: production
+multimodal `/ask` used the *legacy* `evidence_id`-keyed fusion, reranked an
+already-truncated 8-item list through a private attribute, and never passed a
+caption store at all — so the caption stream was dead in production.
+
+Integration only. No retrieval algorithm, fusion parameter or ranking behaviour
+was changed or tuned; pool 20, `rrf_k` 60 and final top-5 stay at their
+evaluated values.
+
+### New files
+
+| File | Purpose |
+|---|---|
+| `src/mrta/retrieval/canonical_pipeline.py` | `retrieve_multimodal()` — one typed orchestration point over text/caption/CLIP → canonical RRF → cross-encoder, plus the production canonical adapter and per-stage diagnostics |
+| `src/mrta/generation/canonical_rag.py` | `CanonicalMultimodalRAG`, evidence views, citation assembly and label verification |
+| `src/mrta/prompts/canonical_multimodal_rag.j2` | Structured prompt keeping text and figure evidence semantically distinct |
+| `src/mrta/ingestion/document_indexer.py` | `index_document()` — builds the text, caption and CLIP indices from one uploaded PDF |
+| `tests/integration/test_pipeline_e2e.py` | 47 fully-mocked end-to-end tests (no Ollama, no GPU, no model download) |
+| `tests/integration/test_ingestion_e2e.py` | 28 tests covering artifact creation, canonical identity, provenance, persistence and ingestion degradation |
+| `docs/adr/ADR-009-canonical-retrieval-production-integration.md` | New ADR; amends ADR-008 decisions 3 and 5 |
+
+### Modified files
+
+| File | Change |
+|---|---|
+| `src/mrta/core/schemas.py` | **Additive** — `MultimodalCitation` gains `evidence_type`, `document_id`, `figure_id`, `chunk_id`, `image_path`, `caption`, `modality_sources`, `rrf_rank`, `reranker_rank`; `EvidenceRecord` gains `caption_source` and `extraction_method`; `VisualRecord` gains `extraction_method`. All default to None/empty, so indices persisted before PR6 still load |
+| `src/mrta/core/config.py` | Added `enable_canonical_retrieval`, `enable_cross_encoder_rerank` |
+| `configs/test.yaml` | Both disabled so the suite never loads cross-encoder weights |
+| `apps/api/routers/ask.py` | Multimodal `/ask` prefers the canonical stack; shared `_to_response` so both paths cannot drift |
+| `apps/api/schemas/ask.py` | **Additive** — `VisualSource` gains `document_id`, `figure_id`, `image_path`, `caption`, `modality_sources` |
+| `apps/api/deps.py`, `apps/api/main.py` | `get_canonical_stack` dependency; lifespan loads the persisted caption and CLIP indices (previously it handed the canonical stack an **empty in-memory** visual store, so the CLIP stream could never return anything) and supplies the `VisualAnalyzer` used at upload time |
+| `apps/api/routers/upload.py` | Delegates to `index_document()`, so an upload builds every retrieval artifact rather than only the text index |
+| `apps/api/schemas/upload.py` | **Additive** — `UploadResponse` gains `n_figures`, `n_caption_records`, `n_visual_records`, `visual_retrieval_available` |
+| `src/mrta/__init__.py` | **Additive** — exports `retrieve_multimodal` and `CanonicalMultimodalRAG` under the multimodal extra |
+| `README.md` | Production pipeline diagram; replaced the stale "reranking is a stub" limitation with the two real ones |
+| `tests/unit/test_api.py` | Fixtures pinned to the legacy engine via `get_canonical_stack → None`. **No assertion changed** — those tests still cover the legacy path, which stays reachable |
+
+### Canonical identity without a benchmark manifest
+
+The blocker for reusing PR4/PR5 in production: they key figures on `figure_id`,
+which `EvalAdapter` resolves from the frozen v2 manifest, and production code
+must not depend on evaluation artifacts.
+
+It does not need to. Ingestion already assigns `(doc_id, page, figure_index)`,
+so `figure_id` is derived as `p{page}_f{index}` and PR4's `canonical_identity()`
+applies unchanged:
+
+```text
+caption hit on figure p4_f1 ─┐
+                             ├─► one candidate, modality_sources=["caption","clip"]
+CLIP hit on figure p4_f1  ───┘
+```
+
+A text chunk on page 4 stays a separate candidate — page-level collapsing is
+exactly what canonical identity avoids.
+
+### Citation integrity
+
+Labels are assigned by the application and resolved back to retrieved evidence.
+A label the model invents resolves to nothing and is reported rather than parsed
+into a citation, so a fabricated page, figure id or path cannot reach a
+response. An emitted `image_path` must be relative, inside `data/`, and exist on
+disk; otherwise it is dropped and the figure keeps its textual evidence.
+
+A filesystem path is never placed in the prompt — it carries no visual
+information, and showing one invites the model to describe an image it cannot
+see.
+
+### Graceful degradation
+
+| Condition | Behaviour |
+|---|---|
+| caption index absent/failing | continue with text + CLIP; reason recorded |
+| CLIP index absent/failing | continue with text + caption; reason recorded |
+| reranker absent/failing | fall back to canonical RRF ordering, marked `not_reranked` |
+| image asset missing | figure keeps textual evidence, no image reference emitted |
+| retrieval returns nothing | clean empty answer, no citations |
+| generator rejects images | retry text-only, `retrieval_mode="text_only"` |
+
+### Single-execution diagnostics
+
+`ask_with_diagnostics()` initially ran retrieval twice — once directly and once
+inside `ask()` — so the diagnostics it returned described a *different* run than
+the answer it returned alongside them. Both now delegate to one private `_run()`,
+and a test asserts each store and the generator are called exactly once.
+
+### Verification
+
+All CI-equivalent checks were run locally:
+
+```text
+ruff check src/ tests/ apps/             All checks passed
+black --check src/ tests/ apps/          98 files unchanged
+mypy src/ apps/ --ignore-missing-imports Success: no issues in 58 files
+MRTA_ENV=test pytest                     673 passed, 12 skipped, 0 failed
+docker build -f docker/Dockerfile.api    succeeded
+docker /health smoke                     {"status":"ok"}, container healthy
+```
+
+A real-model run over the frozen v2 indices (text 704 chunks / caption 37 /
+CLIP 37, real cross-encoder, Ollama generation) exercised the whole path: all
+three streams returned 20 candidates with no degradation, the caption and CLIP
+hits on Figure 1 merged into a single `[F1]` citation carrying
+`modality_sources=['caption','clip']`, the cross-encoder promoted a text chunk
+from RRF rank 16 to rank 1, and citation verification returned zero unknown
+labels. Stage latencies: text 0.456 s, caption 0.034 s, CLIP 0.021 s, RRF
+0.0003 s, reranking 0.132 s, 5.668 s total including generation. Local
+measurement, not a production SLO.
+
+**Latent CI flake, pre-existing:** the container downloads CLIP weights during
+lifespan startup and took ~45 s to report healthy on a cold cache, against the
+Docker job's 5 x 6 s retry budget. `Embedder()` and `_CLIPEmbedder()` both
+predate PR6 and `MRTA_ENV=test` skips the canonical stack entirely, so PR6 adds
+no startup work in that configuration.
+
+### Backward compatibility
+
+`/ask`, `/upload`, `/documents`, `/figures`, `/health` unchanged; `question`
+remains the only required request field; `answer`/`sources`/`latency_s` still
+present and populated; multimodal-unavailable still returns 503; teaching modes
+still route to the legacy engine with unchanged templates. All multimodal
+enrichment is additive.
+
+### Production ingestion (gap closed)
+
+`/upload` previously built only the text index, so a newly uploaded PDF silently
+degraded to text-only retrieval while the caption and CLIP indices existed only
+as benchmark artifacts. `index_document()` now produces all three from one PDF:
+
+```text
+PDF ─┬─► chunks         ──► VectorStore        data/vector_store/default/
+     └─► FigureRecords ─┬─► PNG                data/figures/
+                        ├─► VisualAnalyzer ──► CaptionVectorStore  .../captions/
+                        └─► VisualRecord   ──► ImageStore          .../clip_images/
+```
+
+Figure identity is `(doc_id, page, figure_index)`, which `extract_figures`
+already assigns, so the caption record and the CLIP record built from one
+`FigureRecord` share a canonical identity and merge under fusion — no manifest.
+
+All three indices persist to disk and are reloaded by the API lifespan, so an
+uploaded document survives a restart.
+
+**Verified end to end on a real PDF with no benchmark indices:** 15 pages → 61
+chunks, 3 figures → 3 caption records + 3 CLIP records (1 VLM-captioned, 2
+nearby-text fallback), all three indices written, reloaded after a simulated
+restart, and queried through canonical RRF + cross-encoder. Caption and CLIP
+merged into one `[F1]` citation; citation verification returned zero unknown
+labels.
+
+Per-record provenance is persisted, not merely tallied: each caption record
+carries `caption_source` (`vlm_generated` / `nearby_text_fallback` / `empty`) and
+`extraction_method`, and each CLIP record carries `extraction_method`. PR5
+measured caption provenance as the dominant factor in figure retrieval quality
+(Figure Recall@5 0.70 captioned vs 0.26 fallback), so that distinction has to
+survive a restart to be analysable in production.
+
+Degradation: a PDF with no figures ingests successfully and stays text-searchable;
+a caption- or CLIP-index failure leaves the text index intact and is reported in
+`degraded`; a per-figure failure is recorded in `figure_failures` without
+aborting the document; a captioning failure falls back to nearby page text and
+never fabricates a caption.
+
+### Known limitations carried forward
+
+From PR5: 16/21 canonical v2 figures are page-render fallbacks; the cross-encoder
+is text-only over visual evidence; the rerank pool is fixed at 20. Figure
+extraction captures embedded raster images only — vector-only figures are not
+extracted, so a document whose figures are all vector drawings yields no visual
+records.
+
+**Recommendation for PR7:** figure-region extraction and improved VLM captioning.
+The provenance split measured in PR5 (Figure Recall@5 0.70 for VLM-captioned
+figures vs 0.26 for nearby-text fallbacks) makes caption quality the strongest
+remaining lever on visual retrieval, and this ingestion path now produces the
+captions that lever acts on.
+
+---
+
 ## [feat/retrieval-cross-encoder-reranker] — PR5: Cross-Encoder Candidate Reranking — 2026-09-08
 
 **Tests:** 626 passing, 12 skipped (592 → +34)

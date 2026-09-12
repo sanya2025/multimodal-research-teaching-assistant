@@ -86,6 +86,15 @@ class Settings(BaseSettings):
     rerank_top_n: int = 20  # RRF candidate depth entering the reranker
     final_top_k: int = 5  # reranked cutoff, matches evaluation_k
 
+    # --- Canonical retrieval pipeline (PR6) ---
+    # Routes multimodal /ask through the evaluated PR4 canonical RRF + PR5
+    # cross-encoder stack. Disabled under MRTA_ENV=test so the suite never
+    # downloads or loads cross-encoder weights.
+    enable_canonical_retrieval: bool = True
+    # Load the cross-encoder at startup. Turning this off keeps the canonical
+    # pipeline available but falls back to canonical RRF ordering.
+    enable_cross_encoder_rerank: bool = True
+
     # --- Observability ---
     log_level: str = "INFO"
     log_file: Path = Field(default=Path("data/logs/runs.jsonl"))
