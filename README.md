@@ -116,9 +116,34 @@ from mrta import (
     VisualDescription,     # Pydantic schema + to_retrieval_text() for embedding
     MultimodalRetriever,   # text + caption + CLIP visual retrieval with RRF fusion
     MultimodalRAG,         # full multimodal RAG: retrieve → fuse → VLM → cited answer
+    retrieve_multimodal,   # canonical RRF + cross-encoder retrieval (the evaluated stack)
+    CanonicalMultimodalRAG,# generation over canonical evidence with verified citations
     VLMClient,             # Ollama vision-language model client
 )
 ```
+
+### Production retrieval pipeline
+
+`retrieve_multimodal()` runs the stack measured in PR1–PR5:
+
+```text
+Text ──────┐
+Caption ───┼──► canonical RRF ──► top-20 ──► CrossEncoder ──► top-5 ──► generation
+CLIP ──────┘                                                              │
+                                                                          ├──► text citations
+                                                                          └──► figure citations
+```
+
+RRF fuses *rank order* across the three streams — raw cosines from different
+embedding spaces are never compared. The cross-encoder then scores each
+candidate against the query directly; it is a **text** model, so figures are
+reranked through their caption or description, never their pixels. One physical
+figure retrieved by both the caption and CLIP streams collapses into a single
+canonical candidate and a single citation.
+
+Image pixels reach the generator only when the configured model accepts them
+and the figure has a verified image asset. A figure's file path is citation
+metadata, never prompt content.
 
 ## Development
 
@@ -136,6 +161,52 @@ Run the backend and frontend in separate terminals:
 uvicorn apps.api.main:app --reload --port 8000
 streamlit run apps/streamlit/app.py
 ```
+
+### Apple Silicon: FAISS + PyTorch segfault
+
+On macOS ARM, `faiss-cpu` and `torch` each ship their **own** copy of
+`libomp.dylib`. Loading both into one process gives you two OpenMP runtimes, and
+the second library to initialise segfaults — typically as a silent `SIGSEGV`
+(exit 139) the moment a real PyTorch model is built after FAISS has been
+imported. Upstream: [pytorch#149201](https://github.com/pytorch/pytorch/issues/149201).
+
+Check whether you are affected:
+
+```bash
+DYLD_PRINT_LIBRARIES=1 python -c "import faiss, torch" 2>&1 | grep -i libomp
+```
+
+Two paths means you will hit it. Point FAISS at PyTorch's copy so the process
+has exactly one OpenMP runtime:
+
+```bash
+cd "$(python -c 'import site; print(site.getsitepackages()[0])')"
+cp -p faiss/.dylibs/libomp.dylib faiss/.dylibs/libomp.dylib.orig   # backup
+ln -sf ../../torch/lib/libomp.dylib faiss/.dylibs/libomp.dylib
+```
+
+Verify — this should print one path, and exit 0:
+
+```bash
+DYLD_PRINT_LIBRARIES=1 python -c "import faiss, torch" 2>&1 | grep -i libomp
+python -c "
+import faiss, torch
+from torch import nn
+for _ in range(100):
+    nn.Parameter(torch.randn(257, 1024))
+print('OK')
+"
+```
+
+Notes:
+
+- Reinstalling or upgrading `faiss-cpu` restores its vendored copy and brings
+  the crash back; re-apply the symlink. Revert with
+  `mv faiss/.dylibs/libomp.dylib.orig faiss/.dylibs/libomp.dylib`.
+- Avoid `KMP_DUPLICATE_LIB_OK=TRUE` — it permits two runtimes to coexist without
+  making them safe. `OMP_NUM_THREADS=1` also avoids the crash but serialises all
+  OpenMP work in both libraries.
+- Linux and CI are unaffected, so this will not show up in GitHub Actions.
 
 ### Environment switching
 
@@ -216,7 +287,12 @@ Two parallel versions of the 10-part series:
 
 - Math is rendered as text; LaTeX-aware parsing would improve recall on equation-heavy papers.
 - Table extraction is basic; ColPali or `unstructured` would help for table-heavy domains.
-- Reranking is a stub; adding a cross-encoder (`bge-reranker-base`) is a one-day improvement.
+- Figure extraction captures embedded raster images only; vector-only figures are
+  not extracted, so a document whose figures are all vector drawings produces no
+  visual records.
+- The cross-encoder reranks figures through their text, not their pixels — figures
+  whose only description is extracted nearby-text rank substantially worse
+  (Figure Recall@5 0.26 vs 0.70 for VLM-captioned figures on the v2 benchmark).
 - No multi-document graph reasoning yet — a clear next step toward an "agentic" research assistant.
 
 ## License

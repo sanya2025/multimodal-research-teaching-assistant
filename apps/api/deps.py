@@ -23,3 +23,13 @@ def get_retriever(request: Request):
 def get_vlm(request: Request):
     """Return the VLMClient used for multimodal generation, or None if unavailable."""
     return getattr(request.app.state, "vlm", None)
+
+
+def get_canonical_stack(request: Request):
+    """Return the canonical retrieval components, or None if not configured.
+
+    A dict of {"caption_store", "image_store", "reranker"}, any of which may be
+    None — the canonical pipeline degrades per-stream. None here means the whole
+    canonical path is unavailable and /ask should use the legacy retriever.
+    """
+    return getattr(request.app.state, "canonical_stack", None)

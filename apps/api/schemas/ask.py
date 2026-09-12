@@ -29,11 +29,25 @@ class SourceChunk(BaseModel):
 
 
 class VisualSource(BaseModel):
-    label: str  # "[V1]", "[V2]", …
+    """One figure citation.
+
+    The first five fields are the original contract. The rest are additive
+    (PR6) and are populated only by the canonical retrieval path; they stay
+    None/empty on the legacy path, so existing clients are unaffected.
+    """
+
+    label: str  # "[V1]"/"[F1]", …
     page: int
     source: str  # PDF filename
     figure_index: int | None = None
     modality: str  # "image" or "page"
+
+    # --- additive (PR6) ---
+    document_id: str | None = None
+    figure_id: str | None = None
+    image_path: str | None = None
+    caption: str | None = None
+    modality_sources: list[str] = []
 
 
 class AskResponse(BaseModel):

@@ -73,10 +73,12 @@ except ImportError:
 # Multimodal extra  —  pip install "mrta-rag[multimodal]"
 # ---------------------------------------------------------------------------
 try:
+    from mrta.generation.canonical_rag import CanonicalMultimodalRAG
     from mrta.generation.multimodal_rag import MultimodalRAG
     from mrta.multimodal.clip_embedder import CLIPEmbedder
     from mrta.multimodal.visual_analyzer import VisualAnalyzer, VisualDescription
     from mrta.multimodal.vlm_client import VLMClient
+    from mrta.retrieval.canonical_pipeline import retrieve_multimodal
     from mrta.retrieval.visual_vector_store import VisualVectorStore
 except ImportError:
     pass  # requires mrta-rag[multimodal] (open-clip-torch) + mrta-rag[retrieval] (faiss)
@@ -147,6 +149,8 @@ __all__ = [
     "VisualDescription",
     "VisualVectorStore",
     "MultimodalRAG",
+    "CanonicalMultimodalRAG",
+    "retrieve_multimodal",
     # Eval extra
     "run_eval",
     "answer_relevance",

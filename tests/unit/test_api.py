@@ -12,7 +12,7 @@ from pathlib import Path
 from unittest.mock import MagicMock, patch
 
 import pytest
-from apps.api.deps import get_llm, get_retriever, get_store, get_vlm
+from apps.api.deps import get_canonical_stack, get_llm, get_retriever, get_store, get_vlm
 from apps.api.main import app
 from fastapi.testclient import TestClient
 
@@ -66,6 +66,7 @@ def client(mock_store: MagicMock, mock_llm: MagicMock):
     app.dependency_overrides[get_llm] = lambda: mock_llm
     app.dependency_overrides[get_retriever] = lambda: None  # multimodal unavailable
     app.dependency_overrides[get_vlm] = lambda: None
+    app.dependency_overrides[get_canonical_stack] = lambda: None
     with (
         patch("apps.api.main.Embedder"),
         patch("apps.api.main.VectorStore"),
@@ -104,12 +105,16 @@ _MM_ANSWER = MultimodalAnswer(
 
 @pytest.fixture
 def mm_client(mock_store: MagicMock, mock_llm: MagicMock):
-    """TestClient with multimodal retriever wired and MultimodalRAG mocked."""
+    """TestClient with the legacy multimodal retriever wired and MultimodalRAG mocked."""
     mock_retriever = MagicMock()
     app.dependency_overrides[get_store] = lambda: mock_store
     app.dependency_overrides[get_llm] = lambda: mock_llm
     app.dependency_overrides[get_retriever] = lambda: mock_retriever
     app.dependency_overrides[get_vlm] = lambda: MagicMock()
+    # Pin this fixture to the legacy MultimodalRAG engine. /ask prefers the
+    # canonical PR4/PR5 stack when one is configured; these tests cover the
+    # legacy path, which stays reachable whenever no canonical stack exists.
+    app.dependency_overrides[get_canonical_stack] = lambda: None
     with (
         patch("apps.api.main.Embedder"),
         patch("apps.api.main.VectorStore"),
@@ -186,7 +191,7 @@ class TestDocuments:
 class TestUpload:
     def test_pdf_upload_returns_200(self, client: TestClient) -> None:
         pdf_path = Path("tests/fixtures/sample.pdf")
-        with patch("apps.api.routers.upload.chunk_pdf") as mock_chunk:
+        with patch("mrta.ingestion.chunker.chunk_pdf") as mock_chunk:
             mock_chunk.return_value = FAKE_CHUNKS
             with pdf_path.open("rb") as f:
                 r = client.post("/upload", files={"file": ("sample.pdf", f, "application/pdf")})
@@ -194,7 +199,7 @@ class TestUpload:
 
     def test_pdf_upload_returns_expected_fields(self, client: TestClient) -> None:
         pdf_path = Path("tests/fixtures/sample.pdf")
-        with patch("apps.api.routers.upload.chunk_pdf") as mock_chunk:
+        with patch("mrta.ingestion.chunker.chunk_pdf") as mock_chunk:
             mock_chunk.return_value = FAKE_CHUNKS
             with pdf_path.open("rb") as f:
                 r = client.post("/upload", files={"file": ("sample.pdf", f, "application/pdf")})
@@ -222,7 +227,7 @@ class TestUpload:
 
     def test_path_traversal_filename_is_sanitised(self, client: TestClient) -> None:
         pdf_path = Path("tests/fixtures/sample.pdf")
-        with patch("apps.api.routers.upload.chunk_pdf") as mock_chunk:
+        with patch("mrta.ingestion.chunker.chunk_pdf") as mock_chunk:
             mock_chunk.return_value = FAKE_CHUNKS
             with pdf_path.open("rb") as f:
                 r = client.post(
@@ -233,7 +238,7 @@ class TestUpload:
         assert r.json()["source"] == "evil.pdf"
 
     def test_malformed_pdf_returns_422(self, client: TestClient) -> None:
-        with patch("apps.api.routers.upload.load_pdf") as mock_load:
+        with patch("mrta.ingestion.pdf_loader.load_pdf") as mock_load:
             from mrta.core.exceptions import IngestionError
 
             mock_load.side_effect = IngestionError("Cannot open PDF")

@@ -20,3 +20,9 @@ chunk_overlap: 50
 log_level: WARNING
 log_file: data/logs/test_runs.jsonl
 enable_tracing: false
+
+# Canonical retrieval (PR6) is disabled here so the suite never loads or
+# downloads cross-encoder weights. Canonical-path tests construct the pipeline
+# directly with mocks, or override the get_canonical_stack dependency.
+enable_canonical_retrieval: false
+enable_cross_encoder_rerank: false
