@@ -1,0 +1,49 @@
+# PR7 frozen ablation matrix.
+#
+# These configurations were declared before any PR7 result was inspected.
+# This file is not a tuning surface: candidate_depth, rrf_k and final_top_k are
+# the values PR4/PR5 evaluated, and changing them would break comparability with
+# every frozen historical result.
+#
+# Run: python scripts/run_ablation.py --config configs/ablation_config.yaml
+
+benchmark: v2
+
+# Fixed at the PR4/PR5 evaluated values. Not swept.
+candidate_depth: 20
+rrf_k: 60
+final_top_k: 5
+
+# Retrieval-only baselines (A-C), fusion pairs and triple (D-G),
+# reranked configurations (H-I), plus the evaluation-only oracle.
+configurations:
+  - text_only
+  - caption_only
+  - clip_only
+  - text_caption_rrf
+  - text_clip_rrf
+  - caption_clip_rrf
+  - text_caption_clip_rrf
+  - text_caption_rrf_reranked
+  - full_reranked
+  - oracle_evidence_generation
+
+# Configurations that run the generator when --generation is passed.
+# Deliberately a subset: generation is the expensive stage, and these four plus
+# the oracle are exactly what the required scientific comparisons need.
+generation_configurations:
+  - text_caption_rrf
+  - text_caption_clip_rrf
+  - text_caption_rrf_reranked
+  - full_reranked
+  - oracle_evidence_generation
+
+generation:
+  enabled: false # opt in with --generation; keeps the default run model-free
+  temperature: 0.0 # evaluation-side determinism; not a production default change
+
+evaluation:
+  retrieval: true
+  generation: true
+
+output_dir: results/v2/pr7

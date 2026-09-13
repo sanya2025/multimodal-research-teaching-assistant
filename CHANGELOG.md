@@ -5,6 +5,187 @@ Each entry maps tutorial notebook cells → `src/mrta/` modules → production n
 
 ---
 
+## [feat/eval-ablation-runner-generation-metrics] — PR7: Ablation Runner & Generation Metrics — 2026-09-12
+
+**Tests:** 794 passing, 12 skipped (701 → +93)
+
+Evaluation infrastructure. No retrieval algorithm, fusion parameter, reranking
+logic, benchmark judgment or production behaviour was changed — PR7 measures the
+system PR1–PR6 built.
+
+### New files
+
+| File | Purpose |
+|---|---|
+| `src/mrta/eval/generation_metrics.py` | Citation precision/recall/F1 over canonical evidence, citation validity, evidence coverage, deterministic grounding proxies, token counts |
+| `src/mrta/eval/ablation.py` | Frozen configuration matrix, retrieval metrics, failure attribution, aggregation |
+| `src/mrta/eval/ablation_runner.py` | Executes configurations; owns store access and stage sequencing |
+| `scripts/run_ablation.py` | CLI runner, reports and artifacts |
+| `configs/ablation_config.yaml` | The frozen matrix and execution settings |
+| `tests/unit/test_generation_metrics.py` | 45 tests |
+| `tests/unit/test_ablation.py` | 48 tests |
+| `results/v2/pr7/` | `ablation_summary.json`, `ablation_per_query.json`, `ablation_report.md`, `ablation_config_resolved.yaml` |
+
+### Historical reproduction (the gate that mattered)
+
+All seven configurations corresponding to PR1–PR5 reproduce their frozen metrics
+**exactly** — not approximately:
+
+| Configuration | R@5 | MRR@5 | Frozen source |
+|---|---|---|---|
+| `text_only` | 0.2950 | 0.3292 | PR1 |
+| `caption_only` | 0.3300 | 0.2835 | PR2 |
+| `clip_only` | 0.2900 | 0.1983 | PR3 |
+| `text_caption_rrf` | 0.5150 | 0.3695 | PR4 |
+| `text_caption_clip_rrf` | 0.3400 | 0.2658 | PR4 |
+| `text_caption_rrf_reranked` | 0.5250 | 0.4703 | PR5 |
+| `full_reranked` | 0.6050 | 0.5153 | PR5 |
+
+Getting there required fixing two real bugs the check exposed, rather than
+adjusting expectations:
+
+1. **Wrong adapter.** The runner initially used the PR6 *production* canonical
+   adapter, which keys documents by the content-hashed `doc_id`
+   (`attention_is_all_you_need_a639448e61`) while benchmark targets use the
+   manifest id (`attention_is_all_you_need`). Every metric read 0.0000 while
+   retrieval was in fact working. `EvalAdapter` resolves the manifest id and is
+   what PR1–PR5 scored against.
+2. **Figure representation drift.** PR5's frozen
+   `candidate_representation_policy` gives CLIP-retrieved figures the *same*
+   canonical-id text lookup as caption-retrieved figures (a `VisualRecord`
+   carries no text of its own), and resolves multi-crop figures deterministically
+   (prefer a VLM caption, then lowest `evidence_id`). Without both rules the two
+   reranked configurations drifted (0.5050 vs 0.5250, 0.6100 vs 0.6050).
+
+### Metric naming
+
+Nothing in `generation_metrics.py` is called `faithfulness` or
+`hallucination_rate`. Every grounding signal there is lexical — it asks whether
+an answer's tokens appear in the supplied context — so the names say
+`lexical_support_score`, `supported_claim_fraction`, `unsupported_claim_fraction`.
+They underestimate correct paraphrase and overestimate coincidental overlap, and
+are regression signals rather than semantic verdicts.
+
+`mrta.evaluation.metrics.faithfulness` and `.hallucination_rate` (Stage 7) are
+also pure lexical overlap, and their rule is markedly weaker still — a sentence
+counts as grounded when *any* token longer than three characters appears
+anywhere in the concatenated context. They are left untouched because
+`EvalReport` and `run_eval` depend on them, but their names claim more than they
+measure. PR7 does not reuse them.
+
+Three failure modes are kept separate rather than collapsed: **validity** (did
+the citation resolve to evidence the generator was given?), **relevance** (was
+the cited evidence the expected evidence?), and **coverage** (was the expected
+evidence cited at all?). A valid-but-irrelevant citation is a precision loss, not
+a fabrication.
+
+### Provenance: two groupings, named for what they measure
+
+`target_figure_provenance` groups by the representation of the figure the
+benchmark *expects* — PR5's grouping, and the only one comparable with its
+numbers. `top_retrieved_figure_provenance` groups by the first figure the system
+actually surfaced. These are different populations; reporting only the second
+under a bare name made it look as though it contradicted PR5 when it was
+measuring something else.
+
+### Citation recall is completeness, not correctness
+
+Citation recall measures how much of the expected evidence an answer cited. An
+answer can be correct while citing one of two redundant targets and score 0.5.
+No metric here measures semantic correctness, and the reports say "did not cite
+every expected evidence item" rather than "was incorrect".
+
+### Failure attribution
+
+Each query is attributed to the earliest stage that failed — `retrieval_miss`,
+`ranking_miss`, `citation_missing`, `citation_relevance`, `citation_validity`,
+`answer_support`. Earliest-stage attribution matters: if the target never reached
+the generator, a missing citation is not the generator's fault, and counting it
+as one would make generation look worse than it is.
+
+### Measured results (frozen v2, n=100)
+
+| Configuration | R@5 | MRR@5 | FigR@5 | Citation F1 | Support proxy |
+|---|---|---|---|---|---|
+| `text_only` | 0.2950 | 0.3292 | — | — | — |
+| `caption_only` | 0.3300 | 0.2835 | 0.5467 | — | — |
+| `clip_only` | 0.2900 | 0.1983 | 0.4800 | — | — |
+| `text_caption_rrf` | 0.5150 | 0.3695 | 0.4400 | 0.2073 | 0.4853 |
+| `text_caption_clip_rrf` | 0.3400 | 0.2658 | 0.5467 | 0.0417 | 0.2654 |
+| `text_caption_rrf_reranked` | 0.5250 | 0.4703 | 0.3733 | **0.2685** | 0.5781 |
+| `full_reranked` | **0.6050** | **0.5153** | 0.4800 | 0.2153 | 0.5618 |
+| `oracle_evidence_generation` | 1.0000 | 1.0000 | 1.0000 | 0.6067 | 0.4356 |
+
+`caption_clip_rrf` and `text_caption_clip_rrf` are identical on every metric:
+adding the whole text stream to caption+CLIP changes nothing at depth 20, a
+direct symptom of the pool saturation PR4 diagnosed.
+
+### Scientific conclusion
+
+End-to-end performance is now constrained more by evidence use, ranking and
+citation behaviour than by first-stage retrieval alone. In `full_reranked`, only
+**7/100** queries fail because relevant evidence is absent from the retrieved
+candidate set, while **36** fail because relevant evidence does not survive final
+ranking, and a substantial further fraction fail after relevant evidence reaches
+the generation context. Oracle-evidence generation still achieves only **0.605**
+citation recall, showing that perfect evidence availability does not guarantee
+complete evidence citation.
+
+Citation completeness should not be read as semantic answer correctness. The
+result motivates targeted generation-side evaluation and citation-aware
+generation — not a claim that the generator is simply wrong.
+
+Failure decomposition for `full_reranked` (earliest failing stage): ranking_miss
+36, citation_missing 28, citation_relevance 23, retrieval_miss 7, none 5,
+answer_support 1. Generation-side behaviour is the largest single category, but
+ranking remains a material source of error.
+
+### CLIP exposes a retrieval-to-generation interface problem
+
+Adding CLIP improves retrieval but *degrades* citation quality:
+
+| | T+C → CE | T+C+CLIP → CE |
+|---|---|---|
+| R@5 / MRR@5 | 0.525 / 0.470 | **0.605 / 0.515** |
+| Citation F1 | **0.269** | 0.215 |
+| Figure share of generation context | 19.6% | **35.8%** |
+| `retrieval_miss` failures | 24 | **7** |
+| `citation_relevance` failures | 13 | **23** |
+| Citation precision (85 changed contexts) | 0.756 | **0.596** |
+
+CLIP cuts retrieval misses by two-thirds and nearly doubles the figure share of
+the generation context. That figure evidence carries weaker textual
+representation, so citation precision falls and the error *relocates* from
+retrieval to citation rather than disappearing.
+
+Target-figure provenance shows the same mechanism and reproduces PR5 exactly
+(0.7027 / 0.2632):
+
+| Target figure text | n | FigR@5 | Citation F1 |
+|---|---|---|---|
+| `vlm_caption` | 37 | 0.7027 | 0.2225 |
+| `nearby_text_fallback` | 38 | 0.2632 | 0.1465 |
+
+For VLM-captioned targets, adding CLIP raises FigR@5 (0.541 → 0.703) while
+lowering citation F1 (0.348 → 0.223): the divergence is sharpest exactly where
+retrieval improves most.
+
+**Recommendation for PR8:** figure textual representation at the
+retrieval/generation boundary — figure-region extraction plus better VLM
+captioning — rather than generation-side citation work alone. Improving
+retrieval without improving representation measurably degrades citation quality.
+
+### Determinism and integrity
+
+Queries and configurations run in stable sorted order; failed queries are counted
+separately and excluded from metric means, so an execution error cannot quietly
+improve an average by dropping a hard query from the denominator. Run metadata
+records benchmark and corpus versions, every model id, RRF k, depths, git commit
+and timestamp. A test asserts no frozen metric value appears as a literal in the
+ablation module.
+
+---
+
 ## [feat/pipeline-multimodal-generation] — PR6: End-to-End Production Integration — 2026-09-09
 
 **Tests:** 701 passing, 12 skipped (626 → +75)

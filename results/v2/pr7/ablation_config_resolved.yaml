@@ -1,0 +1,19 @@
+{
+  "benchmark": "v2",
+  "candidate_depth": 20,
+  "rrf_k": 60,
+  "final_top_k": 5,
+  "configurations": [
+    "text_only",
+    "caption_only",
+    "clip_only",
+    "text_caption_rrf",
+    "text_clip_rrf",
+    "caption_clip_rrf",
+    "text_caption_clip_rrf",
+    "text_caption_rrf_reranked",
+    "full_reranked",
+    "oracle_evidence_generation"
+  ],
+  "generation_enabled": true
+}
