@@ -233,17 +233,33 @@ A required check that can never report leaves every pull request permanently
 pending, and the repository is then unmergeable until someone with admin rights
 works out why. Recording the rule here is cheaper than rediscovering it.
 
-The eligible set, by the names GitHub registers (`workflow name / job name`):
+The eligible set. A required context must be spelled as the **check-run name**,
+which is the *job* name alone — not the `workflow / job` label the pull-request
+UI displays. Confirmed against the first hosted run:
 
-| Check | Required-eligible |
-|---|---|
-| `MRTA Fast PR CI / lint-and-type` | yes |
-| `MRTA Fast PR CI / fast-tests` | yes |
-| `MRTA Fast PR CI / smoke-eval` | yes |
-| `CI / docker` | yes |
-| `CI / audit` | no — `continue-on-error: true`, so it cannot fail |
-| `MRTA Evaluation Regression / full-evaluation-gate` | **no — never runs on PRs** |
-| `MRTA Evaluation Regression / heavy-tests` | **no — never runs on PRs** |
+```bash
+gh api repos/<owner>/<repo>/commits/<sha>/check-runs -q '.check_runs[].name'
+audit  docker  fast-tests  lint-and-type  smoke-eval
+```
+
+| Workflow | Required context | Required-eligible |
+|---|---|---|
+| MRTA Fast PR CI | `lint-and-type` | yes |
+| MRTA Fast PR CI | `fast-tests` | yes |
+| MRTA Fast PR CI | `smoke-eval` | yes |
+| CI | `docker` | yes |
+| CI | `audit` | no — `continue-on-error: true`, so it cannot fail |
+| MRTA Evaluation Regression | `full-evaluation-gate` | **no — never runs on PRs** |
+| MRTA Evaluation Regression | `heavy-tests` | **no — never runs on PRs** |
+
+The job names are unique across all three workflows, so the unqualified form is
+unambiguous here. Adding a job whose name collides with an existing one would
+break that, and is a reason to keep job names distinct.
+
+Using the qualified `MRTA Fast PR CI / lint-and-type` form would match no check
+run and leave every pull request permanently pending — the same failure this
+decision exists to prevent, reached by a third route. An earlier draft of this
+ADR made exactly that error.
 
 Order of operations matters: GitHub only offers a context it has already seen, so
 protection is configured *after* the first hosted run, never before. Enabling it
@@ -281,6 +297,48 @@ can be tightened once the tiers have run over several pull requests.
   other nine ablation configurations, or about generalization beyond v2.
 - Tier 1 still installs torch, because `sentence-transformers` requires it. The
   dominant Tier-1 cost is dependency installation, not tests.
+
+## First hosted measurement
+
+Recorded after the first real runs rather than predicted, since §O of the PR9
+report deliberately claimed no runtime it had not observed.
+
+```text
+Tier-1 target:              < 3 min
+First hosted measurement:     3.68 min
+Status: target narrowly missed; functionality accepted.
+        Dependency installation dominates the critical path
+        and is deferred for optimization.
+```
+
+The critical path is `lint-and-type`, with a **warm** pip cache — so this is the
+steady-state number, not a cold start:
+
+| Step | Time |
+|---|---:|
+| Install dependencies | 109s |
+| Type check (mypy) | 57s |
+| Set up Python 3.11 | 39s |
+| Format check (black) | 2s |
+| Lint (ruff) | 0s |
+
+`fast-tests` and `smoke-eval` both finished in 2.8 min, inside the target. No
+check was weakened to chase the remaining 41s: a three-minute number bought by
+removing meaningful coverage would be worth less than a measured 3.68.
+
+Caching `.mypy_cache` and splitting lint from type-checking are the obvious
+candidates, both deferred — mypy cache-key design and invalidation can cost more
+complexity than the saving is worth, and neither affects correctness.
+
+Tier 2 on its first run: `full-evaluation-gate` 4.0 min, `heavy-tests` 3.5 min,
+model cache missed as expected and saved for subsequent runs, artifacts uploaded.
+
+**The result that matters more than the 41 seconds:** the frozen retrieval
+metrics reproduced bit-exactly on a Linux x86_64 runner, against a baseline
+measured on macOS arm64 — `Recall@5 0.6050 · MRR@5 0.5153 · Figure Recall@5 0.4800`,
+zero drift. The regression path is genuinely reproducible rather than tied to one
+development machine, which is the property the whole tier depends on and the one
+thing no amount of local validation could have established.
 
 > Passing Tier 2 means that selected frozen retrieval metrics have not regressed
 > beyond configured tolerances on the v2 benchmark. It does not prove semantic
