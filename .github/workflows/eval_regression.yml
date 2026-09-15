@@ -1,0 +1,154 @@
+name: MRTA Evaluation Regression
+
+# Tier 2 of the two-tier gate (ADR-012): the heavyweight check that frozen
+# retrieval behaviour on the v2 benchmark has not regressed.
+#
+# It is not on pull requests because it downloads model weights and evaluates
+# 100 queries — minutes, not seconds. Protecting a measured result and giving
+# fast review feedback are different jobs with different budgets.
+#
+# No Ollama. The v2 indices were built with nomic-embed-text, which is served
+# over a local API, so the 100 query vectors are frozen in
+# data/eval/query_embeddings_v2.npz and `--offline` reads them instead. The
+# vectors are the same ones the live embedder produced, and the run reproduces
+# the PR5/PR7 numbers exactly.
+
+on:
+  push:
+    branches: [main]
+  schedule:
+    # 03:17 UTC — an odd minute, off the hour, to avoid the scheduling spike
+    # that makes on-the-hour cron jobs queue on shared runners.
+    - cron: "17 3 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  # Keyed by ref but NOT cancel-in-progress: every main commit and every nightly
+  # is a measurement worth completing. Cancelling them would leave gaps in
+  # exactly the history this workflow exists to produce.
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  full-evaluation-gate:
+    name: full-evaluation-gate
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+
+    env:
+      MRTA_ENV: test
+      BASELINE: results/v2/baselines/retrieval_regression_v1.json
+      CURRENT: artifacts/eval/ablation_summary.json
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+          cache-dependency-path: pyproject.toml
+
+      # Not .[all]: streamlit, qdrant, ocr and the API stack play no part in an
+      # offline retrieval evaluation. This is the smallest set that runs it.
+      - name: Install dependencies
+        run: pip install -e ".[dev,pdf,retrieval,multimodal,eval]"
+
+      # CLIP (transformers) and the cross-encoder (sentence-transformers) both
+      # resolve through the HF hub cache. ~/.cache/torch is included because
+      # older sentence-transformers releases wrote there; it is harmless when absent.
+      - name: Cache model weights
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cache/huggingface
+            ~/.cache/torch
+          key: mrta-models-${{ runner.os }}-py311-clip-vit-base-patch32-ms-marco-MiniLM-L-6-v2-v1
+          restore-keys: |
+            mrta-models-${{ runner.os }}-py311-
+
+      - name: Verify frozen benchmark assets are present
+        run: |
+          set -euo pipefail
+          for f in \
+            data/eval/queries_v2.json \
+            data/eval/query_embeddings_v2.npz \
+            data/eval/corpus/v2/manifest.json \
+            data/vector_store/v2_corpus/index.faiss \
+            data/vector_store/v2_corpus/metadata.jsonl \
+            data/eval/indices/v2/caption_index/index.faiss \
+            data/eval/indices/v2/clip_image_index/index.faiss
+          do
+            test -f "$f" || { echo "missing frozen benchmark asset: $f"; exit 1; }
+          done
+          echo "all frozen v2 assets present"
+
+      - name: Run frozen v2 retrieval evaluation
+        run: |
+          python scripts/run_ablation.py \
+            --configuration full_reranked \
+            --retrieval-only \
+            --offline \
+            --output-dir artifacts/eval
+
+      # Comparison lives in Python so the semantics are tested; this step only
+      # invokes it. The checker writes its own table to $GITHUB_STEP_SUMMARY.
+      - name: Check for regressions against the frozen baseline
+        run: |
+          python scripts/check_eval_regression.py \
+            --baseline "$BASELINE" \
+            --current "$CURRENT"
+
+      # Uploaded even when the gate fails — a failure is when the numbers are
+      # most worth reading.
+      - name: Upload evaluation artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: eval-${{ github.run_id }}
+          path: |
+            artifacts/eval/ablation_summary.json
+            artifacts/eval/ablation_per_query.json
+            artifacts/eval/ablation_report.md
+            artifacts/eval/ablation_config_resolved.yaml
+            results/v2/baselines/retrieval_regression_v1.json
+          if-no-files-found: warn
+          retention-days: 30
+
+  # Heavyweight tests belong with the heavyweight tier: these load real CLIP and
+  # sentence-transformers weights, which is precisely what Tier 1 refuses to do.
+  heavy-tests:
+    name: heavy-tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      MRTA_ENV: test
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+          cache-dependency-path: pyproject.toml
+
+      - name: Install dependencies
+        run: pip install -e ".[dev,api,pdf,retrieval,multimodal,eval]"
+
+      - name: Cache model weights
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cache/huggingface
+            ~/.cache/torch
+          key: mrta-models-${{ runner.os }}-py311-clip-vit-base-patch32-ms-marco-MiniLM-L-6-v2-v1
+          restore-keys: |
+            mrta-models-${{ runner.os }}-py311-
+
+      - name: Heavy tests (real model weights)
+        run: pytest -m "heavy" --durations=10

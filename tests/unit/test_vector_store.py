@@ -63,7 +63,14 @@ def store(embedder: _FakeEmbedder, chunks: list[Chunk]) -> VectorStore:
     return vs
 
 
+@pytest.mark.heavy
 class TestEmbedder:
+    """Contract tests against real sentence-transformers weights.
+
+    Marked heavy: the model downloads (~90 MB) on a cold cache. Everything else
+    in this module uses _FakeEmbedder and stays in Tier 1.
+    """
+
     def test_embed_returns_correct_shape(self, real_embedder: Embedder) -> None:
         result = real_embedder.embed(["hello world"])
         assert result.shape == (1, real_embedder.dim)

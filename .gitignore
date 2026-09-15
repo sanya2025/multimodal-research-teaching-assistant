@@ -186,3 +186,19 @@ production-ready.md
 notes/*
 !notes/.gitkeep
 
+
+# ==========================================================
+# Frozen v2 benchmark artifacts — deliberately versioned (ADR-012)
+# ==========================================================
+# The rules above exclude vector stores and *.faiss as blanket policy for large,
+# rebuildable data. The v2 benchmark indices are the deliberate exception: 2.8 MB
+# total, and the only way CI can reproduce the frozen retrieval baselines without
+# an Ollama server. Negations come last so they win over the general rules, and
+# every excluded parent directory has to be re-included before a file inside it
+# can be — git will not descend into an excluded directory.
+!data/vector_store/
+data/vector_store/*
+!data/vector_store/v2_corpus/
+!data/vector_store/v2_corpus/**
+!data/eval/indices/v2/**
+!data/eval/query_embeddings_v2.npz

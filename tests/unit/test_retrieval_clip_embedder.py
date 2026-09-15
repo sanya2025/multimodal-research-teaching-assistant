@@ -228,6 +228,7 @@ class TestImageInputHandling:
 # ---------------------------------------------------------------------------
 
 
+@pytest.mark.heavy
 class TestRealModelContract:
     def test_text_embedding_shape(self, real_clip) -> None:
         assert real_clip.embed_text("attention mechanism").shape == (512,)

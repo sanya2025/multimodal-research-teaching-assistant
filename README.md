@@ -221,9 +221,60 @@ MRTA_ENV=dev pytest    # full dev config
 ### Tests
 
 ```bash
-pytest
+pytest                    # everything
+pytest -m "not heavy"     # skip tests that download model weights
+pytest -m heavy           # only those (needs network on a cold cache)
 pytest tests/unit/        # unit tests only
-pytest tests/evaluation/  # retrieval gate tests
+pytest tests/evaluation/  # benchmark integrity tests
+```
+
+Markers: `unit`, `integration` and `eval` are applied automatically by directory;
+`heavy` is explicit and marks the 22 tests that load real CLIP or
+sentence-transformers weights.
+
+### CI tiers
+
+Two tiers, split by what they protect — see
+[`ADR-012`](docs/adr/ADR-012-two-tier-ci-quality-gates.md).
+
+Tier 1 is a **pre-merge** quality gate; Tier 2 is a **post-merge** regression
+detector. Tier 2 does not run on pull requests, so it must never be configured as
+a required PR status check — a required check that can never report leaves every
+pull request permanently pending.
+
+**Tier 1** guards the code and runs on every pull request. Reproduce it with:
+
+```bash
+ruff check src/ tests/ apps/
+black --check src/ tests/ apps/
+mypy src/ apps/ --ignore-missing-imports
+MRTA_ENV=test pytest -m "not heavy"
+python scripts/smoke_eval.py            # synthetic — not a benchmark result
+```
+
+**Tier 2** guards the measurement and runs on `main`, nightly, and on demand. It
+replays the frozen v2 benchmark and fails if retrieval regressed:
+
+```bash
+python scripts/run_ablation.py --configuration full_reranked \
+    --retrieval-only --offline --output-dir artifacts/eval
+
+python scripts/check_eval_regression.py --current artifacts/eval/ablation_summary.json
+```
+
+`--offline` reads the frozen query vectors in `data/eval/query_embeddings_v2.npz`,
+so this needs **no Ollama** and takes about 5 seconds. Gates are absolute metric
+points: Recall@5 and MRR@5 may drop at most 0.02, Figure Recall@5 at most 0.03.
+
+Passing Tier 2 means selected frozen retrieval metrics have not regressed on the
+v2 benchmark. It does not prove semantic answer correctness or generalization
+beyond that benchmark.
+
+Rebuild the query cache only when the benchmark queries or the embedding model
+change — both invalidate the frozen baselines:
+
+```bash
+python scripts/build_query_embeddings.py --benchmark v2   # requires Ollama
 ```
 
 ### Observability

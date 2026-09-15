@@ -5,6 +5,127 @@ Each entry maps tutorial notebook cells → `src/mrta/` modules → production n
 
 ---
 
+## [ci/two-tier-quality-gates] — PR9: Two-Tier CI Quality Gates & Evaluation Regression Protection — 2026-09-15
+
+**Tests:** 982 passing, 12 skipped (879 → +103)
+
+An engineering/reproducibility PR. No retrieval algorithm, fusion parameter,
+reranker, prompt, generation condition, benchmark query, expected-evidence label
+or metric definition changed.
+
+### New files
+
+| File | Purpose |
+|---|---|
+| `.github/workflows/fast_pr.yml` | Tier 1 — lint/type, fast tests, smoke eval on every PR |
+| `.github/workflows/eval_regression.yml` | Tier 2 — frozen v2 retrieval gate + heavy tests on main/nightly/dispatch |
+| `src/mrta/eval/regression_gate.py` | Baseline/current loading, absolute-drop comparison, configuration identity, fail-closed validation, rendering |
+| `src/mrta/eval/query_embedding_cache.py` | `QueryEmbeddingCache` + `CachedQueryEmbedder` — frozen query vectors, no model server |
+| `scripts/check_eval_regression.py` | CLI gate; exit 0 pass / 1 regression / 2 unusable input |
+| `scripts/build_query_embeddings.py` | Regenerates the frozen query cache (needs Ollama; run only when queries or model change) |
+| `scripts/smoke_eval.py` | Deterministic synthetic plumbing check for Tier 1 |
+| `results/v2/baselines/retrieval_regression_v1.json` | Immutable `full_reranked` baseline |
+| `data/eval/query_embeddings_v2.npz` | 100 frozen query vectors, 284 KB |
+| `tests/unit/test_regression_gate.py` | 71 tests |
+| `tests/unit/test_query_embedding_cache.py` | 32 tests |
+| `docs/adr/ADR-012-two-tier-ci-quality-gates.md` | Decisions and limitations |
+
+### Modified files
+
+| File | Change |
+|---|---|
+| `.github/workflows/ci.yml` | Retargeted to `audit` + `docker`; job names and PR trigger preserved, `needs: test` chain removed |
+| `.gitignore` | Un-ignores the 2.8 MB of frozen v2 index artifacts; all other vector stores still ignored |
+| `pyproject.toml` | `markers` — `unit`, `integration`, `eval`, `heavy` |
+| `tests/conftest.py` | `pytest_collection_modifyitems` applies unit/integration/eval by path |
+| `scripts/run_ablation.py` | **Additive** — `--offline` reads the frozen query cache; default behaviour unchanged |
+| `tests/unit/test_vector_store.py`, `test_clip_embedder.py`, `test_retrieval_clip_embedder.py` | `@pytest.mark.heavy` on the three real-weight groups |
+
+### The blocker this PR had to clear first
+
+Tier 2 could not have run on a GitHub runner. The v2 text and caption indices
+were built with `nomic-embed-text` served over Ollama, and `VectorStore.search`
+embeds the *query* through that same embedder — so Ollama was required at each of
+the 100 evaluation queries, not just at index build time. Meanwhile
+`data/vector_store/v2_corpus` had **zero** tracked files.
+
+Fixed by committing the 2.8 MB of index artifacts and freezing the 100 query
+vectors. The offline run reproduces PR5/PR7 **bit-exactly**:
+
+```text
+metric                      PR7 (Ollama)    PR9 (offline)
+recall_at_5                     0.605000         0.605000
+mrr_at_5                        0.515333         0.515333
+figure_recall_at_5              0.480000         0.480000
+ndcg_at_5                       0.511055         0.511055
+  ... 9/9 metrics identical, 5.3 s, no model server
+```
+
+A consequence worth stating: the frozen results previously depended on
+`EMBEDDING_MODEL=nomic-embed-text` in an **untracked `.env`** while tracked config
+said `all-MiniLM-L6-v2`. A fresh clone reproduced nothing. It does now.
+
+### Two meanings of "gate"
+
+Tier 1 is a **pre-merge** quality gate: it runs on pull requests and can block a
+merge if configured as a required status check. Tier 2 is a **post-merge**
+regression detector: it runs on `main`, nightly and on dispatch, so it can make a
+retrieval regression unmissable but cannot prevent the commit that caused it from
+landing. That is a deliberate consequence of keeping the benchmark off the PR
+path, not a gap.
+
+Because Tier 2 never runs on `pull_request`, requiring either of its jobs would
+leave every PR permanently pending. ADR-012 decision 10 records the eligible set
+and the rule. `main` carried no branch protection or rulesets at the time of
+writing, so removing `CI / test` and `CI / type-check` broke no required check.
+
+### Configuration identity
+
+The gate refuses to compare incomparable runs. It checks benchmark name and
+dataset version, configuration id, candidate depth, `rrf_k`, final top-k, and all
+three retrieval models — embedding, CLIP and reranker — and fails even when every
+metric improved.
+
+All three models are checked because dimension is not a safety net: a 384-d
+MiniLM query against the 768-d v2 index trips FAISS's `assert d == self.d`, but a
+*different 768-d* embedder changes every score and raises nothing.
+
+The offline path cannot select the wrong embedder in the first place — the model
+name comes from the frozen cache, which is bound to the index's own
+`config.json`. Verified by forcing `EMBEDDING_MODEL=sentence-transformers/all-MiniLM-L6-v2`
+as an environment variable (the highest-priority source) with `MRTA_ENV=test`:
+the run still recorded `nomic-embed-text` and reproduced all nine metrics exactly.
+
+### Gate semantics
+
+```text
+Recall@5         max allowed absolute drop  0.02
+MRR@5            max allowed absolute drop  0.02
+Figure Recall@5  max allowed absolute drop  0.03
+```
+
+Absolute metric points, not relative percentages and not statistical bounds:
+0.605 → 0.580 is a drop of 0.025 and fails. Figure Recall@5 is looser because it
+is computed over 21 canonical figures, where one figure is worth ~0.013.
+
+### No citation metric is a CI gate
+
+PR8 measured a citation precision/recall trade-off (recall 0.3100 → 0.4300,
+precision 0.5883 → 0.3500) whose relationship to semantic answer quality is
+unresolved. Gating either side would freeze one answer to an open question into
+CI. G0–G3 are untouched, no G3 precision repair was attempted, no factorial
+condition was added, and no semantic judge was introduced.
+
+### Marker audit found an unnoticed cost
+
+`tests/unit/test_clip_embedder.py` and `test_vector_store.py::TestEmbedder`
+construct real models, so CI had been downloading ~700 MB of weights on every
+run — invisible behind a 12-second suite. Those 22 tests are now `heavy` and run
+in Tier 2; Tier 1 sets `HF_HUB_OFFLINE=1` so a repeat fails loudly instead of
+slowly.
+
+---
+
 ## [feat/generation-citation-aware-grounding] — PR8: Citation-Aware Grounded Generation — 2026-09-13
 
 **Tests:** 879 passing, 12 skipped (800 → +79)

@@ -27,6 +27,7 @@ import time
 from collections import defaultdict
 from datetime import UTC, datetime
 from pathlib import Path
+from typing import Any
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO_ROOT / "src"))
@@ -38,6 +39,7 @@ BENCHMARK_PATHS = {
         "caption_index": REPO_ROOT / "data" / "eval" / "indices" / "caption_index",
         "clip_index": REPO_ROOT / "data" / "eval" / "indices" / "clip_image_index",
         "manifest": REPO_ROOT / "data" / "eval" / "corpus" / "manifest.json",
+        "query_embeddings": REPO_ROOT / "data" / "eval" / "query_embeddings_v1.npz",
     },
     "v2": {
         "queries": REPO_ROOT / "data" / "eval" / "queries_v2.json",
@@ -45,6 +47,7 @@ BENCHMARK_PATHS = {
         "caption_index": REPO_ROOT / "data" / "eval" / "indices" / "v2" / "caption_index",
         "clip_index": REPO_ROOT / "data" / "eval" / "indices" / "v2" / "clip_image_index",
         "manifest": REPO_ROOT / "data" / "eval" / "corpus" / "v2" / "manifest.json",
+        "query_embeddings": REPO_ROOT / "data" / "eval" / "query_embeddings_v2.npz",
     },
 }
 
@@ -69,8 +72,14 @@ def git_commit() -> str | None:
         return None
 
 
-def build_stores(benchmark: str, need: set[str]):
-    """Load only the indices the selected configurations actually require."""
+def build_stores(benchmark: str, need: set[str], offline: bool = False):
+    """Load only the indices the selected configurations actually require.
+
+    ``offline`` swaps the live Ollama-backed Embedder for the frozen query
+    embedding cache. The vectors are identical either way — the cache was
+    built from this same embedder — so retrieval behaviour does not change;
+    what changes is that no model server is required. See ADR-012.
+    """
     from mrta.core.config import settings
     from mrta.eval.ablation_runner import RunnerStores
     from mrta.eval.adapter import EvalAdapter
@@ -98,10 +107,21 @@ def build_stores(benchmark: str, need: set[str]):
         models["clip_model"] = clip.model_name
 
     if {"text", "caption"} & need:
-        from mrta.retrieval.embedder import Embedder
+        embedder: Any
+        if offline:
+            from mrta.eval.query_embedding_cache import CachedQueryEmbedder, QueryEmbeddingCache
 
-        embedder = Embedder(settings.embedding_model)
-        models["embedding_model"] = settings.embedding_model
+            cache = QueryEmbeddingCache.load(paths["query_embeddings"])
+            embedder = CachedQueryEmbedder(cache)
+            # Fail closed before any retrieval runs: a benchmark edited after the
+            # cache was frozen must not be evaluated against stale vectors.
+            embedder.verify_queries(paths["queries"])
+            models["embedding_model"] = cache.model_name
+        else:
+            from mrta.retrieval.embedder import Embedder
+
+            embedder = Embedder(settings.embedding_model)
+            models["embedding_model"] = settings.embedding_model
 
         if "text" in need:
             from mrta.retrieval.vector_store import VectorStore
@@ -143,6 +163,13 @@ def main() -> None:
         "g2_structured_evidence, g3_structured_generation. Default: g0_baseline.",
     )
     parser.add_argument("--output-dir", type=Path, default=None)
+    parser.add_argument(
+        "--offline",
+        action="store_true",
+        help="Embed queries from the frozen cache instead of Ollama. Requires "
+        "data/eval/query_embeddings_<benchmark>.npz. Retrieval-only runs then "
+        "need no model server; generation still does.",
+    )
     args = parser.parse_args()
 
     cfg = load_yaml(args.config) if args.config.exists() else {}
@@ -198,7 +225,7 @@ def main() -> None:
             print(f"ERROR: {name} not found at {path}")
             sys.exit(1)
 
-    stores, models = build_stores(benchmark, needed_streams)
+    stores, models = build_stores(benchmark, needed_streams, offline=args.offline)
 
     reranker = None
     if any(c.rerank for c in configs):

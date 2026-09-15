@@ -1,0 +1,61 @@
+{
+  "baseline_version": "v1",
+  "_comment": "IMMUTABLE. Frozen expected metrics for the production-equivalent v2 retrieval configuration. Never regenerate this file to make CI pass \u2014 a deliberate change requires a new baseline_version and written justification (ADR-012 \u00a7Baseline).",
+  "source": {
+    "artifact": "results/v2/pr7/ablation_summary.json",
+    "pr": "PR7",
+    "git_commit": "9def9b8c85f7c2338209eb5b5c2f6e297e2331d3",
+    "measured_utc": "2026-09-12T04:54:41.449426+00:00",
+    "equivalence_note": "PR7 full_reranked reproduces PR5 rerank_text_caption_clip exactly on every retrieval metric. PR7 is used as the source because its artifact records the embedding model, candidate depth, rrf_k and final_top_k in machine-readable metadata; the PR5 artifact does not name the embedding model.",
+    "pr5_cross_check": {
+      "artifact": "results/v2/pr5_reranker_metrics.json",
+      "configuration_id": "rerank_text_caption_clip",
+      "recall_at_5": 0.605,
+      "mrr_at_5": 0.5153,
+      "figure_recall_at_5": 0.48
+    }
+  },
+  "benchmark": {
+    "name": "v2",
+    "dataset_version": "v2.0.0",
+    "corpus_version": "v2.0.0",
+    "query_count": 100,
+    "queries_sha256": "b83e67a14fc1938a70255691fbe2d98b51edaab76d8a65d9f1b26669ed56a465"
+  },
+  "configuration": {
+    "configuration_id": "full_reranked",
+    "description": "Text + Caption + CLIP -> canonical equal-weight RRF -> top-20 -> CrossEncoder -> top-5",
+    "streams": [
+      "text",
+      "caption",
+      "clip"
+    ],
+    "fusion": "reciprocal_rank_fusion_equal_weight",
+    "candidate_depth": 20,
+    "rrf_k": 60,
+    "final_top_k": 5,
+    "reranked": true
+  },
+  "models": {
+    "embedding_model": "nomic-embed-text",
+    "clip_model": "openai/clip-vit-base-patch32",
+    "reranker_model": "cross-encoder/ms-marco-MiniLM-L-6-v2",
+    "generator_model": null
+  },
+  "metrics": {
+    "recall_at_1": 0.35,
+    "recall_at_5": 0.605,
+    "hit_at_1": 0.43,
+    "hit_at_5": 0.66,
+    "mrr_at_5": 0.515333,
+    "ndcg_at_5": 0.511055,
+    "figure_recall_at_1": 0.253333,
+    "figure_recall_at_5": 0.48,
+    "both_target_recall_at_5": 0.32
+  },
+  "gated_metrics": [
+    "recall_at_5",
+    "mrr_at_5",
+    "figure_recall_at_5"
+  ]
+}

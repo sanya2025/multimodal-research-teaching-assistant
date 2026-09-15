@@ -5,6 +5,10 @@ import pytest
 
 open_clip = pytest.importorskip("open_clip", reason="open-clip-torch not installed")
 
+# Every test here runs against real open_clip ViT-B-32 weights (~600 MB on a
+# cold cache), so the whole module is heavy rather than any single test.
+pytestmark = pytest.mark.heavy
+
 from PIL import Image  # noqa: E402
 
 from mrta.multimodal.clip_embedder import CLIPEmbedder  # noqa: E402

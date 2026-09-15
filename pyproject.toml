@@ -156,6 +156,17 @@ all = [
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 asyncio_mode = "auto"
+# Markers exist to let the two CI tiers select work, not to classify for its own
+# sake — every marker below has members and at least one caller. unit/integration/
+# eval are applied automatically by path in tests/conftest.py; `heavy` is applied
+# explicitly, because loading real weights is a property of a test, not of a
+# directory. See ADR-012.
+markers = [
+    "unit: fast isolated unit tests (tests/unit)",
+    "integration: multi-component tests with no heavyweight external dependency (tests/integration)",
+    "eval: tests that read the frozen benchmark assets under data/eval (tests/evaluation)",
+    "heavy: loads real model weights — downloads on a cold cache, so excluded from Tier 1 CI",
+]
 
 [tool.ruff]
 src = ["src"]

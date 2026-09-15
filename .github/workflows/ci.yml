@@ -1,5 +1,16 @@
 name: CI
 
+# Retained coverage that belongs to neither tier's core loop (ADR-012).
+#
+# Lint, format, type-check and the fast test suite moved to "MRTA Fast PR CI";
+# heavyweight tests and the benchmark gate moved to "MRTA Evaluation Regression".
+# What is left here is the packaging and supply-chain surface: a vulnerability
+# scan and a real container build with a live /health check.
+#
+# The job names `audit` and `docker` are unchanged so any branch protection
+# already requiring them keeps resolving. They no longer chain behind `test`,
+# which used to serialise the whole workflow behind the suite.
+
 on:
   push:
     branches:
@@ -8,61 +19,15 @@ on:
     branches:
       - main
 
+permissions:
+  contents: read
+
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
-  test:
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Set up Python 3.11
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.11"
-          cache: "pip"
-
-      - name: Install dependencies
-        # Include all extras needed to collect and run every test module.
-        # llm/ocr/qdrant are excluded: torch (~2 GB) and system OCR deps
-        # are not required by any current test.
-        run: pip install -e ".[dev,api,pdf,retrieval,multimodal,eval]"
-
-      - name: Lint (ruff)
-        run: ruff check src/ tests/ apps/
-
-      - name: Format check (black)
-        run: black --check src/ tests/ apps/
-
-      - name: Test (pytest)
-        env:
-          MRTA_ENV: test
-        run: pytest
-
-  type-check:
-    needs: test
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Set up Python 3.11
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.11"
-          cache: "pip"
-
-      - name: Install dependencies
-        run: pip install -e ".[dev,api,pdf,retrieval,multimodal,eval]"
-
-      - name: Type check (mypy)
-        run: mypy src/ apps/ --ignore-missing-imports
-
   audit:
-    needs: test
     runs-on: ubuntu-latest
 
     steps:
@@ -73,6 +38,7 @@ jobs:
         with:
           python-version: "3.11"
           cache: "pip"
+          cache-dependency-path: pyproject.toml
 
       - name: Install dependencies
         run: pip install --upgrade pip && pip install -e ".[dev,api,pdf,retrieval,multimodal,eval]"
@@ -86,7 +52,6 @@ jobs:
         run: pip-audit --skip-editable --ignore-vuln CVE-2025-3000 --ignore-vuln PYSEC-2026-3447
 
   docker:
-    needs: test
     runs-on: ubuntu-latest
 
     steps:
