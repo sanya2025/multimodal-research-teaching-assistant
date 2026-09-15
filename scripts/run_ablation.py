@@ -135,6 +135,13 @@ def main() -> None:
     parser.add_argument("--document-id", action="append", default=None)
     parser.add_argument("--retrieval-only", action="store_true")
     parser.add_argument("--generation", action="store_true")
+    parser.add_argument(
+        "--condition",
+        action="append",
+        default=None,
+        help="PR8 generation condition(s): g0_baseline, g1_explicit_citations, "
+        "g2_structured_evidence, g3_structured_generation. Default: g0_baseline.",
+    )
     parser.add_argument("--output-dir", type=Path, default=None)
     args = parser.parse_args()
 
@@ -222,28 +229,55 @@ def main() -> None:
         generator = _DeterministicGenerator()
         models["generator_model"] = settings.ollama_llm_model
 
-    runner = AblationRunner(
-        stores,
-        reranker=reranker,
-        generator=generator,
-        candidate_depth=candidate_depth,
-        rrf_k=rrf_k,
-        final_top_k=final_top_k,
-    )
+    from mrta.eval.generation_conditions import CONDITIONS_BY_ID, G0_BASELINE
+
+    condition_ids = args.condition or cfg.get("generation_conditions", [G0_BASELINE])
+    unknown_conditions = [c for c in condition_ids if c not in CONDITIONS_BY_ID]
+    if unknown_conditions:
+        print(f"ERROR: unknown condition(s): {unknown_conditions}")
+        print(f"Known: {sorted(CONDITIONS_BY_ID)}")
+        sys.exit(1)
+    conditions = [CONDITIONS_BY_ID[c] for c in condition_ids]
+    if run_generation and len(conditions) > 1:
+        print(f"generation conditions: {', '.join(condition_ids)}\n")
+
+    # One runner per condition so the prompt/parsing strategy is fixed per run,
+    # while retrieval stays shared: pools are retrieved once per query below and
+    # handed to every condition unchanged.
+    runners = {
+        c.condition_id: AblationRunner(
+            stores,
+            reranker=reranker,
+            generator=generator,
+            condition=c,
+            candidate_depth=candidate_depth,
+            rrf_k=rrf_k,
+            final_top_k=final_top_k,
+        )
+        for c in conditions
+    }
+    runner = runners[conditions[0].condition_id]
 
     rows = []
     started = time.perf_counter()
 
     for index, query in enumerate(queries, start=1):
         pools, stream_latency = runner.retrieve_streams(query["query"])
+        # Retrieval ran once; every other condition reuses exactly that evidence.
+        for other in runners.values():
+            if other is not runner:
+                other.adopt_retrieval_state(runner)
         for config in configs:
             generate_here = run_generation and (
                 not generation_ids or config.config_id in generation_ids
             )
-            result = runner.run_configuration(
-                config, query, pools, stream_latency, generate=generate_here
-            )
-            rows.append(result)
+            # Every generation condition receives the identical pools object.
+            active = conditions if generate_here else conditions[:1]
+            for condition in active:
+                result = runners[condition.condition_id].run_configuration(
+                    config, query, pools, stream_latency, generate=generate_here
+                )
+                rows.append(result)
         marker = "✓" if all(r.status == "ok" for r in rows[-len(configs) :]) else "✗"
         print(f"  [{index:3d}/{len(queries)}] {query['query_id']} {marker}")
 
@@ -267,6 +301,63 @@ def main() -> None:
             }
             for value in values
         }
+
+    # PR8: conditions are a second axis. Aggregating by config alone would
+    # collapse every generation condition into one bucket and make the
+    # comparison invisible.
+    generation_rows = [r for r in rows if r.generation_condition]
+    condition_ids_present = sorted({r.generation_condition for r in generation_rows})
+    config_ids_present = sorted({r.config_id for r in generation_rows})
+
+    # Nested by configuration, never flattened across it. The oracle supplies
+    # ground-truth evidence, so averaging it together with a retrieval
+    # configuration inflates every condition — exactly what the oracle's own
+    # caveat forbids.
+    by_condition_per_config = {
+        config_id: {
+            cid: aggregate(
+                [
+                    r
+                    for r in generation_rows
+                    if r.generation_condition == cid and r.config_id == config_id
+                ]
+            )
+            for cid in condition_ids_present
+        }
+        for config_id in config_ids_present
+    }
+    primary_config = (
+        ("full_reranked" if "full_reranked" in by_condition_per_config else config_ids_present[0])
+        if config_ids_present
+        else None
+    )
+    by_condition = by_condition_per_config.get(primary_config, {})
+    primary_rows = [r for r in generation_rows if r.config_id == primary_config]
+
+    by_condition_intent = {
+        intent: {
+            cid: aggregate(
+                [r for r in primary_rows if r.generation_condition == cid and r.intent == intent]
+            )
+            for cid in condition_ids_present
+        }
+        for intent in sorted({r.intent for r in primary_rows if r.intent})
+    }
+    by_condition_provenance = {
+        prov: {
+            cid: aggregate(
+                [
+                    r
+                    for r in primary_rows
+                    if r.generation_condition == cid and r.target_figure_provenance == prov
+                ]
+            )
+            for cid in condition_ids_present
+        }
+        for prov in sorted(
+            {r.target_figure_provenance for r in primary_rows if r.target_figure_provenance}
+        )
+    }
 
     by_intent = slice_by("intent")
     by_paper = slice_by("document_id")
@@ -300,6 +391,16 @@ def main() -> None:
             float(cfg.get("generation", {}).get("temperature", 0.0)) if run_generation else None
         ),
         "models": models,
+        "generation_conditions": [
+            {
+                "condition_id": c.condition_id,
+                "template": c.template,
+                "structured_output": c.structured_output,
+                "prompt_hash": c.prompt_hash(),
+                "description": c.description,
+            }
+            for c in conditions
+        ],
         "timestamp_utc": datetime.now(UTC).isoformat(),
         "git_commit": git_commit(),
         "python": platform.python_version(),
@@ -333,6 +434,20 @@ def main() -> None:
         "by_target_figure_provenance": by_target_provenance,
         "by_top_retrieved_figure_provenance": by_retrieved_provenance,
         "latency_percentiles": latency_percentiles,
+        "primary_generation_config": primary_config,
+        "by_generation_condition": by_condition,
+        "by_generation_condition_per_config": by_condition_per_config,
+        "by_generation_condition_intent": by_condition_intent,
+        "by_generation_condition_target_provenance": by_condition_provenance,
+        "generation_condition_paired": _paired_analysis(primary_rows),
+        "generation_condition_paired_oracle": (
+            _paired_analysis(
+                [r for r in generation_rows if r.config_id == "oracle_evidence_generation"]
+            )
+            if "oracle_evidence_generation" in config_ids_present
+            else {}
+        ),
+        "evidence_hash_integrity": _evidence_hash_integrity(generation_rows),
     }
 
     output_dir.mkdir(parents=True, exist_ok=True)
@@ -358,6 +473,33 @@ def main() -> None:
     )
 
     _print_tables(overall, configs)
+    if by_condition:
+        print("\n=== PR8 generation conditions (overall) ===")
+        print(
+            f"  {'condition':28s} {'CitP':>8} {'CitR':>8} {'CitF1':>8} "
+            f"{'FigCov':>8} {'HybBoth':>8} {'ClaimCov':>9} {'CtxTok':>8}"
+        )
+        for cid, m in by_condition.items():
+            print(
+                f"  {cid:28s} {_fmt(m.get('citation_precision'))} "
+                f"{_fmt(m.get('citation_recall'))} {_fmt(m.get('citation_f1'))} "
+                f"{_fmt(m.get('figure_target_covered'))} "
+                f"{_fmt(m.get('both_targets_covered'))} "
+                f"{_fmt(m.get('claim_citation_coverage'),9)} "
+                f"{_fmt(m.get('context_token_count'))}"
+            )
+        integrity = summary["evidence_hash_integrity"]
+        print(
+            f"\n  evidence-hash integrity: "
+            f"{integrity['pairs_with_identical_evidence']}/{integrity['pairs_checked']} "
+            f"(query, configuration) pairs identical across conditions "
+            f"({'PASS' if integrity['all_identical'] else 'FAIL'})"
+        )
+        for config_id, counts in sorted(integrity["per_configuration"].items()):
+            print(
+                f"    {config_id:30s} identical={counts['identical']:3d} "
+                f"divergent={counts['divergent']:3d}"
+            )
     _write_report(output_dir, summary, configs, by_intent, by_target_provenance)
 
     print(f"\nSaved → {output_dir}/ablation_summary.json")
@@ -365,6 +507,85 @@ def main() -> None:
     print(f"Saved → {output_dir}/ablation_report.md")
     print(f"\nRows: {len(rows)}  ({len(queries)} queries x {len(configs)} configurations)")
     print(f"Elapsed: {elapsed:.1f}s")
+
+
+def _paired_analysis(rows) -> dict:
+    """G3-vs-G0 win/tie/loss on the primary metrics, paired per query.
+
+    Paired because every condition answers the same queries from the same
+    evidence: a mean delta can hide a change that helps a few queries a lot
+    while hurting many slightly.
+    """
+    from mrta.eval.generation_conditions import (
+        G0_BASELINE,
+        G1_EXPLICIT_CITATIONS,
+        G2_STRUCTURED_EVIDENCE,
+        G3_STRUCTURED_GENERATION,
+        paired_comparison,
+    )
+
+    configs = {r.config_id for r in rows}
+    if len(configs) > 1:
+        raise ValueError(
+            f"paired analysis requires one configuration, got {sorted(configs)}: "
+            "pairing across configurations compares different evidence"
+        )
+    present = {r.generation_condition for r in rows}
+    out: dict = {}
+    metrics = ("citation_recall", "citation_f1", "citation_precision", "claim_citation_coverage")
+
+    for baseline_id, treatment_id in (
+        (G0_BASELINE, G1_EXPLICIT_CITATIONS),
+        (G1_EXPLICIT_CITATIONS, G2_STRUCTURED_EVIDENCE),
+        (G2_STRUCTURED_EVIDENCE, G3_STRUCTURED_GENERATION),
+        (G0_BASELINE, G3_STRUCTURED_GENERATION),
+    ):
+        if baseline_id not in present or treatment_id not in present:
+            continue
+        base_by_query = {r.query_id: r for r in rows if r.generation_condition == baseline_id}
+        treat_by_query = {r.query_id: r for r in rows if r.generation_condition == treatment_id}
+        shared = sorted(set(base_by_query) & set(treat_by_query))
+        pair_key = f"{treatment_id}_vs_{baseline_id}"
+        out[pair_key] = {
+            metric: paired_comparison(
+                [base_by_query[q].generation_metrics.get(metric) for q in shared],
+                [treat_by_query[q].generation_metrics.get(metric) for q in shared],
+            )
+            for metric in metrics
+        }
+    return out
+
+
+def _evidence_hash_integrity(rows) -> dict:
+    """Whether every generation condition saw identical evidence per query.
+
+    PR8's causal claim is only valid where this holds, so it is reported as a
+    result rather than assumed.
+    """
+    from collections import defaultdict
+
+    # Keyed by (query, configuration), not query alone: different retrieval
+    # configurations legitimately supply different evidence, and the oracle
+    # supplies ground truth by design. The invariant PR8 needs is that the
+    # generation *conditions* agree within one configuration.
+    hashes: dict[tuple[str, str], set] = defaultdict(set)
+    for row in rows:
+        if row.evidence_context_hash:
+            hashes[(row.query_id, row.config_id)].add(row.evidence_context_hash)
+
+    mismatched = sorted(key for key, h in hashes.items() if len(h) > 1)
+    per_configuration: dict[str, dict] = defaultdict(lambda: {"identical": 0, "divergent": 0})
+    for (_, config_id), h in hashes.items():
+        per_configuration[config_id]["identical" if len(h) == 1 else "divergent"] += 1
+
+    return {
+        "grouping": "(query_id, config_id)",
+        "pairs_checked": len(hashes),
+        "pairs_with_identical_evidence": len(hashes) - len(mismatched),
+        "mismatched": [{"query_id": q, "config_id": c} for q, c in mismatched],
+        "per_configuration": dict(per_configuration),
+        "all_identical": not mismatched,
+    }
 
 
 def _fmt(value, width: int = 8) -> str:
@@ -541,6 +762,140 @@ def _write_report(output_dir: Path, summary: dict, configs, by_intent, by_proven
                     )
                 )
             lines.append("")
+
+    condition_summary = summary.get("by_generation_condition") or {}
+    if condition_summary:
+        lines.append("## PR8 generation conditions")
+        lines.append("")
+        integrity = summary["evidence_hash_integrity"]
+        primary = summary.get("primary_generation_config", "unknown")
+        lines.append(
+            f"Comparison configuration: **`{primary}`**. These numbers are for that "
+            "configuration alone — the oracle is reported separately below and is never "
+            "averaged in, because it is handed ground-truth evidence and scores near "
+            "perfectly by construction."
+        )
+        lines.append("")
+        lines.append(
+            f"Evidence-hash integrity: "
+            f"**{integrity['pairs_with_identical_evidence']}/{integrity['pairs_checked']}** "
+            f"(query, configuration) pairs supplied identical evidence to every condition "
+            f"({'PASS' if integrity['all_identical'] else 'FAIL'}). "
+            "Retrieval is frozen; only the prompt and output contract vary."
+        )
+        lines.append("")
+        lines.append(
+            "> **G3 is a combined intervention.** It changes two things relative to G2 — "
+            "typed evidence cards *and* the JSON `{answer, citations}` contract — so its "
+            "improvement demonstrates the effect of the combination, **not** of JSON output "
+            "alone. Separating them would need a 'G0 prompt + JSON output' cell, which is "
+            "absent from the frozen matrix; adding one after seeing results would be tuning "
+            "rather than measurement."
+        )
+        lines.append("")
+        lines.append(
+            _md_row(
+                [
+                    "Condition",
+                    "Cit P",
+                    "Cit R",
+                    "Cit F1",
+                    "Validity",
+                    "Fig coverage",
+                    "Hybrid both",
+                    "Claim citation cov",
+                ]
+            )
+        )
+        lines.append(_md_row(["---"] * 8))
+        for cid, m in condition_summary.items():
+            lines.append(
+                _md_row(
+                    [
+                        f"`{cid}`",
+                        _md_num(m.get("citation_precision")),
+                        _md_num(m.get("citation_recall")),
+                        _md_num(m.get("citation_f1")),
+                        _md_num(m.get("citation_validity_rate")),
+                        _md_num(m.get("figure_target_covered")),
+                        _md_num(m.get("both_targets_covered")),
+                        _md_num(m.get("claim_citation_coverage")),
+                    ]
+                )
+            )
+        lines.append("")
+
+        lines.append("### Context cost")
+        lines.append("")
+        lines.append(
+            _md_row(["Condition", "Context tokens", "Answer tokens", "Generation mean ms"])
+        )
+        lines.append(_md_row(["---"] * 4))
+        for cid, m in condition_summary.items():
+            lines.append(
+                _md_row(
+                    [
+                        f"`{cid}`",
+                        _md_num(m.get("context_token_count")),
+                        _md_num(m.get("answer_token_count")),
+                        _md_num(m.get("latency_generation_ms")),
+                    ]
+                )
+            )
+        lines.append("")
+
+        paired = summary.get("generation_condition_paired") or {}
+        if paired:
+            lines.append("### Paired comparison (per-query, same evidence)")
+            lines.append("")
+            lines.append(
+                _md_row(
+                    ["Comparison", "Metric", "Treatment better", "Tie", "Baseline better", "Mean Δ"]
+                )
+            )
+            lines.append(_md_row(["---"] * 6))
+            for pair_key, metrics in paired.items():
+                for metric, counts in metrics.items():
+                    lines.append(
+                        _md_row(
+                            [
+                                f"`{pair_key}`",
+                                metric,
+                                str(counts["treatment_better"]),
+                                str(counts["tie"]),
+                                str(counts["baseline_better"]),
+                                _md_num(counts["mean_delta"]),
+                            ]
+                        )
+                    )
+            lines.append("")
+
+    per_config = summary.get("by_generation_condition_per_config") or {}
+    oracle_summary = per_config.get("oracle_evidence_generation")
+    if oracle_summary:
+        lines.append("### Oracle condition (diagnostic only)")
+        lines.append("")
+        lines.append(
+            "The oracle receives the benchmark's ground-truth evidence directly, so its "
+            "retrieval metrics are perfect by construction. It bounds how completely the "
+            "generator cites evidence when availability is not the constraint. It is **not** "
+            "comparable with a retrieval configuration and must never be averaged with one."
+        )
+        lines.append("")
+        lines.append(_md_row(["Condition", "Cit R", "Cit F1", "Claim citation cov"]))
+        lines.append(_md_row(["---"] * 4))
+        for cid, m in oracle_summary.items():
+            lines.append(
+                _md_row(
+                    [
+                        f"`{cid}`",
+                        _md_num(m.get("citation_recall")),
+                        _md_num(m.get("citation_f1")),
+                        _md_num(m.get("claim_citation_coverage")),
+                    ]
+                )
+            )
+        lines.append("")
 
     lines.append("## Failure decomposition")
     lines.append("")

@@ -200,6 +200,14 @@ class QueryResult:
     # actually surfaced. Named explicitly because it is not the same population
     # as the target-figure provenance below, and conflating them invites a false
     # comparison with PR5.
+    # PR8: which generation strategy produced this row, and a hash of the
+    # evidence the generator saw. The hash is what lets the PR8 comparison claim
+    # causality — identical hashes across conditions prove the evidence was held
+    # fixed rather than assuming it.
+    generation_condition: str | None = None
+    evidence_context_hash: str | None = None
+    generation_failures: list[str] = field(default_factory=list)
+
     top_retrieved_figure_provenance: str | None = None
     # Provenance of the figure the benchmark EXPECTS. This is PR5's grouping and
     # the one comparable with its measurements.
@@ -228,6 +236,9 @@ class QueryResult:
             "coverage": self.coverage,
             "generated_answer": self.generated_answer,
             "resolved_citations": self.resolved_citations,
+            "generation_condition": self.generation_condition,
+            "evidence_context_hash": self.evidence_context_hash,
+            "generation_failures": self.generation_failures,
             "top_retrieved_figure_provenance": self.top_retrieved_figure_provenance,
             "target_figure_provenance": self.target_figure_provenance,
             "failure_category": self.failure_category,
@@ -433,7 +444,11 @@ def aggregate(rows: Sequence[QueryResult]) -> dict:
             "supported_claim_fraction",
             "unsupported_claim_fraction",
             "context_token_count",
+            "prompt_token_count",
             "answer_token_count",
+            "claim_citation_coverage",
+            "uncited_claim_fraction",
+            "figure_description_token_count",
         ):
             summary[metric] = _mean([r.generation_metrics.get(metric) for r in generated])
 
