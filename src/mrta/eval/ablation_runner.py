@@ -34,6 +34,13 @@ from mrta.eval.ablation import (
 from mrta.eval.types import CanonicalEvidence, RetrievedCandidate
 
 
+def _prose_condition() -> Any:
+    """PR7-compatible condition: prose output, baseline template."""
+    from mrta.eval.generation_conditions import CONDITIONS_BY_ID, G0_BASELINE
+
+    return CONDITIONS_BY_ID[G0_BASELINE]
+
+
 class Generator(Protocol):
     """Minimal generation surface the runner needs.
 
@@ -146,6 +153,7 @@ class AblationRunner:
         *,
         reranker: Any | None = None,
         generator: Generator | None = None,
+        condition: Any | None = None,
         candidate_depth: int = DEFAULT_CANDIDATE_DEPTH,
         rrf_k: int = DEFAULT_RRF_K,
         final_top_k: int = DEFAULT_FINAL_TOP_K,
@@ -166,9 +174,12 @@ class AblationRunner:
         )
         self._reranker = reranker
         self._generator = generator
+        # None keeps PR7 behaviour exactly, so PR7 runs stay reproducible.
+        self._condition = condition
         self._candidate_depth = candidate_depth
         self._rrf_k = rrf_k
         self._final_top_k = final_top_k
+        self._payload_source: dict[str, Any] = {}
 
     # ------------------------------------------------------------------
     # Retrieval
@@ -200,7 +211,7 @@ class AblationRunner:
 
         pools: dict[str, list[RetrievedCandidate]] = {}
         latency: dict[str, float] = {}
-        self._payload_source: dict[str, Any] = {}
+        self._payload_source = {}
 
         if self._stores.text is not None:
             start = time.perf_counter()
@@ -250,6 +261,19 @@ class AblationRunner:
         from mrta.retrieval.fusion import canonical_identity
 
         return self._figure_text.get("|".join(canonical_identity(candidate)), {})
+
+    def adopt_retrieval_state(self, source: AblationRunner) -> None:
+        """Reuse another runner's retrieved evidence instead of retrieving again.
+
+        PR8 runs several generation conditions over the *same* evidence. Each
+        condition needs its own runner (prompt and parsing differ), but calling
+        ``retrieve_streams`` on each would re-run retrieval — wasting time and,
+        worse, allowing the conditions to diverge if retrieval were ever
+        non-deterministic. Sharing the state makes the freeze structural.
+        """
+        self._payload_source = source._payload_source
+        self._figure_text = source._figure_text
+        self._oracle_text = source._oracle_text
 
     def run_configuration(
         self,
@@ -473,9 +497,16 @@ class AblationRunner:
         *,
         oracle_mode: bool = False,
     ) -> None:
+        from mrta.eval.generation_conditions import (
+            claim_citation_coverage,
+            classify_generation_failures,
+            evidence_context_hash,
+            parse_generation,
+        )
         from mrta.eval.generation_metrics import (
             citation_precision_recall,
             citation_validity,
+            count_tokens,
             evidence_coverage,
             lexical_support_score,
             size_metrics,
@@ -483,16 +514,41 @@ class AblationRunner:
             unsupported_numeric_tokens,
         )
 
+        format_start = time.perf_counter()
         labelled = self._build_labelled_evidence(final, payload_by_id, oracle_mode=oracle_mode)
         context = self._render_context(labelled)
         prompt = self._render_prompt(query["query"], labelled)
+        result.latency_ms["evidence_formatting"] = round(
+            (time.perf_counter() - format_start) * 1000, 3
+        )
+
+        # Recorded before generation: this is the evidence the generator sees,
+        # and PR8's causal claim rests on it being identical across conditions.
+        result.evidence_context_hash = evidence_context_hash(labelled)
+        if self._condition is not None:
+            result.generation_condition = self._condition.condition_id
 
         start = time.perf_counter()
-        answer = self._generator.generate(prompt, [])  # type: ignore[union-attr]
+        raw = self._generator.generate(prompt, [])  # type: ignore[union-attr]
         result.latency_ms["generation"] = round((time.perf_counter() - start) * 1000, 3)
+
+        parse_start = time.perf_counter()
+        parsed = (
+            parse_generation(raw, self._condition)
+            if self._condition is not None
+            else parse_generation(raw, _prose_condition())
+        )
+        answer = parsed.answer
         result.generated_answer = answer
 
-        referenced, unknown = self._resolve_labels(answer, labelled)
+        # Labels come from the condition's own contract (inline prose, or the
+        # JSON citation list), then resolve against the supplied evidence. A
+        # label the model invented resolves to nothing and is counted invalid.
+        known = set(labelled)
+        referenced = [label for label in parsed.labels if label in known]
+        unknown = [label for label in parsed.labels if label not in known]
+        result.latency_ms["citation_parsing"] = round((time.perf_counter() - parse_start) * 1000, 3)
+
         cited_evidence = [labelled[label]["evidence"] for label in referenced]
 
         result.resolved_citations = [
@@ -506,11 +562,23 @@ class AblationRunner:
         scores = citation_precision_recall(cited_evidence, targets)
         validity = citation_validity(referenced, unknown)
         support = lexical_support_score(answer, context)
+        claims_cited = claim_citation_coverage(answer)
         claims = unsupported_claim_fraction(answer, context)
         sizes = size_metrics(context, answer)
 
+        # context_token_count measures the evidence alone and is identical across
+        # conditions by construction — a useful invariant. prompt_token_count
+        # measures the whole rendered prompt, which is where formatting overhead
+        # actually shows up and what the request actually costs.
+        prompt_tokens, _ = count_tokens(prompt)
+        figure_description_tokens, _ = count_tokens(
+            "\n".join(v["text"] for label, v in labelled.items() if label.startswith("[F"))
+        )
+
         result.generation_metrics = {
             **scores,
+            "prompt_token_count": prompt_tokens,
+            "figure_description_token_count": figure_description_tokens,
             **validity.as_dict(),
             "lexical_support_score": support,
             **claims,
@@ -523,8 +591,19 @@ class AblationRunner:
                 1 for v in labelled.values() if v["evidence"].figure_id is not None
             ),
             "total_evidence_count": len(labelled),
+            **claims_cited,
+            "structured_output_malformed": parsed.malformed,
+            "structured_parse_note": parsed.parse_note,
         }
         result.coverage = evidence_coverage(cited_evidence, targets)
+        result.generation_failures = classify_generation_failures(
+            answer=answer,
+            citation_scores=scores,
+            invalid_count=validity.invalid_count,
+            malformed=parsed.malformed,
+            claim_coverage=claims_cited.get("claim_citation_coverage"),
+            has_targets=bool(targets),
+        )
 
     def _build_labelled_evidence(
         self,
@@ -568,6 +647,10 @@ class AblationRunner:
     def _render_prompt(self, question: str, labelled: dict[str, dict]) -> str:
         from mrta.prompts import load_prompt
 
+        template = (
+            self._condition.template if self._condition is not None else "canonical_multimodal_rag"
+        )
+
         text_evidence = [
             _PromptView(label, v) for label, v in labelled.items() if label.startswith("[T")
         ]
@@ -575,7 +658,7 @@ class AblationRunner:
             _PromptView(label, v) for label, v in labelled.items() if label.startswith("[F")
         ]
         return load_prompt(
-            "canonical_multimodal_rag",
+            template,
             question=question,
             text_evidence=text_evidence,
             figure_evidence=figure_evidence,

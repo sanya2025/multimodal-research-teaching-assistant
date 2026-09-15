@@ -5,6 +5,154 @@ Each entry maps tutorial notebook cells → `src/mrta/` modules → production n
 
 ---
 
+## [feat/generation-citation-aware-grounding] — PR8: Citation-Aware Grounded Generation — 2026-09-13
+
+**Tests:** 879 passing, 12 skipped (800 → +79)
+
+A controlled generation experiment with retrieval held completely fixed. No
+retrieval algorithm, fusion parameter, reranker, benchmark judgment or
+production behaviour changed.
+
+### New files
+
+| File | Purpose |
+|---|---|
+| `src/mrta/eval/generation_conditions.py` | Frozen G0–G3 conditions, structured-output parsing, evidence hash, claim-citation coverage, generation failure taxonomy, paired comparison |
+| `src/mrta/prompts/g1_explicit_citations.j2` | G1 — claim-level citation requirements |
+| `src/mrta/prompts/g2_structured_evidence.j2` | G2 — typed evidence cards |
+| `src/mrta/prompts/g3_structured_generation.j2` | G3 — cards plus a JSON `{answer, citations}` contract |
+| `tests/unit/test_generation_conditions.py` | 68 tests |
+| `docs/adr/ADR-011-citation-aware-generation.md` | Decisions and limitations |
+| `results/v2/pr8/` | Measured artifacts |
+
+### Modified files
+
+| File | Change |
+|---|---|
+| `src/mrta/core/llm.py` | **Additive** — optional `response_format` on `chat()`, defaulting to None; no existing caller passes it |
+| `src/mrta/eval/ablation.py` | `QueryResult` gains `generation_condition`, `evidence_context_hash`, `generation_failures`; PR8 metrics in `aggregate()` |
+| `src/mrta/eval/ablation_runner.py` | Condition-aware prompt selection and parsing; `adopt_retrieval_state()` so conditions share one retrieval |
+| `scripts/run_ablation.py` | `--condition` axis, per-configuration aggregation, paired analysis, PR8 report sections |
+| `tests/unit/test_ablation.py` | +11 experimental-integrity and grouping regression tests |
+
+### Experimental control
+
+Every condition receives byte-identical evidence; only the prompt and output
+contract vary. An `evidence_context_hash` over each label's canonical identity
+and text is recorded per row:
+
+```text
+evidence-hash integrity: 200/200 (query, configuration) pairs identical
+  full_reranked                identical=100  divergent=0
+  oracle_evidence_generation   identical=100  divergent=0
+```
+
+Generation reproduced identically across three full runs at `temperature=0`.
+
+### The headline is a trade-off, not a win
+
+With identical retrieved evidence, structured citation generation raised citation
+recall **0.3100 → 0.4300** and citation F1 **0.2203 → 0.3603**, while *reducing*
+precision **0.5883 → 0.3500**. G3 moves the system from under-citing toward
+over-citing.
+
+That reframes the open question: no longer "can we get the model to cite?" but
+"which citations actually support the claims, and are the resulting answers
+semantically correct?" PR8's deterministic metrics cannot answer the second.
+
+### Results (frozen v2, n=100, `full_reranked` — oracle reported separately)
+
+| Condition | Cit P | Cit R | Cit F1 | Fig cov | Hybrid both | Claim cov | Prompt tok | Gen ms |
+|---|---|---|---|---|---|---|---|---|
+| `g0_baseline` | 0.5883 | 0.3100 | 0.2203 | 0.2267 | 0.2000 | 0.2650 | 940 | 1409 |
+| `g1_explicit_citations` | 0.5770 | 0.3200 | 0.2593 | 0.2400 | 0.1200 | 0.3306 | 1049 | 1339 |
+| `g2_structured_evidence` | 0.5450 | 0.2850 | 0.2213 | 0.2133 | 0.1200 | 0.3927 | 1128 | 1495 |
+| **`g3_structured_generation`** | 0.3500 | **0.4300** | **0.3603** | **0.3467** | 0.2000 | **0.6015** | 1223 | **674** |
+
+Paired per-query (same evidence), citation F1:
+
+| Comparison | Better | Tie | Worse | Mean Δ |
+|---|---|---|---|---|
+| G1 vs G0 | 15 | 72 | 13 | +0.039 |
+| G2 vs G1 | 18 | 57 | 25 | −0.038 |
+| G3 vs G2 | 31 | 57 | 12 | +0.139 |
+| **G3 vs G0** | **35** | **52** | **13** | **+0.140** |
+
+G3 vs G0 on the other primary metrics: citation recall 23/67/10 (+0.120),
+claim citation coverage 65/12/23 (+0.336), and citation **precision** 20/35/45
+(**−0.238**).
+
+### The precision/recall trade
+
+G3's F1 gain is not free. It cites more and more of what it cites is wrong:
+precision falls 0.5883 → 0.3500, and `irrelevant_valid_citation` becomes its
+most common failure (78 occurrences, up from 52 in G0) while
+`missing_expected_citation` falls (71 → 61) and `uncited_claim` roughly halves
+(72 → 35).
+
+Whether that trade is desirable depends on whether a reader is harmed more by a
+missing citation or a spurious one. PR8 does not answer that: it measures
+citation behaviour, not answer quality.
+
+### Design limitation
+
+G3 changes **two** things relative to G2 — evidence cards *and* the JSON
+contract — so its improvement cannot be attributed to output structure alone.
+Separating them needs a "G0 prompt + JSON output" cell, which is absent from the
+frozen matrix; adding one after seeing results would be tuning, not measurement.
+
+### Target-figure provenance (comparable with PR5/PR7)
+
+| Target figure text | n | G0 F1 | G3 F1 | G0 fig cov | G3 fig cov |
+|---|---|---|---|---|---|
+| `vlm_caption` | 37 | 0.2225 | 0.4243 | 0.2703 | 0.4595 |
+| `nearby_text_fallback` | 38 | 0.1596 | 0.2588 | 0.1842 | 0.2368 |
+
+The PR5 representation gap persists at the generation stage: captioned target
+figures outperform fallback ones under every condition, and G3 helps both without
+closing the gap.
+
+### Oracle (reported separately, never mixed into the comparison)
+
+| Condition | Oracle citation recall |
+|---|---|
+| `g0_baseline` | 0.605 |
+| `g1_explicit_citations` | 0.505 |
+| `g2_structured_evidence` | 0.445 |
+| `g3_structured_generation` | **0.925** |
+
+Given perfect evidence, G3 cites 92.5% of it versus 60.5% for the baseline. This
+measures citation completeness when evidence availability is not the constraint;
+it is not a measure of semantic correctness.
+
+### Two grouping bugs found and fixed
+
+Both were aggregations keyed by `query_id` alone, ignoring `config_id`:
+
+1. The evidence-hash integrity check reported a false `0/100 FAIL`, because the
+   oracle legitimately supplies different evidence than a retrieval configuration.
+2. More seriously, the headline condition table **averaged oracle rows into
+   `full_reranked`**, inflating every condition and inverting the apparent G0→G1
+   direction. The first reported figures (G0 F1 0.4135, G1 0.3863) were artifacts;
+   the real values are 0.2203 and 0.2593 — G1 *improves* on the baseline.
+
+`_paired_analysis` now raises when handed more than one configuration rather than
+averaging silently, and both bugs have regression tests.
+
+### Interpretation guardrails
+
+Citation completeness is not semantic correctness. `lexical_support_score` and
+`claim_citation_coverage` are deterministic proxies for grounding and citation
+behaviour respectively — neither measures faithfulness. Oracle citation recall
+measures citing completeness under perfect availability, not generator accuracy.
+
+**Recommendation for PR9:** a semantic correctness/faithfulness judge. PR8 has
+taken deterministic citation metrics as far as they go: it can show G3 cites more
+and cites more wrongly, but cannot say whether its answers are better. That
+question now blocks the precision/recall trade-off decision.
+
+---
+
 ## [feat/eval-ablation-runner-generation-metrics] — PR7: Ablation Runner & Generation Metrics — 2026-09-12
 
 **Tests:** 794 passing, 12 skipped (701 → +93)

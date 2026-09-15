@@ -24,18 +24,31 @@ class LLMClient:
         """The resolved model name."""
         return self._model
 
-    def chat(self, messages: list[dict], temperature: float = 0.1) -> str:
+    def chat(
+        self,
+        messages: list[dict],
+        temperature: float = 0.1,
+        response_format: str | None = None,
+    ) -> str:
         """Send a chat request and return the response text.
 
         Args:
             messages: OpenAI-style list of role/content dicts.
             temperature: Sampling temperature (0.0–1.0).
+            response_format: Ollama format constraint, e.g. "json". Optional and
+                None by default, so existing callers are unaffected. JSON mode
+                constrains the decoder but does not guarantee a parseable reply,
+                so callers must still handle malformed output.
         """
         try:
+            kwargs: dict = {}
+            if response_format is not None:
+                kwargs["format"] = response_format
             resp = ollama.chat(
                 model=self._model,
                 messages=messages,
                 options={"temperature": temperature},
+                **kwargs,
             )
         except Exception as e:
             raise LLMError(f"Ollama chat failed (model={self._model}): {e}") from e

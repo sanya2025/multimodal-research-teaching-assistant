@@ -695,3 +695,248 @@ class TestTargetProvenance:
         }
         result = runner.run_configuration(CONFIGURATIONS_BY_ID["text_only"], query, pools, latency)
         assert result.target_figure_provenance is None
+
+
+class TestPR8ExperimentalIntegrity:
+    """PR8's causal claim requires evidence held fixed across conditions."""
+
+    def _stores(self):
+        return RunnerStores(text=_text_store(), caption=_caption_store(), adapter=FakeAdapter())
+
+    def _query(self):
+        return {
+            "query_id": "q1",
+            "query": "attention softmax",
+            "expected_evidence": [{"document_id": DOC, "page_number": 2, "figure_id": None}],
+        }
+
+    def _run_all_conditions(self, generator_factory):
+        from mrta.eval.generation_conditions import FROZEN_CONDITIONS
+
+        stores = self._stores()
+        primary = AblationRunner(stores, generator=generator_factory())
+        pools, latency = primary.retrieve_streams("attention softmax")
+
+        results = {}
+        for condition in FROZEN_CONDITIONS:
+            runner = AblationRunner(stores, generator=generator_factory(), condition=condition)
+            runner.adopt_retrieval_state(primary)
+            results[condition.condition_id] = runner.run_configuration(
+                CONFIGURATIONS_BY_ID["text_caption_rrf"],
+                self._query(),
+                pools,
+                latency,
+                generate=True,
+            )
+        return results
+
+    def test_all_conditions_receive_identical_evidence(self) -> None:
+        class Gen:
+            def generate(self, prompt, images):
+                return "An answer [T1]."
+
+        results = self._run_all_conditions(Gen)
+        hashes = {r.evidence_context_hash for r in results.values()}
+        assert len(hashes) == 1, f"evidence diverged across conditions: {hashes}"
+        assert all(r.status == STATUS_OK for r in results.values())
+
+    def test_each_condition_is_labelled(self) -> None:
+        class Gen:
+            def generate(self, prompt, images):
+                return "An answer [T1]."
+
+        results = self._run_all_conditions(Gen)
+        assert set(results) == {r.generation_condition for r in results.values()}
+
+    def test_conditions_receive_different_prompts(self) -> None:
+        """Same evidence, different prompt — that is the whole experiment."""
+        from mrta.eval.generation_conditions import FROZEN_CONDITIONS
+
+        class RecordingGen:
+            prompts: list[str] = []
+
+            def generate(self, prompt, images):
+                RecordingGen.prompts.append(prompt)
+                return "An answer [T1]."
+
+        RecordingGen.prompts = []
+        stores = self._stores()
+        primary = AblationRunner(stores, generator=RecordingGen())
+        pools, latency = primary.retrieve_streams("attention softmax")
+        for condition in FROZEN_CONDITIONS:
+            runner = AblationRunner(stores, generator=RecordingGen(), condition=condition)
+            runner.adopt_retrieval_state(primary)
+            runner.run_configuration(
+                CONFIGURATIONS_BY_ID["text_caption_rrf"],
+                self._query(),
+                pools,
+                latency,
+                generate=True,
+            )
+        assert len(set(RecordingGen.prompts)) == len(FROZEN_CONDITIONS)
+
+    def test_adopt_retrieval_state_does_not_rerun_retrieval(self) -> None:
+        """Sharing state must not touch the stores again."""
+
+        class CountingStore(FakeStore):
+            def __init__(self, hits, records=None):
+                super().__init__(hits, records)
+                self.search_count = 0
+
+            def search_with_scores(self, query, k=5):
+                self.search_count += 1
+                return super().search_with_scores(query, k)
+
+        text = CountingStore(
+            [
+                (_chunk("c1", 2, "Attention uses softmax scaling."), 0.9),
+                (_chunk("c2", 7, "Unrelated content here."), 0.5),
+            ]
+        )
+        stores = RunnerStores(text=text, caption=_caption_store(), adapter=FakeAdapter())
+        primary = AblationRunner(stores)
+        primary.retrieve_streams("attention softmax")
+        assert text.search_count == 1
+
+        secondary = AblationRunner(stores, condition=CONFIGURATIONS_BY_ID["text_only"])
+        secondary.adopt_retrieval_state(primary)
+        assert text.search_count == 1  # unchanged: no second retrieval
+
+    def test_retrieval_parameters_unchanged_from_pr5(self) -> None:
+        """PR8 freezes retrieval; these are the PR4/PR5 evaluated values."""
+        from mrta.eval.ablation import (
+            DEFAULT_CANDIDATE_DEPTH,
+            DEFAULT_FINAL_TOP_K,
+            DEFAULT_RRF_K,
+        )
+
+        assert DEFAULT_CANDIDATE_DEPTH == 20
+        assert DEFAULT_RRF_K == 60
+        assert DEFAULT_FINAL_TOP_K == 5
+
+    def test_oracle_citation_recall_tracks_citations_not_retrieval(self) -> None:
+        """Section 18: oracle citation recall must respond to citing behaviour."""
+
+        class CitingGen:
+            def generate(self, prompt, images):
+                return "The answer is grounded [T1]."
+
+        class SilentGen:
+            def generate(self, prompt, images):
+                return "The answer is grounded, with no labels."
+
+        query = self._query()
+        recalls = {}
+        for name, gen in (("cites", CitingGen()), ("silent", SilentGen())):
+            runner = AblationRunner(self._stores(), generator=gen)
+            result = runner.run_configuration(
+                CONFIGURATIONS_BY_ID["oracle_evidence_generation"], query, {}, {}, generate=True
+            )
+            recalls[name] = result.generation_metrics["citation_recall"]
+            # evidence availability is unchanged in both cases
+            assert result.retrieval_metrics["recall_at_5"] == 1.0
+
+        assert recalls["cites"] == 1.0
+        assert recalls["silent"] == 0.0
+
+
+class TestEvidenceHashIntegrityGrouping:
+    """The integrity check must group by (query, configuration).
+
+    Grouping by query alone conflates configurations that legitimately supply
+    different evidence — most obviously the oracle, which supplies ground truth
+    by design — and reports a false FAIL on a valid experiment.
+    """
+
+    def _row(self, query_id, config_id, condition, digest):
+        row = QueryResult(query_id=query_id, config_id=config_id)
+        row.generation_condition = condition
+        row.evidence_context_hash = digest
+        return row
+
+    def _integrity(self, rows):
+        import importlib.util
+        import pathlib
+
+        path = pathlib.Path(__file__).resolve().parents[2] / "scripts/run_ablation.py"
+        spec = importlib.util.spec_from_file_location("run_ablation", path)
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        return module._evidence_hash_integrity(rows)
+
+    def test_oracle_differing_from_retrieval_is_not_a_failure(self) -> None:
+        rows = [
+            self._row("q1", "full_reranked", "g0_baseline", "aaa"),
+            self._row("q1", "full_reranked", "g3_structured_generation", "aaa"),
+            # oracle supplies ground-truth evidence: a different hash by design
+            self._row("q1", "oracle_evidence_generation", "g0_baseline", "bbb"),
+            self._row("q1", "oracle_evidence_generation", "g3_structured_generation", "bbb"),
+        ]
+        result = self._integrity(rows)
+        assert result["all_identical"] is True
+        assert result["pairs_checked"] == 2
+
+    def test_real_divergence_within_a_configuration_is_a_failure(self) -> None:
+        rows = [
+            self._row("q1", "full_reranked", "g0_baseline", "aaa"),
+            self._row("q1", "full_reranked", "g3_structured_generation", "DIFFERENT"),
+        ]
+        result = self._integrity(rows)
+        assert result["all_identical"] is False
+        assert result["mismatched"] == [{"query_id": "q1", "config_id": "full_reranked"}]
+
+    def test_per_configuration_counts_reported(self) -> None:
+        rows = [
+            self._row("q1", "full_reranked", "g0_baseline", "aaa"),
+            self._row("q1", "full_reranked", "g1_explicit_citations", "aaa"),
+            self._row("q2", "full_reranked", "g0_baseline", "ccc"),
+            self._row("q2", "full_reranked", "g1_explicit_citations", "DIFFERENT"),
+        ]
+        result = self._integrity(rows)
+        assert result["per_configuration"]["full_reranked"] == {"identical": 1, "divergent": 1}
+
+
+class TestPairedAnalysisConfigurationSafety:
+    """Paired comparison must never span configurations.
+
+    A configuration determines what evidence the generator saw. Pairing a
+    retrieval row against an oracle row compares two different contexts and
+    silently answers a question nobody asked.
+    """
+
+    def _row(self, query_id, config_id, condition, f1):
+        row = QueryResult(query_id=query_id, config_id=config_id)
+        row.generation_condition = condition
+        row.generation_metrics = {"citation_f1": f1, "citation_recall": f1}
+        return row
+
+    def _paired(self, rows):
+        import importlib.util
+        import pathlib
+
+        path = pathlib.Path(__file__).resolve().parents[2] / "scripts/run_ablation.py"
+        spec = importlib.util.spec_from_file_location("run_ablation_paired", path)
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        return module._paired_analysis(rows)
+
+    def test_mixed_configurations_are_rejected(self) -> None:
+        rows = [
+            self._row("q1", "full_reranked", "g0_baseline", 0.2),
+            self._row("q1", "oracle_evidence_generation", "g0_baseline", 0.9),
+        ]
+        with pytest.raises(ValueError, match="one configuration"):
+            self._paired(rows)
+
+    def test_single_configuration_pairs_correctly(self) -> None:
+        rows = [
+            self._row("q1", "full_reranked", "g0_baseline", 0.2),
+            self._row("q1", "full_reranked", "g3_structured_generation", 0.6),
+            self._row("q2", "full_reranked", "g0_baseline", 0.5),
+            self._row("q2", "full_reranked", "g3_structured_generation", 0.1),
+        ]
+        result = self._paired(rows)
+        counts = result["g3_structured_generation_vs_g0_baseline"]["citation_f1"]
+        assert counts["treatment_better"] == 1
+        assert counts["baseline_better"] == 1
+        assert counts["compared"] == 2
