@@ -5,6 +5,67 @@ Each entry maps tutorial notebook cells → `src/mrta/` modules → production n
 
 ---
 
+## [docs/portfolio-research-overhaul] — PR10: Portfolio & Research Documentation Overhaul — 2026-09-16
+
+**Tests:** 982 passing, 12 skipped (unchanged — documentation only)
+
+Documentation only. No retrieval, generation, evaluation, benchmark, model, CI,
+or production behaviour changed. `git diff -- results/v2 data/eval` is empty.
+
+### New files
+
+| File | Purpose |
+|---|---|
+| `docs/architecture/multimodal_reranking_v2.md` | Authoritative technical description of the retrieval architecture: indexing, canonical identity, RRF, candidate depth, reranking, figure representation, full ablations, failure analysis, latency, CI contract, provenance table |
+| `docs/adr/ADR-013-modality-specific-retrieval-and-query-aware-reranking.md` | Ten evidence-backed architectural decisions consolidating PR1–PR9 |
+
+### Modified files
+
+| File | Change |
+|---|---|
+| `README.md` | Overhauled above the fold — positioning, two Mermaid diagrams, full ablation table, four empirical discoveries, research-engineering table, performance profile, expanded limitations, documentation index. Every operational section preserved |
+| `CHANGELOG.md` | This entry |
+
+### Two corrections to the numbers as originally specified
+
+**Figure provenance metric identity.** The values `0.7027` and `0.2632` are
+`figure_recall_at_5`, **not** `recall_at_5` — the artifact defines both and they
+differ (`recall_at_5` is 0.7162 / 0.3421 for the same slices). They are published
+as **Figure Recall@5**, with `n` stated as queries whose target figure has that
+provenance (37 and 38), not canonical figures. The canonical-figure split is
+11 VLM / 10 fallback of 21; the record-level split is 17 / 20 of 37.
+
+**A finding not previously documented.** `caption_clip_rrf` and
+`text_caption_clip_rrf` are numerically identical across all four reported
+aggregate top-5 metrics (0.3400 / 0.2658 / 0.2561 / 0.5467). Adding the text
+stream produced no measurable change in the reported top-5 aggregate metrics for
+this frozen configuration, consistent with the modality-competition analysis.
+This is **not** evidence that text retrieval is unnecessary — text contributes
+strongly in other frozen configurations, reaching `text`-intent MRR@5 0.6713 in
+the reranked three-stream configuration.
+
+### Empirical fidelity
+
+Every published number is traceable to a committed artifact, with a provenance
+table in the architecture document. Wording constraints applied throughout:
+
+- "strongest" is always scoped to *the evaluated frozen v2 configurations*, never
+  implying superiority over external systems or unevaluated configurations;
+- v2 is described as a frozen evaluation and regression benchmark that informed
+  development, never as a held-out test set;
+- the PR4→PR5 result is not summarised as "CLIP works" or "RRF fails";
+- citation completeness is never described as semantic groundedness or answer
+  correctness;
+- G3 is described as a combined intervention;
+- CI tolerances are described as engineering thresholds, not statistical
+  significance;
+- cross-platform agreement is stated for the two platforms measured, not as
+  general platform independence;
+- unimplemented capabilities (model-revision pinning, access control, cost
+  budgets, SLOs) appear only under future work.
+
+---
+
 ## [ci/two-tier-quality-gates] — PR9: Two-Tier CI Quality Gates & Evaluation Regression Protection — 2026-09-15
 
 **Tests:** 982 passing, 12 skipped (879 → +103)
@@ -441,8 +502,9 @@ retrieval improves most.
 
 **Recommendation for PR8:** figure textual representation at the
 retrieval/generation boundary — figure-region extraction plus better VLM
-captioning — rather than generation-side citation work alone. Improving
-retrieval without improving representation measurably degrades citation quality.
+captioning — rather than generation-side citation work alone. Across the
+evaluated configurations, higher retrieval metrics did not necessarily translate
+into higher citation F1.
 
 ### Determinism and integrity
 
