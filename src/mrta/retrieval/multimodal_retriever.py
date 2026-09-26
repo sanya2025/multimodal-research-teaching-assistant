@@ -17,7 +17,7 @@ text-rich evidence but cannot evaluate pure visual evidence independently.
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Protocol
 
 from mrta.core.schemas import EvidenceRecord
 from mrta.observability.tracing import trace_span
@@ -27,22 +27,34 @@ from mrta.retrieval.vector_store import VectorStore
 if TYPE_CHECKING:
     from mrta.retrieval.caption_store import CaptionVectorStore
     from mrta.retrieval.reranker import Reranker
-    from mrta.retrieval.visual_vector_store import VisualVectorStore
+
+
+class VisualSearchStore(Protocol):
+    """The visual-stream surface this retriever depends on.
+
+    Structural rather than nominal because two implementations legitimately
+    provide it: ``VisualVectorStore``, which owns its own CLIP index, and
+    ``ImageStoreAdapter``, which reads the CLIP index production ingestion
+    writes. Typing against the behaviour keeps the retriever from having to know
+    which one it was given.
+    """
+
+    def search_with_scores(self, query: str, k: int = 5) -> list[tuple[EvidenceRecord, float]]: ...
 
 
 class MultimodalRetriever:
     """Retrieves evidence from text, caption, and visual stores and fuses via RRF.
 
-    At minimum, a VectorStore is required. CaptionVectorStore and
-    VisualVectorStore are optional — the retriever degrades gracefully to
-    text-only when they are absent or empty.
+    At minimum, a VectorStore is required. The caption and visual streams are
+    optional — the retriever degrades gracefully to text-only when they are
+    absent or empty. The visual stream is any ``VisualSearchStore``.
     """
 
     def __init__(
         self,
         vector_store: VectorStore,
         caption_store: CaptionVectorStore | None = None,
-        visual_store: VisualVectorStore | None = None,
+        visual_store: VisualSearchStore | None = None,
         rrf_k: int = 60,
         reranker: Reranker | None = None,
         reranker_top_n: int = 5,

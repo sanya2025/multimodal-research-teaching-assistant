@@ -109,6 +109,12 @@ evidence. A path is never placed in the prompt: a filesystem path carries no
 visual information, and presenting one as if it did would invite the model to
 describe an image it cannot see.
 
+> **Extended by [ADR-014](ADR-014-visual-evidence-serving-path.md) §4.** A
+> validated `image_path` is now also resolved to actual pixels and attached to
+> the VLM call when a record carries no `image_bytes`, which is the normal state
+> for figures restored from a persisted index. The rule above is unchanged: the
+> path itself still never enters the prompt.
+
 ### 6. Per-stream graceful degradation
 
 Text retrieval is required — it is the only index production ingestion always
@@ -129,6 +135,12 @@ The caption record and the CLIP record for one figure are built from the same
 `FigureRecord`, so they share a canonical identity by construction rather than by
 coincidence. Text indexing happens first and unconditionally: visual work can
 never cost a document its text retrieval.
+
+> **Correction recorded in [ADR-014](ADR-014-visual-evidence-serving-path.md)
+> §1.** This held for the text and caption indices but not the CLIP index: the
+> API lifespan passed `ImageStore` an incompatible CLIP encoder, so every
+> `add_images()` call raised and was absorbed by the §6 degradation handler.
+> Ingestion reported success while `clip_images/` was never written.
 
 ### 8. Canonical retrieval gated by configuration
 
@@ -178,3 +190,4 @@ hallucinated provenance indistinguishable from real provenance.
 - [ADR-006 — Evaluation Framework](ADR-006-evaluation-framework.md)
 - [ADR-007 — Cross-Encoder Reranking](ADR-007-cross-encoder-reranking.md)
 - [ADR-008 — Multimodal RAG Architecture](ADR-008-multimodal-rag-architecture.md)
+- [ADR-014 — Visual Evidence Serving Path](ADR-014-visual-evidence-serving-path.md)

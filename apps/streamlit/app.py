@@ -6,10 +6,43 @@ import httpx
 import streamlit as st
 
 # --- page config ----------------------------------------------------------
-API = os.getenv("API_URL", "http://localhost:8000")
-
+# set_page_config must precede every other Streamlit call.
 st.set_page_config(page_title="Research & Teaching Assistant", layout="wide")
 st.title("Multimodal AI Research & Teaching Assistant")
+
+API = os.getenv("API_URL", "http://localhost:8000")
+
+# Extracted figures are full-resolution page crops — Figure 1 of the Transformer
+# paper is 1520x2239 — so rendering at natural size overflows the viewport and
+# stretching to a wide container distorts tall diagrams. A bounded width keeps
+# the aspect ratio and fits the expander.
+FIGURE_DISPLAY_WIDTH = 520
+
+
+@st.cache_data(show_spinner=False)
+def fetch_figure_image(source: str, page: int, figure_index: int | None) -> bytes | None:
+    """Return the PNG bytes for one cited figure, or None if it has no raster asset.
+
+    Cached because the same figure is commonly cited across consecutive
+    questions, and because re-fetching on every Streamlit rerun would make the
+    expander flicker.
+    """
+    try:
+        r = httpx.get(
+            f"{API}/figures/image",
+            params={
+                "source": source,
+                "page": page,
+                "figure_index": figure_index if figure_index is not None else 1,
+            },
+            timeout=30,
+        )
+    except Exception:
+        return None
+    if r.status_code != 200:
+        return None
+    return r.content
+
 
 # --- sidebar: upload + doc list -------------------------------------------
 with st.sidebar:
@@ -191,42 +224,35 @@ if st.button("Ask", type="primary", disabled=not question):
     visual_sources = resp.get("visual_sources", [])
     if visual_sources:
         with st.expander("Visual evidence", expanded=True):
-            # group by source so we can batch the /figures calls
-            pages_by_fig_source: dict[str, list[int]] = {}
-            for vs in visual_sources:
-                pages_by_fig_source.setdefault(vs["source"], [])
-                if vs["page"] not in pages_by_fig_source[vs["source"]]:
-                    pages_by_fig_source[vs["source"]].append(vs["page"])
-
-            # fetch thumbnails for each source
-            fig_lookup: dict[tuple[str, int, int | None], str] = {}
-            for src, pages in pages_by_fig_source.items():
-                try:
-                    fig_r = httpx.post(
-                        f"{API}/figures",
-                        json={"source": src, "pages": pages},
-                        timeout=120,
-                    )
-                    if fig_r.status_code == 200:
-                        fdata = fig_r.json()
-                        for fig in fdata.get("figures", []):
-                            fig_lookup[(src, fig["page"], fig["figure_index"])] = fig.get(
-                                "caption", ""
-                            )
-                except Exception:
-                    pass
-
             for vs in visual_sources:
                 label = vs["label"]
                 src = vs["source"]
                 page = vs["page"]
                 fig_idx = vs.get("figure_index")
-                caption = fig_lookup.get((src, page, fig_idx), "")
 
                 fig_title = f"{label} — {src} · page {page}"
-                if fig_idx:
+                # `is not None`, not truthiness: figure_index 0 is a real index.
+                if fig_idx is not None:
                     fig_title += f" · figure {fig_idx}"
                 st.markdown(f"**{fig_title}**")
+
+                # Fetch the PNG through the API rather than pointing the browser
+                # at it: this process can always reach the backend, whereas the
+                # browser may not when the two run in separate containers.
+                image_bytes = fetch_figure_image(src, page, fig_idx)
+                if image_bytes is not None:
+                    st.image(image_bytes, width=FIGURE_DISPLAY_WIDTH)
+                else:
+                    st.caption(
+                        "Figure image unavailable — the page may contain only vector "
+                        "graphics, which the raster extractor does not capture."
+                    )
+
+                # The answer already carries the caption the retriever scored this
+                # figure on. Showing that, rather than re-captioning via /figures,
+                # keeps the displayed text identical to the evidence the model saw
+                # and avoids a VLM call on every question.
+                caption = vs.get("caption")
                 if caption:
                     st.markdown(f"_{caption}_")
                 st.divider()

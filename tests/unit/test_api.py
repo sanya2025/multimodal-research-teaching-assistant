@@ -72,7 +72,7 @@ def client(mock_store: MagicMock, mock_llm: MagicMock):
         patch("apps.api.main.VectorStore"),
         patch("apps.api.main.LLMClient"),
         patch("apps.api.main._CLIPEmbedder", create=True),
-        patch("apps.api.main._VisualVectorStore", create=True),
+        patch("apps.api.main._ImageStoreAdapter", create=True),
         patch("apps.api.main._MultimodalRetriever", create=True),
         patch("apps.api.main._VLMClient", create=True),
         TestClient(app) as c,
@@ -120,7 +120,7 @@ def mm_client(mock_store: MagicMock, mock_llm: MagicMock):
         patch("apps.api.main.VectorStore"),
         patch("apps.api.main.LLMClient"),
         patch("apps.api.main._CLIPEmbedder", create=True),
-        patch("apps.api.main._VisualVectorStore", create=True),
+        patch("apps.api.main._ImageStoreAdapter", create=True),
         patch("apps.api.main._MultimodalRetriever", create=True),
         patch("apps.api.main._VLMClient", create=True),
         patch("apps.api.routers.ask.MultimodalRAG") as MockRAG,
@@ -342,3 +342,164 @@ class TestAskMultimodal:
     def test_response_visual_sources_empty_for_text_mode(self, client: TestClient) -> None:
         r = client.post("/ask", json={"question": "What is attention?"})
         assert r.json().get("visual_sources", []) == []
+
+
+class TestFigureImageEndpoint:
+    """GET /figures/image — serves the PNG so a cited figure can actually be shown.
+
+    Before this endpoint existed, answers carried an ``image_path`` that was a
+    server-side filesystem location no browser could load, so figures could be
+    cited but never displayed.
+    """
+
+    @staticmethod
+    def _write_figure(root: Path, name: str) -> bytes:
+        from PIL import Image
+
+        figures = root / "data" / "figures"
+        figures.mkdir(parents=True, exist_ok=True)
+        Image.new("RGB", (4, 4), "white").save(figures / name)
+        return (figures / name).read_bytes()
+
+    def test_known_figure_returns_200(
+        self, client: TestClient, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        self._write_figure(tmp_path, "doc_abc_p1_f1.png")
+        monkeypatch.chdir(tmp_path)
+        r = client.get("/figures/image", params={"source": "attention.pdf", "page": 1})
+        assert r.status_code == 200
+
+    def test_known_figure_returns_png_content_type(
+        self, client: TestClient, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        self._write_figure(tmp_path, "doc_abc_p1_f1.png")
+        monkeypatch.chdir(tmp_path)
+        r = client.get("/figures/image", params={"source": "attention.pdf", "page": 1})
+        assert r.headers["content-type"] == "image/png"
+
+    def test_returns_the_actual_bytes(
+        self, client: TestClient, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        expected = self._write_figure(tmp_path, "doc_abc_p1_f1.png")
+        monkeypatch.chdir(tmp_path)
+        r = client.get("/figures/image", params={"source": "attention.pdf", "page": 1})
+        assert r.content == expected
+
+    def test_figure_index_selects_the_figure(
+        self, client: TestClient, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        self._write_figure(tmp_path, "doc_abc_p1_f1.png")
+        second = self._write_figure(tmp_path, "doc_abc_p1_f2.png")
+        monkeypatch.chdir(tmp_path)
+        r = client.get(
+            "/figures/image",
+            params={"source": "attention.pdf", "page": 1, "figure_index": 2},
+        )
+        assert r.content == second
+
+    def test_unindexed_source_returns_404(
+        self, client: TestClient, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        monkeypatch.chdir(tmp_path)
+        r = client.get("/figures/image", params={"source": "not_indexed.pdf", "page": 1})
+        assert r.status_code == 404
+
+    def test_missing_asset_returns_404(
+        self, client: TestClient, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        """A page of vector graphics has no raster crop — not an error, just absent."""
+        monkeypatch.chdir(tmp_path)
+        r = client.get("/figures/image", params={"source": "attention.pdf", "page": 9})
+        assert r.status_code == 404
+
+    def test_page_zero_is_rejected(
+        self, client: TestClient, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        monkeypatch.chdir(tmp_path)
+        r = client.get("/figures/image", params={"source": "attention.pdf", "page": 0})
+        assert r.status_code == 422
+
+    def test_traversal_in_source_is_not_resolvable(
+        self, client: TestClient, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        """The path is derived from the index, never from the caller's string."""
+        monkeypatch.chdir(tmp_path)
+        r = client.get(
+            "/figures/image",
+            params={"source": "../../etc/passwd", "page": 1},
+        )
+        assert r.status_code == 404
+
+
+class TestStartupOrdering:
+    """The lifespan must warm torch's OpenMP runtime before it touches FAISS.
+
+    faiss-cpu and torch both link against libomp and whichever initializes the
+    OpenMP runtime first wins. FAISS first means torch's next forward pass dies
+    with SIGSEGV on macOS — a signal, so no `except Exception` anywhere can
+    recover it. This ordering is load-bearing; these tests keep a future edit
+    from quietly reversing it. See ADR-014 §8.
+    """
+
+    def test_warmup_precedes_any_vector_store_use(self) -> None:
+        manager = MagicMock()
+        with (
+            patch("apps.api.main._warm_torch_runtime", manager.warm_torch_runtime),
+            patch("apps.api.main.VectorStore", manager.VectorStore),
+            patch("apps.api.main.Embedder"),
+            patch("apps.api.main.LLMClient"),
+            patch("apps.api.main._VLMClient", create=True),
+            patch("apps.api.main._build_canonical_stack"),
+            patch("apps.api.main._build_legacy_retriever"),
+            TestClient(app),
+        ):
+            names = [c[0].split(".")[0] for c in manager.mock_calls]
+
+        assert "warm_torch_runtime" in names, "lifespan never warmed the torch runtime"
+        assert "VectorStore" in names, "lifespan never touched the vector store"
+        assert names.index("warm_torch_runtime") < names.index("VectorStore")
+
+    def test_no_clip_disables_multimodal_but_keeps_text(self) -> None:
+        """Weights unavailable is a degraded start, not a failed one."""
+        with (
+            patch("apps.api.main._warm_torch_runtime", return_value=None),
+            patch("apps.api.main.Embedder"),
+            patch("apps.api.main.VectorStore"),
+            patch("apps.api.main.LLMClient"),
+            TestClient(app) as c,
+        ):
+            assert c.get("/health").status_code == 200
+            assert app.state.retriever is None
+
+
+class TestWarmTorchRuntime:
+    def test_returns_none_when_multimodal_unavailable(self) -> None:
+        from apps.api import main as main_mod
+
+        with patch.object(main_mod, "_MULTIMODAL_AVAILABLE", False):
+            assert main_mod._warm_torch_runtime() is None
+
+    def test_calls_warmup_on_the_returned_encoder(self) -> None:
+        """Constructing the encoder is not enough — only a forward pass claims libomp."""
+        from apps.api import main as main_mod
+
+        encoder = MagicMock()
+        with (
+            patch.object(main_mod, "_MULTIMODAL_AVAILABLE", True),
+            patch.object(main_mod, "_CLIPEmbedder", return_value=encoder, create=True),
+        ):
+            result = main_mod._warm_torch_runtime()
+
+        assert result is encoder
+        encoder.warmup.assert_called_once_with()
+
+    def test_returns_none_when_weights_cannot_load(self) -> None:
+        from apps.api import main as main_mod
+
+        encoder = MagicMock()
+        encoder.warmup.side_effect = OSError("weights not downloaded")
+        with (
+            patch.object(main_mod, "_MULTIMODAL_AVAILABLE", True),
+            patch.object(main_mod, "_CLIPEmbedder", return_value=encoder, create=True),
+        ):
+            assert main_mod._warm_torch_runtime() is None

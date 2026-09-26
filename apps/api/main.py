@@ -20,15 +20,56 @@ from mrta.retrieval.embedder import Embedder
 from mrta.retrieval.vector_store import VectorStore
 
 # optional multimodal stack — requires mrta-rag[multimodal]
+#
+# The CLIP encoder must be mrta.retrieval.clip_embedder, not the mrta.multimodal
+# one: ImageStore embeds figures by path and relies on warmup(). Passing the
+# other encoder silently produced an empty CLIP index for months (ADR-014 §1).
 try:
-    from mrta.multimodal.clip_embedder import CLIPEmbedder as _CLIPEmbedder
     from mrta.multimodal.vlm_client import VLMClient as _VLMClient
+    from mrta.retrieval.clip_embedder import CLIPEmbedder as _CLIPEmbedder
+    from mrta.retrieval.image_store_adapter import ImageStoreAdapter as _ImageStoreAdapter
     from mrta.retrieval.multimodal_retriever import MultimodalRetriever as _MultimodalRetriever
-    from mrta.retrieval.visual_vector_store import VisualVectorStore as _VisualVectorStore
 
     _MULTIMODAL_AVAILABLE = True
 except ImportError:
     _MULTIMODAL_AVAILABLE = False
+
+
+def _warm_torch_runtime():
+    """Load the CLIP encoder and run one forward pass, before FAISS is touched.
+
+    Returns the warmed encoder, or None when the multimodal extra is absent or
+    the weights cannot be loaded (offline, not yet downloaded). None disables the
+    multimodal stack; text retrieval is unaffected.
+
+    Ordering is load-bearing, not stylistic. faiss-cpu and torch both link
+    against libomp, and whichever initializes the OpenMP runtime first wins. If
+    FAISS gets there first, torch's next forward pass segfaults on macOS — the
+    process dies with SIGSEGV, so no exception handler here or in the
+    per-stream degradation logic can catch it. In this repository's Python 3.14
+    environment the crash reproduced 5/5 with the old ordering and 0/5 with
+    this one.
+
+    ``CLIPEmbedder.warmup()`` exists for exactly this and documents it, but it
+    was only ever called from ``ImageStore._ensure_index()`` — which runs long
+    after the API lifespan has already loaded the text index through FAISS. By
+    then the protection is lost. Calling it here, before any FAISS use, is what
+    makes it effective. See ADR-014 §8.
+
+    ``OMP_NUM_THREADS=1`` also avoids the crash, but serializes all OpenMP work
+    for embedding and reranking, so it is documented as a fallback rather than
+    used as the fix.
+    """
+    if not _MULTIMODAL_AVAILABLE:
+        return None
+    try:
+        clip = _CLIPEmbedder()
+        clip.warmup()
+        return clip
+    except Exception:
+        # No CLIP means no visual streams. The API still serves text RAG, which
+        # is the only path that has a required index.
+        return None
 
 
 @asynccontextmanager
@@ -39,6 +80,9 @@ async def lifespan(app: FastAPI):
             console=settings.otel_console_exporter,
             otlp_endpoint=settings.otel_exporter_otlp_endpoint,
         )
+
+    # Must happen before anything touches FAISS. See _warm_torch_runtime.
+    clip = _warm_torch_runtime()
 
     embedder = Embedder()
 
@@ -54,19 +98,22 @@ async def lifespan(app: FastAPI):
     app.state.embedder = embedder
 
     # multimodal stack (optional)
-    if _MULTIMODAL_AVAILABLE:
+    if _MULTIMODAL_AVAILABLE and clip is not None:
         try:
-            clip = _CLIPEmbedder()
-            visual_store = _VisualVectorStore(clip)
-            app.state.retriever = _MultimodalRetriever(
-                vector_store=store, visual_store=visual_store
-            )
             app.state.vlm = _VLMClient()
-            app.state.canonical_stack = (
+
+            canonical_stack = (
                 _build_canonical_stack(embedder, clip)
                 if settings.enable_canonical_retrieval
                 else None
             )
+            app.state.canonical_stack = canonical_stack
+
+            # The legacy retriever reads the same persisted indices the canonical
+            # stack loads. It previously received an empty, never-loaded
+            # VisualVectorStore, so teaching modes — which route to this
+            # retriever — could not return visual evidence at all.
+            app.state.retriever = _build_legacy_retriever(store, canonical_stack)
         except Exception:
             app.state.retriever = None
             app.state.vlm = None
@@ -147,6 +194,50 @@ def _build_canonical_stack(embedder, clip) -> dict | None:
             stack["reranker"] = None
 
     return stack
+
+
+def _source_for_doc(store: VectorStore, doc_id: str) -> str | None:
+    """Resolve a document_id to its PDF filename using the loaded text index.
+
+    The CLIP index stores ``VisualRecord``, which carries canonical identity but
+    no filename, while citations are displayed by filename. The text index is the
+    one stream that is always present, which makes it the natural lookup. Resolved
+    per call rather than snapshotted at startup, so a document uploaded into a
+    running server still cites its filename.
+    """
+    for chunk in store._chunks:
+        if chunk.doc_id == doc_id:
+            return chunk.source
+    return None
+
+
+def _build_legacy_retriever(store: VectorStore, canonical_stack: dict | None):
+    """Wire MultimodalRetriever onto the persisted caption and CLIP indices.
+
+    Teaching modes route to this retriever rather than the canonical pipeline
+    (see ``apps.api.routers.ask``), because their prompt templates consume
+    ``EvidenceRecord`` lists. That routing is unchanged; what changes is that the
+    retriever is now given the visual streams that actually hold data.
+
+    The CLIP stream is attached only when the index is non-empty: an empty
+    adapter would add a stream that contributes nothing to RRF while still
+    costing a query embedding on every request.
+    """
+    stack = canonical_stack or {}
+    image_store = stack.get("image_store")
+
+    visual_store = None
+    if image_store is not None and image_store.size > 0:
+        visual_store = _ImageStoreAdapter(
+            image_store,
+            source_resolver=lambda doc_id: _source_for_doc(store, doc_id),
+        )
+
+    return _MultimodalRetriever(
+        vector_store=store,
+        caption_store=stack.get("caption_store"),
+        visual_store=visual_store,
+    )
 
 
 app = FastAPI(

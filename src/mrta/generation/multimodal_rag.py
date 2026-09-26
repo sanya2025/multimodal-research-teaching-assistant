@@ -21,6 +21,7 @@ from typing import TYPE_CHECKING
 
 from mrta.core.exceptions import LLMError
 from mrta.core.schemas import EvidenceRecord, MultimodalAnswer, MultimodalCitation
+from mrta.generation.canonical_rag import safe_image_path
 from mrta.observability.tracing import trace_span
 from mrta.prompts import load_prompt
 
@@ -29,6 +30,32 @@ if TYPE_CHECKING:
 
     from mrta.multimodal.vlm_client import VLMClient
     from mrta.retrieval.multimodal_retriever import MultimodalRetriever
+
+
+def _evidence_image(ev: EvidenceRecord) -> PILImage | None:
+    """Best available PIL image for one visual record, or None.
+
+    Prefers in-memory bytes, then the on-disk asset the indices reference. A
+    record that yields neither is not an error: pages captured without a raster
+    crop legitimately have no image to attach.
+    """
+    if ev.image_bytes is not None:
+        try:
+            return ev.to_pil()
+        except (ValueError, OSError):
+            return None
+
+    path = safe_image_path(ev.image_path)
+    if path is None:
+        return None
+    try:
+        from PIL import Image
+
+        return Image.open(path)
+    except (OSError, ValueError):
+        # A path that passed the safety check but will not decode (truncated
+        # write, unsupported format) costs this one figure, not the answer.
+        return None
 
 
 class MultimodalRAG:
@@ -140,10 +167,18 @@ class MultimodalRAG:
         text_ev: list[EvidenceRecord],
         visual_ev: list[EvidenceRecord],
     ) -> tuple[str, list[PILImage]]:
-        """Render multimodal_rag.j2 and collect PIL images from records with bytes.
+        """Render the prompt template and collect PIL images for the retrieved figures.
 
-        Records in visual_ev that have no image_bytes (e.g. vector-graphic pages)
-        appear in the prompt text but are not attached as images to the VLM call.
+        An image is taken from ``image_bytes`` when the record carries them, and
+        otherwise loaded from ``image_path``. The fallback matters: the caption
+        and CLIP indices both persist without bytes by design (they would add
+        megabytes per figure and are re-readable from disk), so records restored
+        from a persisted index always arrive with ``image_bytes=None``. Without
+        the fallback a "multimodal" answer would silently be text-only whenever
+        the server had been restarted.
+
+        Records with neither bytes nor a readable path (e.g. vector-graphic
+        pages) still appear in the prompt text; they are simply not attached.
         """
         template = f"teaching_{self._teaching_mode}" if self._teaching_mode else "multimodal_rag"
         prompt = load_prompt(
@@ -152,7 +187,7 @@ class MultimodalRAG:
             text_evidence=text_ev,
             visual_evidence=visual_ev,
         )
-        images = [ev.to_pil() for ev in visual_ev if ev.image_bytes is not None]
+        images = [img for img in (_evidence_image(ev) for ev in visual_ev) if img is not None]
         return prompt, images
 
     def _make_citations(
@@ -180,6 +215,12 @@ class MultimodalRAG:
                 source=ev.source,
                 page=ev.page,
                 figure_index=ev.figure_index,
+                # Populated so a client can render the figure itself rather than
+                # only naming it. safe_image_path keeps a malformed index from
+                # turning into an arbitrary host path in an API response, which
+                # is the same guard the canonical path applies.
+                image_path=safe_image_path(ev.image_path),
+                caption=ev.retrieval_text() or None,
             )
             for i, ev in enumerate(visual_ev)
         ]
