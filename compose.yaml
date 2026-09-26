@@ -18,7 +18,13 @@ services:
              "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
       interval: 15s
       timeout: 5s
-      start_period: 30s
+      # The API loads two models before it serves: the CLIP encoder for the
+      # visual index and the cross-encoder reranker. Measured cold start in this
+      # image is ~70s, and a first run that has to fetch weights is slower still.
+      # 30s was survivable only while the CLIP index was silently failing to
+      # build (ADR-014 §1) and CLIP therefore never loaded at startup. With a
+      # working visual index the load is real work, not a hang.
+      start_period: 180s
       retries: 3
 
   streamlit:

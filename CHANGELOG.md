@@ -5,6 +5,138 @@ Each entry maps tutorial notebook cells → `src/mrta/` modules → production n
 
 ---
 
+## [fix/visual-evidence-serving-path] — Visual Evidence Serving Path Repair — 2026-09-22
+
+**Tests:** 1017 passing, 12 skipped (982 → +35)
+
+A defect-repair PR. No retrieval algorithm, fusion parameter, reranker, prompt,
+generation condition, benchmark query, expected-evidence label or metric
+definition changed. `git diff -- results/v2 data/eval` is empty and the ADR-012
+regression gate is untouched.
+
+Asking *"Find the figure showing the Transformer model architecture and explain
+what it depicts"* in **Multimodal RAG → Visual evidence** returned an answer with
+no figure and no Visual evidence panel, even though the figure was extracted,
+captioned, indexed, and present on disk. Four independent defects sat behind that
+one symptom; [ADR-014](docs/adr/ADR-014-visual-evidence-serving-path.md) records
+them and the eight decisions that close them.
+
+### New files
+
+| File | Purpose |
+|---|---|
+| `src/mrta/retrieval/image_store_adapter.py` | `ImageStoreAdapter` — presents the persisted `ImageStore` (CLIP) index through the `VisualVectorStore` search surface, plus `VisualRecord` → `EvidenceRecord` adaptation |
+| `scripts/rebuild_clip_serving_index.py` | Rebuilds `data/vector_store/clip_images/` from already-extracted figures, for corpora ingested while the index was silently failing to build |
+| `tests/unit/test_image_store_adapter.py` | 15 tests — record adaptation, `evidence_id` agreement with the caption index, source resolution and its failure modes |
+| `docs/adr/ADR-014-visual-evidence-serving-path.md` | Four defects, eight decisions, six rejected alternatives |
+| `docs/adr/ADR-015-degradation-observability.md` | **Proposed, not implemented** — the degradation-reporting follow-up ADR-014 scopes out; no code ships with it |
+
+### Modified files
+
+| File | Change |
+|---|---|
+| `apps/api/main.py` | Correct CLIP encoder wired into `ImageStore`; new `_warm_torch_runtime()` runs before any FAISS use; new `_build_legacy_retriever()` attaches the persisted caption and CLIP streams; `_source_for_doc()` resolves `document_id` → filename |
+| `apps/api/routers/figures.py` | New `GET /figures/image` — serves the extracted PNG, path derived server-side |
+| `apps/streamlit/app.py` | Renders visual evidence via the new endpoint; the app previously contained no `st.image` call at all |
+| `src/mrta/generation/multimodal_rag.py` | `_evidence_image()` falls back to `image_path` when `image_bytes` is absent; visual citations now carry `image_path` and `caption` |
+| `src/mrta/retrieval/multimodal_retriever.py` | `visual_store` typed against a new `VisualSearchStore` Protocol rather than the concrete `VisualVectorStore` |
+| `compose.yaml` | API healthcheck `start_period` 30s → 180s |
+| `.gitignore` | Ignores `data/figures/` — rebuildable ingestion output, same policy as the indices |
+| `docs/adr/ADR-008-...md`, `ADR-009-...md` | Amendment and correction notes pointing at ADR-014 §4, §5 |
+| `tests/unit/test_api.py` | +13 — `TestFigureImageEndpoint` (8), `TestStartupOrdering` (2), `TestWarmTorchRuntime` (3) |
+| `notebooks/production/2026-08-26-phase07c-multimodal-rag.ipynb` | One markdown line — the pipeline sketch said "collect PIL images from records with `image_bytes`", now stale after the `image_path` fallback |
+| `tests/unit/test_multimodal_rag.py` | +7 — `TestPersistedFigureEvidence`: path fallback, PIL type, missing-file tolerance, citation `image_path`/`caption`, absolute-path rejection |
+
+### Why this stayed invisible
+
+Three of the four defects were masked by an exception handler. ADR-009 §6 wraps
+each retrieval stream in per-stream degradation so a missing optional index
+cannot fail a query — correct behaviour that also made a *wiring error*
+indistinguishable from an absent optional component. `ImageStore.add_images()`
+raised on every call because it was handed the wrong `CLIPEmbedder`; that was
+recorded as a degraded stream and ingestion reported success. The fourth defect
+needed no handler: `search_with_scores()` returns `[]` on an empty index without
+raising, so teaching modes returned zero visual evidence silently.
+
+The three swallowed exceptions are now understood but deliberately **not**
+removed. Surfacing degradation reasons in `/health` or an ingestion summary is
+the obvious follow-up, and is recorded as ADR-015 (Proposed) rather than
+implemented here. Worth noting for that follow-up: the reasons already exist as
+structured strings in `IndexResult.degraded` and
+`RetrievalDiagnostics.degraded_streams` — what is missing is a reader, not the
+data.
+
+### Two CLIP encoders, and which consumes which
+
+`mrta.retrieval.clip_embedder` loads CLIP through HuggingFace with the correct
+QuickGELU activation and embeds figures **by path**; `mrta.multimodal.clip_embedder`
+loads it through open_clip with an activation mismatch and takes a PIL image. The
+difference is deliberate and documented. `ImageStore` is written against the
+retrieval variant and calls its `warmup()`; the API lifespan constructed the other
+one. The evaluation pipeline was never affected — it builds its own indices under
+`data/eval/indices/` through `scripts/build_clip_image_index.py`, which already
+used the correct encoder. This is why no ADR-013 measurement changes.
+
+### A startup ordering that is load-bearing
+
+`faiss-cpu` and `torch` both link against `libomp`, and whichever initializes the
+OpenMP runtime first wins. With FAISS first, torch's next forward pass dies with
+`SIGSEGV` — no handler in the lifespan or the per-stream degradation logic can
+catch a segfault. Measured in this repository's Python 3.14 environment: **5/5
+crashes with the old ordering, 0/5 with the new one.**
+
+`CLIPEmbedder.warmup()` already existed for exactly this and documents it, but it
+was only ever reached from `ImageStore._ensure_index()` — long after the lifespan
+had loaded the text index through FAISS. Calling it before any FAISS use is what
+makes it effective.
+
+This is defence in depth, not the environment fix. Symlinking FAISS's `libomp` to
+torch's copy, as the README describes, is what actually leaves one runtime in the
+process. `OMP_NUM_THREADS=1` also avoids the crash but serializes all OpenMP work
+for embedding and reranking, so it is documented as a fallback rather than adopted.
+
+Defect 1 is why this surfaced now: while `ImageStore` was raising on the wrong
+encoder, CLIP never executed in the API process, so torch and FAISS never
+contended. Making the CLIP index build for the first time *reached* a latent
+environment hazard rather than introducing one.
+
+### The response contract did not change
+
+`MultimodalCitation.image_path` and `.caption` were already added as additive
+fields in PR6; `src/mrta/core/schemas.py` is unchanged here. The legacy path
+simply never populated them. Binary bytes still stay out of `/ask` responses per
+ADR-008 §5 — `GET /figures/image` serves pixels, and its only client input is a
+filename resolved against the index plus two positive integers. The asset path is
+derived server-side from the deterministic naming in
+`document_indexer.figure_asset_path` and passed through the same
+`safe_image_path` containment check the canonical path already used, so no
+caller-supplied path reaches the filesystem.
+
+### Two costs worth stating plainly
+
+**Teaching-mode output changes.** Teaching modes route to `MultimodalRetriever`
+rather than the canonical pipeline (ADR-009 §3), and that retriever was built with
+a never-loaded, permanently empty `VisualVectorStore`. Teaching modes were
+therefore **text-only in practice** since the multimodal path shipped. Any prior
+qualitative judgement of teaching-mode output was made without figures and should
+be revisited. Answers marked `retrieval_mode="multimodal"` now genuinely attach
+images after a restart — a correction, not a regression, but it does move the
+baseline for any teaching-mode comparison.
+
+**Cold start roughly doubled.** A working CLIP index means `ImageStore.load()`
+loads the CLIP encoder at startup, which it never did while the index was failing
+to build. Measured cold start in the API image went from ~35s to ~69s, past the
+30s `start_period`, so the first `docker compose up` after this change reported
+the API unhealthy and Streamlit refused to start behind its
+`depends_on: service_healthy`. Eager loading is the existing decision from
+ADR-009 §8; making it lazy would trade startup latency for first-query latency
+and is a separate decision, not taken here.
+
+`data/vector_store/clip_images/` is new state, loaded at startup. Its absence
+remains non-fatal per ADR-009 §6.
+
+---
+
 ## [docs/portfolio-research-overhaul] — PR10: Portfolio & Research Documentation Overhaul — 2026-09-16
 
 **Tests:** 982 passing, 12 skipped (unchanged — documentation only)

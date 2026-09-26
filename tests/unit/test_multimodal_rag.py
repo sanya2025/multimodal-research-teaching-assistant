@@ -220,3 +220,112 @@ class TestFallback:
         result = MultimodalRAG(retriever=retriever, vlm=vlm).ask("Q?")
         assert len(result.text_citations) == 1
         assert result.text_citations[0].label == "[T1]"
+
+
+# ---------------------------------------------------------------------------
+# TestPersistedFigureEvidence
+# ---------------------------------------------------------------------------
+
+
+class TestPersistedFigureEvidence:
+    """Figures restored from a persisted index carry a path, not bytes.
+
+    The caption and CLIP indices both drop image_bytes at save time by design, so
+    every figure retrieved after a server restart arrives with image_bytes=None.
+    Without a path fallback the VLM silently received no images and a
+    "multimodal" answer was really text-only.
+    """
+
+    @staticmethod
+    def _record_on_disk(
+        root, eid: str = "v1", page: int = 3, name: str = "fig.png"
+    ) -> EvidenceRecord:
+        figures = root / "data" / "figures"
+        figures.mkdir(parents=True, exist_ok=True)
+        Image.new("RGB", (8, 8), color=(0, 64, 128)).save(figures / name)
+        return EvidenceRecord(
+            evidence_id=eid,
+            doc_id="doc1",
+            source="paper.pdf",
+            page=page,
+            modality="image",
+            figure_index=1,
+            image_bytes=None,
+            image_path=f"data/figures/{name}",
+            nearby_text="Figure 1: The Transformer - model architecture.",
+        )
+
+    def test_image_loaded_from_path_when_bytes_absent(self, tmp_path, monkeypatch) -> None:
+        monkeypatch.chdir(tmp_path)
+        record = self._record_on_disk(tmp_path)
+        vlm = _make_vlm()
+        MultimodalRAG(retriever=_make_retriever([record]), vlm=vlm).ask("Q?")
+        _, images = vlm.generate.call_args.args
+        assert len(images) == 1
+
+    def test_path_loaded_image_is_a_pil_image(self, tmp_path, monkeypatch) -> None:
+        monkeypatch.chdir(tmp_path)
+        record = self._record_on_disk(tmp_path)
+        vlm = _make_vlm()
+        MultimodalRAG(retriever=_make_retriever([record]), vlm=vlm).ask("Q?")
+        _, images = vlm.generate.call_args.args
+        assert all(isinstance(img, Image.Image) for img in images)
+
+    def test_missing_file_is_skipped_not_raised(self, tmp_path, monkeypatch) -> None:
+        monkeypatch.chdir(tmp_path)
+        record = EvidenceRecord(
+            evidence_id="v1",
+            doc_id="doc1",
+            source="paper.pdf",
+            page=3,
+            modality="image",
+            image_path="data/figures/does_not_exist.png",
+        )
+        vlm = _make_vlm()
+        MultimodalRAG(retriever=_make_retriever([record]), vlm=vlm).ask("Q?")
+        _, images = vlm.generate.call_args.args
+        assert images == []
+
+    def test_citation_carries_image_path(self, tmp_path, monkeypatch) -> None:
+        """Without this the client has no way to fetch and display the figure."""
+        monkeypatch.chdir(tmp_path)
+        record = self._record_on_disk(tmp_path)
+        result = MultimodalRAG(retriever=_make_retriever([record]), vlm=_make_vlm()).ask("Q?")
+        assert result.visual_citations[0].image_path == "data/figures/fig.png"
+
+    def test_citation_image_path_is_none_when_file_absent(self, tmp_path, monkeypatch) -> None:
+        """safe_image_path keeps a stale index from emitting a path that will 404."""
+        monkeypatch.chdir(tmp_path)
+        record = EvidenceRecord(
+            evidence_id="v1",
+            doc_id="doc1",
+            source="paper.pdf",
+            page=3,
+            modality="image",
+            image_path="data/figures/gone.png",
+        )
+        result = MultimodalRAG(retriever=_make_retriever([record]), vlm=_make_vlm()).ask("Q?")
+        assert result.visual_citations[0].image_path is None
+
+    def test_citation_carries_caption_text(self, tmp_path, monkeypatch) -> None:
+        """The UI shows the text the retriever actually scored, not a fresh caption."""
+        monkeypatch.chdir(tmp_path)
+        record = self._record_on_disk(tmp_path)
+        result = MultimodalRAG(retriever=_make_retriever([record]), vlm=_make_vlm()).ask("Q?")
+        assert result.visual_citations[0].caption == (
+            "Figure 1: The Transformer - model architecture."
+        )
+
+    def test_absolute_image_path_is_rejected(self, tmp_path, monkeypatch) -> None:
+        """An index that recorded a host path must not leak it through the API."""
+        monkeypatch.chdir(tmp_path)
+        record = EvidenceRecord(
+            evidence_id="v1",
+            doc_id="doc1",
+            source="paper.pdf",
+            page=3,
+            modality="image",
+            image_path="/etc/passwd",
+        )
+        result = MultimodalRAG(retriever=_make_retriever([record]), vlm=_make_vlm()).ask("Q?")
+        assert result.visual_citations[0].image_path is None

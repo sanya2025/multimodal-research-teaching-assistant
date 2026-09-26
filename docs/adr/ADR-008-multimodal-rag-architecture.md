@@ -63,6 +63,11 @@ images attached and sets `retrieval_mode="text_only"` in the returned
 modality)` only. Streamlit fetches thumbnails via a separate `/figures` call.
 This keeps response sizes predictable and avoids base64 bloat in JSON.
 
+> **Amended by [ADR-014](ADR-014-visual-evidence-serving-path.md) §5.** The
+> separate call named here was never implemented: `/figures` returns VLM
+> captions, not pixels, so no endpoint served an image. `GET /figures/image`
+> now fills that role. The no-binary-in-`/ask` principle is unchanged.
+
 ### 6. Evaluation metrics report modalities separately
 
 `multimodal_recall_at_k` returns text, visual, and overall recall as separate
@@ -106,3 +111,4 @@ silently falls back when the extra is absent. Text RAG remains fully functional.
 - ADR-002 — Vector store: FAISS chosen for text store (same applies to visual store)
 - ADR-005 — RAG architecture: text-only pipeline unchanged by multimodal extension
 - ADR-006 — Evaluation framework: extended here to cover multimodal metrics
+- [ADR-014 — Visual Evidence Serving Path](ADR-014-visual-evidence-serving-path.md): completes §5

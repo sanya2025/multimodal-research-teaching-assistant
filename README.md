@@ -415,6 +415,15 @@ print('OK')
 "
 ```
 
+Check every environment you actually run from. It is easy to apply this to one
+venv and forget a second one that the API is really launched with:
+
+```bash
+ls -la "$(python -c 'import site; print(site.getsitepackages()[0])')/faiss/.dylibs/libomp.dylib"
+```
+
+A symlink means fixed; a regular ~755 KB file means still vulnerable.
+
 Notes:
 
 - Reinstalling or upgrading `faiss-cpu` restores its vendored copy and brings
@@ -424,6 +433,18 @@ Notes:
   making them safe. `OMP_NUM_THREADS=1` also avoids the crash but serialises all
   OpenMP work in both libraries.
 - Linux and CI are unaffected, so this will not show up in GitHub Actions.
+
+**The API also defends itself.** `apps/api/main.py` warms the CLIP encoder —
+one real torch forward pass — before it loads any FAISS index, so torch claims
+the OpenMP runtime first. That was enough to start cleanly on an unpatched venv
+in local testing, but it is a seatbelt, not a substitute: the symlink above is
+what actually leaves one runtime in the process. See
+[ADR-014](docs/adr/ADR-014-visual-evidence-serving-path.md) §8.
+
+The crash is a `SIGSEGV`, so it kills the worker outright. Under
+`uvicorn --reload` the parent survives and respawns, so the symptom reaching a
+client is `httpx.ReadError: [Errno 54] Connection reset by peer` rather than an
+HTTP error — check the server terminal for the real cause.
 
 ### Environment switching
 
@@ -605,6 +626,8 @@ Two parallel versions of the 10-part series:
 | [Multimodal retrieval architecture](docs/architecture/multimodal_reranking_v2.md) | Authoritative technical description: indexing, fusion, reranking, full ablations, failure analysis, provenance |
 | [Architecture overview](docs/architecture/overview.md) | Tech stack, system diagram, repo layout, design tradeoffs |
 | [Observability](docs/observability.md) | OpenTelemetry span attributes and setup |
+| [ADR-015](docs/adr/ADR-015-degradation-observability.md) | **Proposed** — making per-stream degradation observable in `/health` and `/upload` |
+| [ADR-014](docs/adr/ADR-014-visual-evidence-serving-path.md) | Why visual evidence never reached the UI, and the serving-path repair |
 | [ADR-013](docs/adr/ADR-013-modality-specific-retrieval-and-query-aware-reranking.md) | Why modality-specific retrieval and query-aware reranking, with the v2 evidence |
 | [ADR-012](docs/adr/ADR-012-two-tier-ci-quality-gates.md) | Two-tier CI and the regression contract |
 | [ADR-011](docs/adr/ADR-011-citation-aware-generation.md) | Citation-aware generation and the precision/recall trade-off |
